@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnostic Supabase</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+        }
+        h1 { color: #4ec9b0; }
+        .step {
+            background: #252526;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid #007acc;
+        }
+        .success { border-left-color: #4ec9b0; }
+        .error { border-left-color: #f48771; }
+        .warning { border-left-color: #dcdcaa; }
+        pre {
+            background: #1e1e1e;
+            padding: 10px;
+            border-radius: 3px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        button {
+            background: #007acc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 3px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #005a9e; }
+        .code { color: #ce9178; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Diagnostic Connexion Supabase</h1>
+
+    <div class="step">
+        <h3>Email de test</h3>
+        <input type="email" id="email" value="isma.lepennec@gmail.com" style="width: 100%; padding: 8px; background: #1e1e1e; color: #d4d4d4; border: 1px solid #3c3c3c; border-radius: 3px;">
+    </div>
+
+    <div class="step">
+        <h3>Mot de passe</h3>
+        <input type="password" id="password" value="Aqwzsxedc23!" style="width: 100%; padding: 8px; background: #1e1e1e; color: #d4d4d4; border: 1px solid #3c3c3c; border-radius: 3px;">
+    </div>
+
+    <div class="step">
+        <button onclick="runDiagnostic()">🚀 Lancer le Diagnostic Complet</button>
+        <button onclick="testLogin()">🔑 Tester Connexion</button>
+        <button onclick="clearLog()">🗑️ Effacer</button>
+    </div>
+
+    <div id="log"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../src/config/supabase-config.js"></script>
+    <script src="../src/auth/supabase-auth-v2.js"></script>
+    <script src="../src/data/supabase-data.js"></script>
+
+    <script>
+        function log(title, content, type = 'step') {
+            const div = document.createElement('div');
+            div.className = `step ${type}`;
+            div.innerHTML = `<h3>${title}</h3><pre>${typeof content === 'object' ? JSON.stringify(content, null, 2) : content}</pre>`;
+            document.getElementById('log').appendChild(div);
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        async function runDiagnostic() {
+            clearLog();
+            log('📋 Diagnostic démarré', new Date().toLocaleString());
+
+            // Étape 1: Client Supabase
+            try {
+                if (typeof supabaseClient === 'undefined') {
+                    log('❌ Étape 1: Client Supabase', 'supabaseClient non défini', 'error');
+                    return;
+                }
+                log('✅ Étape 1: Client Supabase', { status: 'OK', url: supabaseClient.supabaseUrl }, 'success');
+            } catch (e) {
+                log('❌ Étape 1: Client Supabase', e.message, 'error');
+                return;
+            }
+
+            // Étape 2: Connexion à la base
+            try {
+                const { data, error } = await supabaseClient.from('profiles').select('count');
+                if (error) {
+                    log('❌ Étape 2: Connexion Base', error.message, 'error');
+                } else {
+                    log('✅ Étape 2: Connexion Base', 'Table profiles accessible', 'success');
+                }
+            } catch (e) {
+                log('❌ Étape 2: Connexion Base', e.message, 'error');
+            }
+
+            // Étape 3: Vérifier le profil
+            const email = document.getElementById('email').value;
+            try {
+                const { data, error } = await supabaseClient
+                    .from('profiles')
+                    .select('*')
+                    .eq('email', email)
+                    .single();
+
+                if (error) {
+                    log('⚠️ Étape 3: Profil Utilisateur', `Profil inexistant pour ${email}`, 'warning');
+                } else {
+                    log('✅ Étape 3: Profil Utilisateur', {
+                        nom: data.name,
+                        email: data.email,
+                        role: data.role,
+                        actif: data.active
+                    }, 'success');
+                }
+            } catch (e) {
+                log('❌ Étape 3: Profil Utilisateur', e.message, 'error');
+            }
+
+            // Étape 4: Test Auth
+            const password = document.getElementById('password').value;
+            try {
+                log('⏳ Étape 4: Test Authentification', 'Tentative de connexion...', 'step');
+
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+
+                if (error) {
+                    log('❌ Étape 4: Test Authentification', {
+                        erreur: error.message,
+                        code: error.status
+                    }, 'error');
+                } else {
+                    log('✅ Étape 4: Test Authentification', {
+                        userId: data.user.id,
+                        email: data.user.email,
+                        session: 'Active'
+                    }, 'success');
+
+                    // Déconnexion immédiate
+                    await supabaseClient.auth.signOut();
+                    log('ℹ️ Déconnexion', 'Session fermée automatiquement', 'step');
+                }
+            } catch (e) {
+                log('❌ Étape 4: Test Authentification', e.message, 'error');
+            }
+
+            log('🏁 Diagnostic terminé', new Date().toLocaleString(), 'success');
+        }
+
+        async function testLogin() {
+            clearLog();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            log('🔑 Test de connexion', `Email: ${email}`, 'step');
+
+            const result = await SupabaseAuth.login(email, password);
+
+            if (result.success) {
+                log('✅ Connexion réussie !', {
+                    nom: result.user.name,
+                    email: result.user.email,
+                    role: result.user.role
+                }, 'success');
+                log('✅ Vous pouvez maintenant aller sur index.html', '', 'success');
+            } else {
+                log('❌ Échec de connexion', result.message, 'error');
+            }
+        }
+
+        // Auto-diagnostic au chargement
+        window.addEventListener('DOMContentLoaded', () => {
+            log('🚀 Page chargée', 'Prêt pour le diagnostic', 'success');
+        });
+    </script>
+</body>
+</html>

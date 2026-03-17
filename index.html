@@ -1,0 +1,2714 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM NJM Conseil - Authentification</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* Colors from NJM logo */
+            --primary-pink: #e91e8c;
+            --primary-purple: #7b3f9e;
+            --primary-orange: #e36a3a;
+            --primary-green: #b8c944;
+
+            /* Derivatives */
+            --gradient-1: linear-gradient(135deg, #e91e8c 0%, #7b3f9e 100%);
+            --gradient-2: linear-gradient(135deg, #e36a3a 0%, #b8c944 100%);
+            --gradient-3: linear-gradient(135deg, #7b3f9e 0%, #e36a3a 50%, #b8c944 100%);
+
+            /* Neutrals */
+            --white: #ffffff;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+
+            /* Spacing */
+            --space-xs: 0.5rem;
+            --space-sm: 0.75rem;
+            --space-md: 1rem;
+            --space-lg: 1.5rem;
+            --space-xl: 2rem;
+            --space-2xl: 3rem;
+
+            /* Border radius */
+            --radius-sm: 0.375rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+            --radius-2xl: 1.5rem;
+
+            /* Shadows */
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+
+            /* Transitions */
+            --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden;
+        }
+
+        /* ==================== AUTH PAGE ==================== */
+        #authPage {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-lg);
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #ffd89b 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        /* Animated background shapes */
+        .bg-shapes {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .shape {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.5;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .shape:nth-child(1) {
+            width: 300px;
+            height: 300px;
+            background: var(--primary-pink);
+            top: 10%;
+            left: 20%;
+            animation-delay: 0s;
+        }
+
+        .shape:nth-child(2) {
+            width: 400px;
+            height: 400px;
+            background: var(--primary-purple);
+            top: 50%;
+            right: 10%;
+            animation-delay: 5s;
+        }
+
+        .shape:nth-child(3) {
+            width: 250px;
+            height: 250px;
+            background: var(--primary-orange);
+            bottom: 20%;
+            left: 10%;
+            animation-delay: 10s;
+        }
+
+        .shape:nth-child(4) {
+            width: 350px;
+            height: 350px;
+            background: var(--primary-green);
+            bottom: 10%;
+            right: 30%;
+            animation-delay: 15s;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            33% {
+                transform: translate(50px, -50px) scale(1.1);
+            }
+
+            66% {
+                transform: translate(-30px, 30px) scale(0.9);
+            }
+        }
+
+        /* Auth card */
+        .auth-card {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 450px;
+            padding: var(--space-2xl);
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: var(--radius-2xl);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: var(--shadow-2xl);
+            animation: slideIn 0.6s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .auth-logo {
+            display: flex;
+            justify-content: center;
+            margin-bottom: var(--space-xl);
+        }
+
+        .auth-logo img {
+            max-width: 250px;
+            height: auto;
+            filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.15));
+            animation: logoFade 0.8s ease-out 0.2s both;
+        }
+
+        @keyframes logoFade {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .auth-title {
+            text-align: center;
+            color: var(--white);
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: var(--space-sm);
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .auth-subtitle {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.95rem;
+            font-weight: 400;
+            margin-bottom: var(--space-xl);
+        }
+
+        .form-group {
+            margin-bottom: var(--space-lg);
+        }
+
+        .form-label {
+            display: block;
+            color: var(--white);
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: var(--space-xs);
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.875rem var(--space-md);
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid transparent;
+            border-radius: var(--radius-lg);
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: all var(--transition-base);
+            outline: none;
+        }
+
+        .form-input:focus {
+            background: var(--white);
+            border-color: var(--primary-pink);
+            box-shadow: 0 0 0 4px rgba(233, 30, 140, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .form-input::placeholder {
+            color: var(--gray-400);
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 1rem;
+            background: var(--gradient-1);
+            color: var(--white);
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            transition: all var(--transition-base);
+            box-shadow: 0 4px 12px rgba(233, 30, 140, 0.3);
+            margin-top: var(--space-md);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(233, 30, 140, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .forgot-link {
+            display: block;
+            text-align: center;
+            margin-top: var(--space-lg);
+            color: var(--white);
+            font-size: 0.875rem;
+            text-decoration: none;
+            transition: opacity var(--transition-fast);
+        }
+
+        .forgot-link:hover {
+            opacity: 0.8;
+            text-decoration: underline;
+        }
+
+        /* ==================== DASHBOARD ==================== */
+        #dashboardPage {
+            display: none;
+            min-height: 100vh;
+            background: var(--gray-50);
+        }
+
+        #dashboardPage.active {
+            display: flex;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--white);
+            border-right: 1px solid var(--gray-200);
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-md);
+            position: fixed;
+            height: 100vh;
+            z-index: 100;
+            transition: transform var(--transition-base);
+        }
+
+        .sidebar-header {
+            padding: var(--space-xl) var(--space-lg);
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .sidebar-logo img {
+            max-width: 180px;
+            height: auto;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: var(--space-lg) 0;
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 0.875rem var(--space-lg);
+            color: var(--gray-700);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all var(--transition-fast);
+            border-left: 3px solid transparent;
+            margin: 0.25rem 0;
+        }
+
+        .nav-item:hover {
+            background: var(--gray-50);
+            color: var(--primary-pink);
+        }
+
+        .nav-item.active {
+            background: rgba(233, 30, 140, 0.05);
+            color: var(--primary-pink);
+            border-left-color: var(--primary-pink);
+        }
+
+        .nav-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: var(--space-md);
+        }
+
+        .sidebar-footer {
+            padding: var(--space-lg);
+            border-top: 1px solid var(--gray-200);
+        }
+
+        .btn-logout {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--gray-100);
+            color: var(--gray-700);
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .btn-logout:hover {
+            background: var(--gray-200);
+        }
+
+        /* Main content */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .dashboard-header {
+            background: var(--white);
+            padding: var(--space-xl);
+            border-bottom: 1px solid var(--gray-200);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+
+        .header-user {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--gradient-1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .user-name {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--gray-700);
+        }
+
+        .dashboard-body {
+            flex: 1;
+            padding: var(--space-xl);
+        }
+
+        /* Page Content */
+        .page-content {
+            flex: 1;
+            padding: var(--space-xl);
+            overflow-y: auto;
+        }
+
+        /* KPI Cards */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--space-lg);
+            margin-bottom: var(--space-xl);
+        }
+
+        .kpi-card {
+            background: var(--white);
+            padding: var(--space-xl);
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--gray-200);
+            box-shadow: var(--shadow-sm);
+            transition: all var(--transition-base);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--gradient-1);
+        }
+
+        .kpi-card:nth-child(2)::before {
+            background: var(--gradient-2);
+        }
+
+        .kpi-card:nth-child(3)::before {
+            background: var(--primary-purple);
+        }
+
+        .kpi-card:nth-child(4)::before {
+            background: var(--primary-green);
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .kpi-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--space-md);
+        }
+
+        .kpi-label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--gray-600);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .kpi-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(233, 30, 140, 0.1);
+        }
+
+        .kpi-card:nth-child(2) .kpi-icon {
+            background: rgba(227, 106, 58, 0.1);
+        }
+
+        .kpi-card:nth-child(3) .kpi-icon {
+            background: rgba(123, 63, 158, 0.1);
+        }
+
+        .kpi-card:nth-child(4) .kpi-icon {
+            background: rgba(184, 201, 68, 0.1);
+        }
+
+        .kpi-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: var(--space-xs);
+        }
+
+        .kpi-change {
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .kpi-change.positive {
+            color: #10b981;
+        }
+
+        .kpi-change.negative {
+            color: #ef4444;
+        }
+
+        /* Activity section */
+        .activity-section {
+            background: var(--white);
+            padding: var(--space-xl);
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--gray-200);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: var(--space-lg);
+        }
+
+        .activity-list {
+            list-style: none;
+        }
+
+        .activity-item {
+            padding: var(--space-md);
+            border-bottom: 1px solid var(--gray-100);
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            transition: background var(--transition-fast);
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-item:hover {
+            background: var(--gray-50);
+        }
+
+        .activity-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--primary-pink);
+            flex-shrink: 0;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-text {
+            font-size: 0.9rem;
+            color: var(--gray-700);
+            margin-bottom: 0.25rem;
+        }
+
+        .activity-time {
+            font-size: 0.8rem;
+            color: var(--gray-500);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .kpi-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .auth-card {
+                padding: var(--space-lg);
+            }
+
+            .auth-title {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Dropdown Menu */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            background-color: #ffffff;
+            min-width: 180px;
+            box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--gray-200);
+            overflow: hidden;
+        }
+
+        .dropdown-content button {
+            color: var(--gray-700);
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            background: none;
+            border: none;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: background 0.2s;
+        }
+
+        .dropdown-content button:hover {
+            background-color: var(--gray-50);
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        /* Helper */
+        .hidden {
+            display: none !important;
+        }
+    </style>
+    <!-- Google API & Identity Services -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://apis.google.com/js/api.js" async defer></script>
+</head>
+
+<body>
+    <!-- ==================== AUTH PAGE ==================== -->
+    <div id="authPage">
+        <div class="bg-shapes">
+            <div class="shape"></div>
+            <div class="shape"></div>
+            <div class="shape"></div>
+            <div class="shape"></div>
+        </div>
+
+        <div class="auth-card">
+            <div class="auth-logo">
+                <img src="assets/images/logo-njm.png" alt="NJM Conseil">
+            </div>
+
+            <h1 class="auth-title">Bienvenue</h1>
+            <p class="auth-subtitle">Connectez-vous à votre espace CRM</p>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" id="email" class="form-input" placeholder="votre@email.fr" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password" class="form-label">Mot de passe</label>
+                    <div style="position: relative;">
+                        <input type="password" id="password" class="form-input" placeholder="••••••••" required
+                            style="padding-right: 45px;">
+                        <button type="button" id="togglePassword"
+                            style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 4px; color: var(--gray-600); display: flex; align-items: center; justify-content: center;"
+                            onclick="togglePasswordVisibility()">
+                            <svg id="eyeIcon" width="20" height="20" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path id="eyeOpenPath" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path id="eyeOpenPath2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
+                                </path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary">
+                    Se connecter
+                </button>
+
+                <a href="#" class="forgot-link">Mot de passe oublié ?</a>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==================== DASHBOARD PAGE ==================== -->
+    <div id="dashboardPage">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <img src="assets/images/logo-njm.png" alt="NJM Conseil">
+                </div>
+            </div>
+
+            <!-- Navigation Admin (visible par défaut) -->
+            <nav class="sidebar-nav" id="admin-nav">
+                <a href="#dashboard" class="nav-item active" data-page="dashboard">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6">
+                        </path>
+                    </svg>
+                    Tableau de bord
+                </a>
+
+                <a href="#formations" class="nav-item" data-page="formations">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253">
+                        </path>
+                    </svg>
+                    Formation 2026
+                </a>
+
+                <a href="#veille" class="nav-item" data-page="veille">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z">
+                        </path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
+                        </path>
+                    </svg>
+                    Veille
+                </a>
+
+                <a href="#bpf" class="nav-item" data-page="bpf">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                        </path>
+                    </svg>
+                    BPF
+                </a>
+
+                <a href="#biblio-supports" class="nav-item" data-page="biblio-supports">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z">
+                        </path>
+                    </svg>
+                    Bibliothèque Supports
+                </a>
+
+                <a href="#biblio-templates" class="nav-item" data-page="biblio-templates">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                        </path>
+                    </svg>
+                    Bibliothèque Templates
+                </a>
+
+                <a href="#acces" class="nav-item" data-page="acces">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
+                        </path>
+                    </svg>
+                    Gestion des Accès
+                </a>
+
+                <a href="#parametres" class="nav-item" data-page="parametres">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z">
+                        </path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                    Paramètres
+                </a>
+            </nav>
+
+            <!-- Navigation Formateur (cachée par défaut) -->
+            <nav class="sidebar-nav" id="formateur-nav" style="display: none;">
+                <a href="#missions" class="nav-item active" data-page="missions">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01">
+                        </path>
+                    </svg>
+                    Mes missions
+                </a>
+
+                <a href="#mes-documents" class="nav-item" data-page="mes-documents">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                        </path>
+                    </svg>
+                    Mes documents
+                </a>
+            </nav>
+
+            <!-- Navigation Client (cachée par défaut) -->
+            <nav class="sidebar-nav" id="client-nav" style="display: none;">
+                <a href="#ma-formation" class="nav-item active" data-page="ma-formation">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253">
+                        </path>
+                    </svg>
+                    Ma formation
+                </a>
+
+                <a href="#catalogue" class="nav-item" data-page="catalogue">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10">
+                        </path>
+                    </svg>
+                    Catalogue
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button id="logoutBtn" class="btn-logout">
+                    Déconnexion
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="dashboard-header">
+                <div class="header-top">
+                    <h1 class="header-title">Tableau de bord</h1>
+                    <div class="header-user">
+                        <span class="user-name">Admin</span>
+                        <div class="user-avatar">A</div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- DASHBOARD PAGE -->
+            <div id="page-dashboard" class="page-content">
+                <div class="dashboard-body">
+                    <!-- KPI Cards -->
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-header">
+                                <div>
+                                    <div class="kpi-label">Apprenants (exercice fiscal)</div>
+                                </div>
+                                <div class="kpi-icon">
+                                    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
+                                        viewBox="0 0 24 24" style="color: var(--primary-pink)">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z">
+                                        </path>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="kpi-value" id="kpi-learners">0</div>
+                            <div class="kpi-change positive">Depuis octobre</div>
+                        </div>
+
+                        <div class="kpi-card">
+                            <div class="kpi-header">
+                                <div>
+                                    <div class="kpi-label">Formations effectuées</div>
+                                </div>
+                                <div class="kpi-icon">
+                                    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
+                                        viewBox="0 0 24 24" style="color: var(--primary-orange)">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z">
+                                        </path>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="kpi-value" id="kpi-completed">0</div>
+                            <div class="kpi-change positive">Complétées</div>
+                        </div>
+
+                        <div class="kpi-card">
+                            <div class="kpi-header">
+                                <div>
+                                    <div class="kpi-label">Formations en cours</div>
+                                </div>
+                                <div class="kpi-icon">
+                                    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
+                                        viewBox="0 0 24 24" style="color: var(--primary-purple)">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M13 10V3L4 14h7v7l9-11h-7z">
+                                        </path>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="kpi-value" id="kpi-in-progress">0</div>
+                            <div class="kpi-change">En cours</div>
+                        </div>
+
+                        <div class="kpi-card">
+                            <div class="kpi-header">
+                                <div>
+                                    <div class="kpi-label">Accès espace client</div>
+                                </div>
+                                <div class="kpi-icon">
+                                    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
+                                        viewBox="0 0 24 24" style="color: var(--primary-green)">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z">
+                                        </path>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="kpi-value" id="kpi-client-access">0</div>
+                            <div class="kpi-change">Clients actifs</div>
+                        </div>
+                    </div>
+
+                    <!-- Activity Section -->
+                    <div class="activity-section">
+                        <h2 class="section-title">Activité récente</h2>
+                        <ul class="activity-list">
+                            <li class="activity-item">
+                                <div class="activity-dot" style="background: var(--primary-pink);"></div>
+                                <div class="activity-content">
+                                    <div class="activity-text">
+                                        Nouveau lead ajouté: <strong>Sophie Martin</strong>
+                                    </div>
+                                    <div class="activity-time">Il y a 5 minutes</div>
+                                </div>
+                            </li>
+                            <li class="activity-item">
+                                <div class="activity-dot" style="background: var(--primary-green);"></div>
+                                <div class="activity-content">
+                                    <div class="activity-text">
+                                        Vente conclue avec <strong>Tech Solutions SAS</strong> - €15,400
+                                    </div>
+                                    <div class="activity-time">Il y a 32 minutes</div>
+                                </div>
+                            </li>
+                            <li class="activity-item">
+                                <div class="activity-dot" style="background: var(--primary-orange);"></div>
+                                <div class="activity-content">
+                                    <div class="activity-text">
+                                        Contact mis à jour: <strong>Jean Dupont</strong>
+                                    </div>
+                                    <div class="activity-time">Il y a 1 heure</div>
+                                </div>
+                            </li>
+                            <li class="activity-item">
+                                <div class="activity-dot" style="background: var(--primary-purple);"></div>
+                                <div class="activity-content">
+                                    <div class="activity-text">
+                                        Rendez-vous planifié avec <strong>Marie Leblanc</strong>
+                                    </div>
+                                    <div class="activity-time">Il y a 2 heures</div>
+                                </div>
+                            </li>
+                            <li class="activity-item">
+                                <div class="activity-dot" style="background: var(--primary-pink);"></div>
+                                <div class="activity-content">
+                                    <div class="activity-text">
+                                        Email envoyé à <strong>Pierre Durand</strong>
+                                    </div>
+                                    <div class="activity-time">Il y a 3 heures</div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Quick Access Buttons -->
+                <div
+                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 2rem;">
+                    <button onclick="CRMApp.showPage('formations')"
+                        style="padding: 1rem; background: var(--gradient-1); color: white; border: none; border-radius: var(--radius-lg); font-weight: 600; cursor: pointer;">Gérer
+                        Formations</button>
+                    <button onclick="CRMApp.showPage('veille')"
+                        style="padding: 1rem; background: var(--gradient-2); color: white; border: none; border-radius: var(--radius-lg); font-weight: 600; cursor: pointer;">Consulter
+                        Veille</button>
+                    <button onclick="CRMApp.showPage('biblio-supports')"
+                        style="padding: 1rem; background: linear-gradient(135deg, var(--primary-purple), var(--primary-pink)); color: white; border: none; border-radius: var(--radius-lg); font-weight: 600; cursor: pointer;">Bibliothèque</button>
+                </div>
+            </div>
+            <!-- END DASHBOARD PAGE -->
+
+            <!-- FORMATION 2026 PAGE -->
+            <div id="page-formations" class="page-content" style="display:none;">
+                <div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-900);">Formation 2026</h2>
+                        <p style="color: var(--gray-600); margin-top: 0.5rem;">Gestion des formations et documents
+                            pédagogiques
+                        </p>
+                    </div>
+                    <button onclick="CRMApp.addFormation()"
+                        style="padding: 0.75rem 1.5rem; background: var(--primary-pink); color: white; border: none; border-radius: var(--radius-md); font-weight: 600; cursor: pointer;">+
+                        Nouvelle Formation</button>
+                </div>
+
+                <div
+                    style="background: white; border-radius: var(--radius-xl); padding: 1.5rem; box-shadow: var(--shadow-sm);">
+                    <table id="formations-table" style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="border-bottom: 2px solid var(--gray-200);">
+                                <th style="text-align: left; padding: 1rem; font-weight: 600; color: var(--gray-700);">
+                                    Client
+                                </th>
+                                <th style="text-align: left; padding: 1rem; font-weight: 600; color: var(--gray-700);">
+                                    Formation
+                                    Avril</th>
+                                <th style="text-align: left; padding: 1rem; font-weight: 600; color: var(--gray-700);">
+                                    Statut
+                                </th>
+                                <th style="text-align: center; padding: 1rem; font-weight: 600; color: var(--gray-700);">
+                                    Convocation
+                                </th>
+                                <th style="text-align: left; padding: 1rem; font-weight: 600; color: var(--gray-700);">
+                                    Documents
+                                </th>
+                                <th
+                                    style="text-align: center; padding: 1rem; font-weight: 600; color: var(--gray-700);">
+                                    Actions
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="formations-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- VEILLE PAGE -->
+            <div id="page-veille" class="page-content" style="display:none;">
+                <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-900); margin-bottom: 2rem;">Veille
+                </h2>
+
+                <div style="display:flex; gap: 1rem; margin-bottom: 2rem;">
+                    <button onclick="CRMApp.filterVeille('formation')" class="veille-filter-btn active"
+                        data-type="formation"
+                        style="padding: 0.75rem 1.5rem; background: var(--primary-pink); color: white; border: none; border-radius: var(--radius-md); font-weight: 600; cursor: pointer;">Formation</button>
+                    <button onclick="CRMApp.filterVeille('metier')" class="veille-filter-btn" data-type="metier"
+                        style="padding: 0.75rem 1.5rem; background: var(--gray-200); color: var(--gray-700); border: none; border-radius: var(--radius-md); font-weight: 600; cursor: pointer;">Métier</button>
+                    <button onclick="CRMApp.filterVeille('legal')" class="veille-filter-btn" data-type="legal"
+                        style="padding: 0.75rem 1.5rem; background: var(--gray-200); color: var(--gray-700); border: none; border-radius: var(--radius-md); font-weight: 600; cursor: pointer;">Légal</button>
+                    <button onclick="CRMApp.addVeille()"
+                        style="padding: 0.75rem 1.5rem; background: var(--primary-green); color: white; border: none; border-radius: var(--radius-md); font-weight: 600; cursor: pointer; margin-left: auto;">+
+                        Ajouter</button>
+                </div>
+
+                <div id="veille-container" style="display: grid; gap: 1rem;"></div>
+            </div>
+
+            <!-- BPF PAGE -->
+            <div id="page-bpf" class="page-content" style="display:none;">
+                <div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-900);">Bilan Pédagogique et Financier</h2>
+                        <p style="color: var(--gray-600); margin-top: 0.5rem;">Gestion des bilans annuels - Les entrées sont créées automatiquement lors de la création d'une formation</p>
+                    </div>
+                    <div style="display: flex; gap: 1rem; align-items: center;">
+                        <select id="bpf-year-filter" onchange="CRMApp.filterBPFByYear(this.value)"
+                            style="padding: 0.75rem 1rem; border: 1px solid var(--gray-300); border-radius: var(--radius-md); font-family: inherit; background: white;">
+                            <option value="">Toutes les années</option>
+                        </select>
+                        <button onclick="CRMApp.exportAllBPFToPDF()"
+                            style="padding: 0.75rem 1.5rem; background: var(--primary-purple); color: white; border: none; border-radius: var(--radius-md); font-weight: 600; cursor: pointer;">
+                            Exporter tout en PDF
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Statistiques résumées -->
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 2rem;">
+                    <div style="background: white; border-radius: var(--radius-xl); padding: 1.5rem; box-shadow: var(--shadow-sm);">
+                        <p style="color: var(--gray-600); font-size: 0.875rem;">Total formations</p>
+                        <p id="bpf-stat-formations" style="font-size: 2rem; font-weight: 700; color: var(--primary-purple);">0</p>
+                    </div>
+                    <div style="background: white; border-radius: var(--radius-xl); padding: 1.5rem; box-shadow: var(--shadow-sm);">
+                        <p style="color: var(--gray-600); font-size: 0.875rem;">Total stagiaires</p>
+                        <p id="bpf-stat-learners" style="font-size: 2rem; font-weight: 700; color: var(--primary-pink);">0</p>
+                    </div>
+                    <div style="background: white; border-radius: var(--radius-xl); padding: 1.5rem; box-shadow: var(--shadow-sm);">
+                        <p style="color: var(--gray-600); font-size: 0.875rem;">Total heures</p>
+                        <p id="bpf-stat-hours" style="font-size: 2rem; font-weight: 700; color: var(--primary-orange);">0</p>
+                    </div>
+                    <div style="background: white; border-radius: var(--radius-xl); padding: 1.5rem; box-shadow: var(--shadow-sm);">
+                        <p style="color: var(--gray-600); font-size: 0.875rem;">Chiffre d'affaires HT</p>
+                        <p id="bpf-stat-revenue" style="font-size: 2rem; font-weight: 700; color: var(--primary-green);">0 €</p>
+                    </div>
+                </div>
+
+                <!-- Tableau BPF -->
+                <div style="background: white; border-radius: var(--radius-xl); padding: 1.5rem; box-shadow: var(--shadow-sm); overflow-x: auto;">
+                    <table id="bpf-table" style="width: 100%; border-collapse: collapse; min-width: 900px;">
+                        <thead>
+                            <tr style="border-bottom: 2px solid var(--gray-200);">
+                                <th style="text-align: left; padding: 1rem; font-weight: 600; color: var(--gray-700);">Type de formation</th>
+                                <th style="text-align: left; padding: 1rem; font-weight: 600; color: var(--gray-700);">Raison sociale</th>
+                                <th style="text-align: center; padding: 1rem; font-weight: 600; color: var(--gray-700);">Année fiscale</th>
+                                <th style="text-align: right; padding: 1rem; font-weight: 600; color: var(--gray-700);">Montant HT</th>
+                                <th style="text-align: center; padding: 1rem; font-weight: 600; color: var(--gray-700);">Nb stagiaires</th>
+                                <th style="text-align: right; padding: 1rem; font-weight: 600; color: var(--gray-700);">Total heures</th>
+                                <th style="text-align: center; padding: 1rem; font-weight: 600; color: var(--gray-700);">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bpf-tbody"></tbody>
+                    </table>
+                    <div id="bpf-empty" style="display: none; text-align: center; padding: 3rem; color: var(--gray-500);">
+                        <p style="font-size: 1.125rem;">Aucune entrée BPF pour le moment</p>
+                        <p style="font-size: 0.875rem; margin-top: 0.5rem;">Les entrées seront créées automatiquement lors de la création de formations</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BIBLIOTHÈQUE SUPPORTS PAGE -->
+            <div id="page-biblio-supports" class="page-content" style="display:none;">
+                <div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
+                    <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-900);">Bibliothèque Supports
+                        Pédagogiques
+                    </h2>
+                    <button onclick="CRMApp.uploadSupport()"
+                        style="padding: 0.75rem 1.5rem; background: var(--primary-orange); color: white; border: none; border-radius: var(--radius-md); font-weight: 600; cursor: pointer;">+
+                        Upload Support</button>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;" id="supports-grid">
+                    <div style="background: white; border-radius: var(--radius-xl); padding: 1.5rem; box-shadow: var(--shadow-sm);">
+                        <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--gray-900); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <span style="display: inline-block; width: 8px; height: 8px; background: var(--primary-pink); border-radius: 50%;"></span>
+                            AEC Disc
+                        </h3>
+                        <div id="supports-aec_disc" style="display: grid; gap: 0.75rem;"></div>
+                    </div>
+
+                    <div style="background: white; border-radius: var(--radius-xl); padding: 1.5rem; box-shadow: var(--shadow-sm);">
+                        <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--gray-900); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <span style="display: inline-block; width: 8px; height: 8px; background: var(--primary-orange); border-radius: 50%;"></span>
+                            Commercial
+                        </h3>
+                        <div id="supports-commercial" style="display: grid; gap: 0.75rem;"></div>
+                    </div>
+
+                    <div style="background: white; border-radius: var(--radius-xl); padding: 1.5rem; box-shadow: var(--shadow-sm);">
+                        <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--gray-900); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <span style="display: inline-block; width: 8px; height: 8px; background: var(--primary-green); border-radius: 50%;"></span>
+                            Communication
+                        </h3>
+                        <div id="supports-communication" style="display: grid; gap: 0.75rem;"></div>
+                    </div>
+
+                    <div style="background: white; border-radius: var(--radius-xl); padding: 1.5rem; box-shadow: var(--shadow-sm);">
+                        <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--gray-900); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <span style="display: inline-block; width: 8px; height: 8px; background: var(--primary-purple); border-radius: 50%;"></span>
+                            Internet et RS
+                        </h3>
+                        <div id="supports-internet_et_rs" style="display: grid; gap: 0.75rem;"></div>
+                    </div>
+
+                    <div style="background: white; border-radius: var(--radius-xl); padding: 1.5rem; box-shadow: var(--shadow-sm);">
+                        <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--gray-900); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <span style="display: inline-block; width: 8px; height: 8px; background: #3b82f6; border-radius: 50%;"></span>
+                            Management
+                        </h3>
+                        <div id="supports-management" style="display: grid; gap: 0.75rem;"></div>
+                    </div>
+
+                    <div style="background: white; border-radius: var(--radius-xl); padding: 1.5rem; box-shadow: var(--shadow-sm);">
+                        <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--gray-900); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <span style="display: inline-block; width: 8px; height: 8px; background: #8b5cf6; border-radius: 50%;"></span>
+                            Manager commercial
+                        </h3>
+                        <div id="supports-manager_commercial" style="display: grid; gap: 0.75rem;"></div>
+                    </div>
+
+                    <div style="background: white; border-radius: var(--radius-xl); padding: 1.5rem; box-shadow: var(--shadow-sm);">
+                        <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--gray-900); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <span style="display: inline-block; width: 8px; height: 8px; background: var(--primary-orange); border-radius: 50%;"></span>
+                            Marketing
+                        </h3>
+                        <div id="supports-marketing" style="display: grid; gap: 0.75rem;"></div>
+                    </div>
+
+                    <div style="background: white; border-radius: var(--radius-xl); padding: 1.5rem; box-shadow: var(--shadow-sm);">
+                        <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--gray-900); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <span style="display: inline-block; width: 8px; height: 8px; background: #ef4444; border-radius: 50%;"></span>
+                            Méthode AEC
+                        </h3>
+                        <div id="supports-methode_aec" style="display: grid; gap: 0.75rem;"></div>
+                    </div>
+
+                    <div style="background: white; border-radius: var(--radius-xl); padding: 1.5rem; box-shadow: var(--shadow-sm);">
+                        <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--gray-900); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <span style="display: inline-block; width: 8px; height: 8px; background: #14b8a6; border-radius: 50%;"></span>
+                            Stratégie
+                        </h3>
+                        <div id="supports-strategie" style="display: grid; gap: 0.75rem;"></div>
+                    </div>
+
+                    <div style="background: white; border-radius: var(--radius-xl); padding: 1.5rem; box-shadow: var(--shadow-sm);">
+                        <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--gray-900); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <span style="display: inline-block; width: 8px; height: 8px; background: var(--primary-pink); border-radius: 50%;"></span>
+                            Vente
+                        </h3>
+                        <div id="supports-vente" style="display: grid; gap: 0.75rem;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BIBLIOTHÈQUE TEMPLATES PAGE -->
+            <div id="page-biblio-templates" class="page-content" style="display:none;">
+                <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-900); margin-bottom: 2rem;">
+                    Bibliothèque
+                    Templates</h2>
+
+                <div style="display: grid; gap: 1.5rem;">
+                    <div
+                        style="background: white; border-radius: var(--radius-xl); padding: 1.5rem; box-shadow: var(--shadow-sm);">
+                        <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--gray-900); margin-bottom: 1rem;">
+                            Documents Formateurs</h3>
+                        <div id="expiring-docs"
+                            style="margin-bottom: 1rem; padding: 1rem; background: #fef3c7; border-left: 4px solid #f59e0b; border-radius: var(--radius-md); display: none;">
+                            <strong>⚠️ Documents prochainement expirés:</strong>
+                            <ul id="expiring-list" style="margin-top: 0.5rem; margin-left: 1.5rem;"></ul>
+                        </div>
+                        <button onclick="CRMApp.uploadTemplate('formateurs')"
+                            style="padding: 0.75rem 1.5rem; background: var(--primary-purple); color: white; border: none; border-radius: var(--radius-md); font-weight: 600; cursor: pointer;">+
+                            Ajouter Document</button>
+                        <div id="templates-formateurs" style="margin-top: 1rem;"></div>
+                    </div>
+
+                    <div
+                        style="background: white; border-radius: var(--radius-xl); padding: 1.5rem; box-shadow: var(--shadow-sm);">
+                        <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--gray-900); margin-bottom: 1rem;">
+                            Documents Pédagogiques</h3>
+                        <button onclick="CRMApp.uploadTemplate('pedagogiques')"
+                            style="padding: 0.75rem 1.5rem; background: var(--primary-pink); color: white; border: none; border-radius: var(--radius-md); font-weight: 600; cursor: pointer;">+
+                            Ajouter Template</button>
+                        <div id="templates-pedagogiques" style="margin-top: 1rem;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GESTION DES ACCÈS PAGE -->
+            <div id="page-acces" class="page-content" style="display:none;">
+                <div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-900);">Gestion des Accès</h2>
+                        <p style="color: var(--gray-600); margin-top: 0.5rem;">Gérez les utilisateurs et leurs
+                            permissions</p>
+                    </div>
+                    <button onclick="UserManagement.showAddUserModal()"
+                        style="padding: 0.75rem 1.5rem; background: var(--primary-green); color: white; border: none; border-radius: var(--radius-md); font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        Nouvel Utilisateur
+                    </button>
+                </div>
+
+                <!-- Stats Cards -->
+                <div
+                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                    <div
+                        style="background: white; padding: 1.5rem; border-radius: var(--radius-xl); box-shadow: var(--shadow-sm); border-left: 4px solid var(--primary-pink);">
+                        <div
+                            style="font-size: 0.875rem; color: var(--gray-600); font-weight: 500; margin-bottom: 0.5rem;">
+                            Total Utilisateurs</div>
+                        <div style="font-size: 2rem; font-weight: 700; color: var(--gray-900);" id="total-users">0</div>
+                    </div>
+                    <div
+                        style="background: white; padding: 1.5rem; border-radius: var(--radius-xl); box-shadow: var(--shadow-sm); border-left: 4px solid var(--primary-orange);">
+                        <div
+                            style="font-size: 0.875rem; color: var(--gray-600); font-weight: 500; margin-bottom: 0.5rem;">
+                            Administrateurs</div>
+                        <div style="font-size: 2rem; font-weight: 700; color: var(--gray-900);" id="total-admins">0
+                        </div>
+                    </div>
+                    <div
+                        style="background: white; padding: 1.5rem; border-radius: var(--radius-xl); box-shadow: var(--shadow-sm); border-left: 4px solid var(--primary-purple);">
+                        <div
+                            style="font-size: 0.875rem; color: var(--gray-600); font-weight: 500; margin-bottom: 0.5rem;">
+                            Formateurs</div>
+                        <div style="font-size: 2rem; font-weight: 700; color: var(--gray-900);" id="total-formateurs">0
+                        </div>
+                    </div>
+                    <div
+                        style="background: white; padding: 1.5rem; border-radius: var(--radius-xl); box-shadow: var(--shadow-sm); border-left: 4px solid var(--primary-green);">
+                        <div
+                            style="font-size: 0.875rem; color: var(--gray-600); font-weight: 500; margin-bottom: 0.5rem;">
+                            Clients</div>
+                        <div style="font-size: 2rem; font-weight: 700; color: var(--gray-900);" id="total-clients">0
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Users Table -->
+                <div
+                    style="background: white; border-radius: var(--radius-xl); padding: 1.5rem; box-shadow: var(--shadow-sm);">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--gray-900);">Liste des
+                            utilisateurs</h3>
+                        <input type="text" id="user-search" placeholder="Rechercher un utilisateur..."
+                            style="padding: 0.5rem 1rem; border: 1px solid var(--gray-300); border-radius: var(--radius-md); width: 300px;">
+                    </div>
+
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="border-bottom: 2px solid var(--gray-200);">
+                                    <th
+                                        style="text-align: left; padding: 1rem; font-weight: 600; color: var(--gray-700);">
+                                        Nom</th>
+                                    <th
+                                        style="text-align: left; padding: 1rem; font-weight: 600; color: var(--gray-700);">
+                                        Email</th>
+                                    <th
+                                        style="text-align: left; padding: 1rem; font-weight: 600; color: var(--gray-700);">
+                                        Rôle</th>
+                                    <th
+                                        style="text-align: left; padding: 1rem; font-weight: 600; color: var(--gray-700);">
+                                        Statut</th>
+                                    <th
+                                        style="text-align: left; padding: 1rem; font-weight: 600; color: var(--gray-700);">
+                                        Dernière connexion</th>
+                                    <th
+                                        style="text-align: left; padding: 1rem; font-weight: 600; color: var(--gray-700);">
+                                        Mot de passe</th>
+                                    <th
+                                        style="text-align: center; padding: 1rem; font-weight: 600; color: var(--gray-700);">
+                                        Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="users-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Activity Logs Section -->
+                <div style="background: white; border-radius: var(--radius-xl); padding: 1.5rem; box-shadow: var(--shadow-sm); margin-top: 2rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--gray-900);">Historique des actions</h3>
+                        <div style="display: flex; gap: 1rem; align-items: center;">
+                            <select id="logs-filter-type" onchange="UserManagement.filterLogs()"
+                                style="padding: 0.5rem 1rem; border: 1px solid var(--gray-300); border-radius: var(--radius-md); font-family: inherit; background: white;">
+                                <option value="">Tous les types</option>
+                                <option value="user_created">Création utilisateur</option>
+                                <option value="user_updated">Modification utilisateur</option>
+                                <option value="user_deleted">Suppression utilisateur</option>
+                                <option value="role_changed">Changement de rôle</option>
+                                <option value="user_activated">Activation compte</option>
+                                <option value="user_deactivated">Désactivation compte</option>
+                            </select>
+                            <button onclick="UserManagement.loadLogs()"
+                                style="padding: 0.5rem 1rem; background: var(--gray-100); border: none; border-radius: var(--radius-md); cursor: pointer; font-size: 0.875rem;">
+                                Actualiser
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="admin-logs-container" style="max-height: 400px; overflow-y: auto;">
+                        <div id="admin-logs-empty" style="text-align: center; padding: 2rem; color: var(--gray-500);">
+                            <p>Chargement de l'historique...</p>
+                        </div>
+                        <div id="admin-logs-list" style="display: none;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add/Edit User Modal -->
+            <div id="userModal" class="modal"
+                style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+                <div
+                    style="background: white; padding: 2rem; border-radius: var(--radius-xl); max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--gray-900);" id="modal-title">
+                            Nouvel Utilisateur</h3>
+                        <button onclick="UserManagement.closeModal()"
+                            style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--gray-500);">&times;</button>
+                    </div>
+
+                    <form id="userForm" onsubmit="UserManagement.saveUser(event)">
+                        <input type="hidden" id="user-id">
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <label
+                                style="display: block; font-weight: 500; color: var(--gray-700); margin-bottom: 0.5rem;">Nom
+                                complet *</label>
+                            <input type="text" id="user-name" required
+                                style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: var(--radius-md); font-family: inherit;">
+                        </div>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <label
+                                style="display: block; font-weight: 500; color: var(--gray-700); margin-bottom: 0.5rem;">Email
+                                *</label>
+                            <input type="email" id="user-email" required
+                                style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: var(--radius-md); font-family: inherit;">
+                        </div>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <label
+                                style="display: block; font-weight: 500; color: var(--gray-700); margin-bottom: 0.5rem;">Rôle
+                                *</label>
+                            <select id="user-role" required onchange="UserManagement.onRoleChange(this.value)"
+                                style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: var(--radius-md); font-family: inherit;">
+                                <option value="">Sélectionner un rôle</option>
+                                <option value="admin">Administrateur</option>
+                                <option value="formateur">Formateur</option>
+                                <option value="client">Client</option>
+                            </select>
+                            <p style="font-size: 0.875rem; color: var(--gray-500); margin-top: 0.25rem;">
+                                <strong>Admin:</strong> Accès complet • <strong>Formateur:</strong> Gestion formations •
+                                <strong>Client:</strong> Consultation uniquement
+                            </p>
+                        </div>
+
+                        <!-- Section sous-traitant (visible uniquement pour les formateurs) -->
+                        <div id="subcontractor-link-section" style="display: none; margin-bottom: 1.5rem; background: #fef3c7; padding: 1rem; border-radius: var(--radius-md); border: 1px solid #fcd34d;">
+                            <label style="display: block; font-weight: 500; color: #92400e; margin-bottom: 0.5rem;">
+                                Sous-traitant associé *
+                            </label>
+
+                            <!-- Toggle création/sélection -->
+                            <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                                <label style="display: flex; align-items: center; cursor: pointer;">
+                                    <input type="radio" name="subcontractor-mode" value="new" checked
+                                           onchange="UserManagement.onSubcontractorModeChange('new')">
+                                    <span style="margin-left: 0.5rem;">Créer nouveau</span>
+                                </label>
+                                <label style="display: flex; align-items: center; cursor: pointer;">
+                                    <input type="radio" name="subcontractor-mode" value="existing"
+                                           onchange="UserManagement.onSubcontractorModeChange('existing')">
+                                    <span style="margin-left: 0.5rem;">Sélectionner existant</span>
+                                </label>
+                            </div>
+
+                            <!-- Formulaire création nouveau sous-traitant -->
+                            <div id="new-subcontractor-form" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div>
+                                    <label style="font-size: 0.875rem; color: #78716c;">Prénom *</label>
+                                    <input type="text" id="new-subcontractor-first-name"
+                                        style="width: 100%; padding: 0.5rem; border: 1px solid var(--gray-300); border-radius: var(--radius-md); font-family: inherit;">
+                                </div>
+                                <div>
+                                    <label style="font-size: 0.875rem; color: #78716c;">Nom *</label>
+                                    <input type="text" id="new-subcontractor-last-name"
+                                        style="width: 100%; padding: 0.5rem; border: 1px solid var(--gray-300); border-radius: var(--radius-md); font-family: inherit;">
+                                </div>
+                                <div style="grid-column: span 2;">
+                                    <label style="font-size: 0.875rem; color: #78716c;">Email</label>
+                                    <input type="email" id="new-subcontractor-email"
+                                        style="width: 100%; padding: 0.5rem; border: 1px solid var(--gray-300); border-radius: var(--radius-md); font-family: inherit;">
+                                </div>
+                            </div>
+
+                            <!-- Dropdown sélection existant -->
+                            <div id="existing-subcontractor-select" style="display: none;">
+                                <select id="user-subcontractor"
+                                    style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: var(--radius-md); font-family: inherit; background: white;">
+                                    <option value="">Sélectionner un sous-traitant</option>
+                                    <!-- Options chargées dynamiquement -->
+                                </select>
+                            </div>
+
+                            <p style="font-size: 0.75rem; color: #92400e; margin-top: 0.5rem;">
+                                Ce sous-traitant sera associé au compte formateur et pourra être affecté aux formations.
+                            </p>
+                        </div>
+
+                        <!-- Section client (visible uniquement pour les clients) -->
+                        <div id="client-link-section" style="display: none; margin-bottom: 1.5rem; background: #dbeafe; padding: 1rem; border-radius: var(--radius-md); border: 1px solid #93c5fd;">
+                            <label style="display: block; font-weight: 500; color: #1e40af; margin-bottom: 0.5rem;">
+                                Entreprise cliente associée *
+                            </label>
+
+                            <!-- Toggle création/sélection -->
+                            <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                                <label style="display: flex; align-items: center; cursor: pointer;">
+                                    <input type="radio" name="client-mode" value="new" checked
+                                           onchange="UserManagement.onClientModeChange('new')">
+                                    <span style="margin-left: 0.5rem;">Créer nouvelle</span>
+                                </label>
+                                <label style="display: flex; align-items: center; cursor: pointer;">
+                                    <input type="radio" name="client-mode" value="existing"
+                                           onchange="UserManagement.onClientModeChange('existing')">
+                                    <span style="margin-left: 0.5rem;">Sélectionner existante</span>
+                                </label>
+                            </div>
+
+                            <!-- Formulaire création nouvelle entreprise -->
+                            <div id="new-client-form" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div style="grid-column: span 2;">
+                                    <label style="font-size: 0.875rem; color: #1e40af;">Raison sociale *</label>
+                                    <input type="text" id="new-client-company-name"
+                                        style="width: 100%; padding: 0.5rem; border: 1px solid var(--gray-300); border-radius: var(--radius-md); font-family: inherit;">
+                                </div>
+                                <div>
+                                    <label style="font-size: 0.875rem; color: #1e40af;">Nom du contact</label>
+                                    <input type="text" id="new-client-contact-name"
+                                        style="width: 100%; padding: 0.5rem; border: 1px solid var(--gray-300); border-radius: var(--radius-md); font-family: inherit;">
+                                </div>
+                                <div>
+                                    <label style="font-size: 0.875rem; color: #1e40af;">Email</label>
+                                    <input type="email" id="new-client-email"
+                                        style="width: 100%; padding: 0.5rem; border: 1px solid var(--gray-300); border-radius: var(--radius-md); font-family: inherit;">
+                                </div>
+                                <div style="grid-column: span 2;">
+                                    <label style="font-size: 0.875rem; color: #1e40af;">Adresse</label>
+                                    <input type="text" id="new-client-address"
+                                        style="width: 100%; padding: 0.5rem; border: 1px solid var(--gray-300); border-radius: var(--radius-md); font-family: inherit;">
+                                </div>
+                            </div>
+
+                            <!-- Dropdown sélection existante (multi-select) -->
+                            <div id="existing-client-select" style="display: none;">
+                                <select id="user-client" multiple
+                                    style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: var(--radius-md); font-family: inherit; background: white; min-height: 120px;">
+                                    <!-- Options chargées dynamiquement -->
+                                </select>
+                                <p style="font-size: 0.7rem; color: #6b7280; margin-top: 0.25rem;">
+                                    Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs entreprises.
+                                </p>
+                            </div>
+
+                            <!-- Liste des entreprises déjà liées (visible en mode édition) -->
+                            <div id="linked-clients-list" style="display: none; margin-top: 0.5rem;">
+                                <label style="font-size: 0.875rem; color: #1e40af; font-weight: 500;">Entreprises actuellement liées :</label>
+                                <div id="linked-clients-tags" style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.25rem;"></div>
+                            </div>
+
+                            <p style="font-size: 0.75rem; color: #1e40af; margin-top: 0.5rem;">
+                                Un même compte peut être associé à plusieurs entreprises clientes (ex: K Vert + K Vert Jardin).
+                            </p>
+                        </div>
+
+                        <div id="password-section" style="margin-bottom: 1.5rem;">
+                            <label
+                                style="display: block; font-weight: 500; color: var(--gray-700); margin-bottom: 0.5rem;">Mot
+                                de passe *</label>
+                            <div style="position: relative;">
+                                <input type="password" id="user-password"
+                                    style="width: 100%; padding: 0.75rem; padding-right: 3rem; border: 1px solid var(--gray-300); border-radius: var(--radius-md); font-family: inherit;">
+                                <button type="button" onclick="UserManagement.togglePasswordVisibility()"
+                                    style="position: absolute; right: 0.5rem; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 0.5rem; color: var(--gray-500);">
+                                    <svg id="password-eye-icon" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                            <p style="font-size: 0.875rem; color: var(--gray-500); margin-top: 0.25rem;">
+                                Minimum 8 caractères, avec majuscule, minuscule, chiffre et caractère spécial
+                            </p>
+                            <!-- Zone d'affichage du mot de passe après création -->
+                            <div id="created-password-display" style="display: none; margin-top: 0.75rem; padding: 0.75rem; background: #d1fae5; border: 1px solid #10b981; border-radius: var(--radius-md);">
+                                <p style="font-size: 0.875rem; color: #065f46; margin: 0;">
+                                    <strong>Mot de passe créé :</strong> <span id="created-password-value" style="font-family: monospace;"></span>
+                                    <button type="button" onclick="UserManagement.copyPassword()" style="margin-left: 0.5rem; padding: 0.25rem 0.5rem; background: #065f46; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">Copier</button>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display: flex; align-items: center; cursor: pointer;">
+                                <input type="checkbox" id="user-active" checked style="margin-right: 0.5rem;">
+                                <span style="font-weight: 500; color: var(--gray-700);">Compte actif</span>
+                            </label>
+                        </div>
+
+                        <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                            <button type="submit"
+                                style="flex: 1; padding: 0.75rem; background: var(--primary-pink); color: white; border: none; border-radius: var(--radius-md); font-weight: 600; cursor: pointer;">
+                                Enregistrer
+                            </button>
+                            <button type="button" onclick="UserManagement.closeModal()"
+                                style="flex: 1; padding: 0.75rem; background: var(--gray-200); color: var(--gray-700); border: none; border-radius: var(--radius-md); font-weight: 600; cursor: pointer;">
+                                Annuler
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Reset Password Modal -->
+            <div id="resetPasswordModal" class="modal"
+                style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+                <div
+                    style="background: white; padding: 2rem; border-radius: var(--radius-xl); max-width: 400px; width: 90%;">
+                    <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--gray-900); margin-bottom: 1rem;">
+                        Réinitialiser le mot de passe</h3>
+                    <p style="color: var(--gray-600); margin-bottom: 1.5rem;">Entrez un nouveau mot de passe pour
+                        l'utilisateur. Il devra le changer à sa prochaine connexion.</p>
+
+                    <form id="resetPasswordForm" onsubmit="UserManagement.resetPassword(event)">
+                        <input type="hidden" id="reset-user-id">
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <label
+                                style="display: block; font-weight: 500; color: var(--gray-700); margin-bottom: 0.5rem;">Nouveau
+                                mot de passe *</label>
+                            <input type="password" id="reset-password" required
+                                style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: var(--radius-md); font-family: inherit;">
+                        </div>
+
+                        <div style="display: flex; gap: 1rem;">
+                            <button type="submit"
+                                style="flex: 1; padding: 0.75rem; background: var(--primary-orange); color: white; border: none; border-radius: var(--radius-md); font-weight: 600; cursor: pointer;">
+                                Réinitialiser
+                            </button>
+                            <button type="button" onclick="UserManagement.closeResetPasswordModal()"
+                                style="flex: 1; padding: 0.75rem; background: var(--gray-200); color: var(--gray-700); border: none; border-radius: var(--radius-md); font-weight: 600; cursor: pointer;">
+                                Annuler
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Convocation Email Modal -->
+            <div id="convocationModal" class="modal"
+                style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+                <div
+                    style="background: white; padding: 2rem; border-radius: var(--radius-xl); max-width: 900px; width: 95%; max-height: 90vh; overflow-y: auto;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--gray-200); padding-bottom: 1rem;">
+                        <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--gray-900); display: flex; align-items: center; gap: 0.5rem;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                <polyline points="22,6 12,13 2,6"></polyline>
+                            </svg>
+                            Envoi de la convocation
+                        </h3>
+                        <button onclick="ConvocationEmail.closeModal()"
+                            style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--gray-500);">&times;</button>
+                    </div>
+
+                    <!-- Destinataire -->
+                    <div style="margin-bottom: 1.5rem;">
+                        <label style="display: block; font-weight: 500; color: var(--gray-700); margin-bottom: 0.5rem;">À (destinataire) *</label>
+                        <input type="email" id="convocation-to" required
+                            style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: var(--radius-md); font-family: inherit;"
+                            placeholder="email@client.com">
+                    </div>
+
+                    <!-- Objet -->
+                    <div style="margin-bottom: 1.5rem;">
+                        <label style="display: block; font-weight: 500; color: var(--gray-700); margin-bottom: 0.5rem;">Objet</label>
+                        <input type="text" id="convocation-subject"
+                            style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: var(--radius-md); font-family: inherit;"
+                            placeholder="Convocation à la formation">
+                    </div>
+
+                    <!-- Sélection du questionnaire -->
+                    <div style="margin-bottom: 1.5rem;">
+                        <label style="display: block; font-weight: 500; color: var(--gray-700); margin-bottom: 0.5rem;">
+                            Questionnaire amont
+                            <span style="font-weight: 400; color: var(--gray-500); font-size: 0.875rem;">(à insérer dans le mail)</span>
+                        </label>
+                        <select id="convocation-questionnaire"
+                            style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: var(--radius-md); font-family: inherit; background: white;"
+                            onchange="ConvocationEmail.updateQuestionnaireInBody()">
+                            <option value="">-- Sélectionner un questionnaire --</option>
+                            <optgroup label="Techniques de vente">
+                                <option value="https://docs.google.com/forms/d/1U4DVl8HIrSE1KXBjOhr0sEIYl6gNLefz0HR4bJg871w/viewform">Techniques de vente 1</option>
+                                <option value="https://docs.google.com/forms/d/10HEK5pAdmcvJVuaXoXQnIXXdgFvnISkScALcKYVes4A/viewform">Techniques de vente 2</option>
+                                <option value="https://docs.google.com/forms/d/1o3kUgM3pGaPSEYSXlIvESUSLpMa5754VzB8yZ3SyqN8/viewform">Techniques de vente 3</option>
+                                <option value="https://docs.google.com/forms/d/1_l3VjROXs1Bp_O6L4_mU_tZoYunqdlm_s_PMyXu0DBU/viewform">Techniques de vente 4</option>
+                            </optgroup>
+                            <optgroup label="Management">
+                                <option value="https://docs.google.com/forms/d/1Xh4ry2rzIlkxIsmXNm9BJl6R08SO5hsJbpYsJHzxYQI/viewform">Management 1</option>
+                                <option value="https://docs.google.com/forms/d/1hF8egxucpogO3V5mx5-LV-B2_jaeC0S_76WMJ9IGlyg/viewform">Manager commercial</option>
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <!-- Corps du mail -->
+                    <div style="margin-bottom: 1.5rem;">
+                        <label style="display: block; font-weight: 500; color: var(--gray-700); margin-bottom: 0.5rem;">Corps du mail</label>
+                        <textarea id="convocation-body"
+                            style="width: 100%; min-height: 400px; padding: 1rem; border: 1px solid var(--gray-300); border-radius: var(--radius-md); font-family: inherit; line-height: 1.6; resize: vertical;"></textarea>
+                    </div>
+
+                    <!-- Pièces jointes (masquées - documents sur l'espace client) -->
+                    <div id="convocation-attachments-section" style="display: none; margin-bottom: 1.5rem; background: var(--gray-50); padding: 1rem; border-radius: var(--radius-md);">
+                        <div id="convocation-attachments" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
+                    </div>
+
+                    <!-- Boutons d'action -->
+                    <div style="display: flex; gap: 1rem; margin-top: 2rem; justify-content: flex-end;">
+                        <button type="button" onclick="ConvocationEmail.closeModal()"
+                            style="padding: 0.75rem 1.5rem; background: var(--gray-200); color: var(--gray-700); border: none; border-radius: var(--radius-md); font-weight: 600; cursor: pointer;">
+                            Annuler
+                        </button>
+                        <button type="button" onclick="ConvocationEmail.copyToClipboard()"
+                            style="padding: 0.75rem 1.5rem; background: var(--gray-700); color: white; border: none; border-radius: var(--radius-md); font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                            Copier le contenu
+                        </button>
+                        <button type="button" id="convocation-send-btn" onclick="ConvocationEmail.sendEmail()"
+                            style="padding: 0.75rem 1.5rem; background: var(--primary-pink); color: white; border: none; border-radius: var(--radius-md); font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="22" y1="2" x2="11" y2="13"></line>
+                                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                            </svg>
+                            Envoyer le mail
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal générique d'envoi de mail (relance, fin de formation, etc.) -->
+            <div id="genericEmailModal" class="modal"
+                style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+                <div style="background: white; padding: 2rem; border-radius: var(--radius-xl); max-width: 900px; width: 95%; max-height: 90vh; overflow-y: auto;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--gray-200); padding-bottom: 1rem;">
+                        <h3 id="generic-email-title" style="font-size: 1.25rem; font-weight: 700; color: var(--gray-900); display: flex; align-items: center; gap: 0.5rem;"></h3>
+                        <button onclick="GenericEmail.closeModal()"
+                            style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--gray-500);">&times;</button>
+                    </div>
+                    <div style="margin-bottom: 1.5rem;">
+                        <label style="display: block; font-weight: 500; color: var(--gray-700); margin-bottom: 0.5rem;">À (destinataire) *</label>
+                        <input type="email" id="generic-email-to" required
+                            style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: var(--radius-md); font-family: inherit;"
+                            placeholder="email@client.com">
+                    </div>
+                    <div style="margin-bottom: 1.5rem;">
+                        <label style="display: block; font-weight: 500; color: var(--gray-700); margin-bottom: 0.5rem;">Objet</label>
+                        <input type="text" id="generic-email-subject"
+                            style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: var(--radius-md); font-family: inherit;">
+                    </div>
+                    <div style="margin-bottom: 1.5rem;">
+                        <label style="display: block; font-weight: 500; color: var(--gray-700); margin-bottom: 0.5rem;">Corps du mail</label>
+                        <textarea id="generic-email-body"
+                            style="width: 100%; min-height: 400px; padding: 1rem; border: 1px solid var(--gray-300); border-radius: var(--radius-md); font-family: inherit; line-height: 1.6; resize: vertical;"></textarea>
+                    </div>
+                    <div style="display: flex; gap: 1rem; margin-top: 2rem; justify-content: flex-end;">
+                        <button type="button" onclick="GenericEmail.closeModal()"
+                            style="padding: 0.75rem 1.5rem; background: var(--gray-200); color: var(--gray-700); border: none; border-radius: var(--radius-md); font-weight: 600; cursor: pointer;">
+                            Annuler
+                        </button>
+                        <button type="button" onclick="GenericEmail.copyToClipboard()"
+                            style="padding: 0.75rem 1.5rem; background: var(--gray-700); color: white; border: none; border-radius: var(--radius-md); font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                            Copier le contenu
+                        </button>
+                        <button type="button" id="generic-email-send-btn" onclick="GenericEmail.sendEmail()"
+                            style="padding: 0.75rem 1.5rem; background: var(--primary-pink); color: white; border: none; border-radius: var(--radius-md); font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="22" y1="2" x2="11" y2="13"></line>
+                                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                            </svg>
+                            Envoyer le mail
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PARAMÈTRES PAGE -->
+            <div id="page-parametres" class="page-content" style="display:none;">
+                <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-900); margin-bottom: 2rem;">Paramètres
+                </h2>
+
+                <div style="display: grid; gap: 1.5rem;">
+                    <div
+                        style="background: white; border-radius: var(--radius-xl); padding: 2rem; box-shadow: var(--shadow-sm);">
+                        <h3
+                            style="font-size: 1.25rem; font-weight: 600; color: var(--gray-900); margin-bottom: 1.5rem;">
+                            Informations Légales OF</h3>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem;">
+                            <div>
+                                <label
+                                    style="display: block; font-weight: 500; color: var(--gray-700); margin-bottom: 0.5rem;">Raison
+                                    sociale</label>
+                                <input type="text" value="NJM Conseil"
+                                    style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: var(--radius-md); font-family: inherit;">
+                            </div>
+                            <div>
+                                <label
+                                    style="display: block; font-weight: 500; color: var(--gray-700); margin-bottom: 0.5rem;">SIRET</label>
+                                <input type="text" placeholder="123 456 789 00012"
+                                    style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: var(--radius-md); font-family: inherit;">
+                            </div>
+                            <div>
+                                <label
+                                    style="display: block; font-weight: 500; color: var(--gray-700); margin-bottom: 0.5rem;">N°
+                                    Déclaration d'Activité</label>
+                                <input type="text" placeholder="11 75 12345 75"
+                                    style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: var(--radius-md); font-family: inherit;">
+                            </div>
+                            <div>
+                                <label
+                                    style="display: block; font-weight: 500; color: var(--gray-700); margin-bottom: 0.5rem;">Adresse</label>
+                                <input type="text" placeholder="123 Rue Example, 75001 Paris"
+                                    style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: var(--radius-md); font-family: inherit;">
+                            </div>
+                        </div>
+                        <button
+                            style="margin-top: 1.5rem; padding: 0.875rem 2rem; background: var(--primary-pink); color: white; border: none; border-radius: var(--radius-md); font-weight: 600; cursor: pointer;">Enregistrer</button>
+                    </div>
+
+                    <div
+                        style="background: white; border-radius: var(--radius-xl); padding: 2rem; box-shadow: var(--shadow-sm);">
+                        <h3
+                            style="font-size: 1.25rem; font-weight: 600; color: var(--gray-900); margin-bottom: 1.5rem;">
+                            Logo
+                        </h3>
+                        <div style="display: flex; align-items: center; gap: 2rem;">
+                            <img src="assets/images/logo-njm.png" alt="Logo"
+                                style="max-width: 200px; height: auto; border: 2px solid var(--gray-200); border-radius: var(--radius-md); padding: 1rem;">
+                            <button
+                                style="padding: 0.875rem 2rem; background: var(--primary-orange); color: white; border: none; border-radius: var(--radius-md); font-weight: 600; cursor: pointer;">Changer
+                                Logo</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- END PARAMÈTRES PAGE -->
+
+            <!-- ==================== PAGES FORMATEUR ==================== -->
+
+            <!-- MES MISSIONS PAGE (Formateur) -->
+            <div id="page-missions" class="page-content" style="display:none;">
+                <div style="margin-bottom: 2rem;">
+                    <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-900);">Mes missions</h2>
+                    <p style="color: var(--gray-600); margin-top: 0.5rem;">Formations auxquelles vous êtes affecté</p>
+                </div>
+
+                <!-- Message si pas lié à un sous-traitant -->
+                <div id="missions-no-link" style="display: none; background: #fef3c7; border: 1px solid #fcd34d; border-radius: var(--radius-xl); padding: 2rem; text-align: center;">
+                    <svg width="48" height="48" fill="none" stroke="#92400e" viewBox="0 0 24 24" style="margin: 0 auto 1rem;">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                    <h3 style="color: #92400e; font-weight: 600; margin-bottom: 0.5rem;">Compte non lié</h3>
+                    <p style="color: #92400e;">Votre compte n'est pas encore lié à un profil sous-traitant. Contactez l'administrateur.</p>
+                </div>
+
+                <!-- Tableau des missions -->
+                <div id="missions-table-container" style="background: white; border-radius: var(--radius-xl); padding: 1.5rem; box-shadow: var(--shadow-sm);">
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="border-bottom: 2px solid var(--gray-200);">
+                                    <th style="text-align: left; padding: 1rem; font-weight: 600; color: var(--gray-700);">Client</th>
+                                    <th style="text-align: left; padding: 1rem; font-weight: 600; color: var(--gray-700);">Formation</th>
+                                    <th style="text-align: left; padding: 1rem; font-weight: 600; color: var(--gray-700);">Dates</th>
+                                    <th style="text-align: left; padding: 1rem; font-weight: 600; color: var(--gray-700);">Statut</th>
+                                    <th style="text-align: center; padding: 1rem; font-weight: 600; color: var(--gray-700);">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="missions-tbody">
+                                <!-- Missions loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="missions-empty" style="display: none; text-align: center; padding: 3rem; color: var(--gray-500);">
+                        <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin: 0 auto 1rem; opacity: 0.5;">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                        </svg>
+                        <p>Aucune mission pour le moment</p>
+                    </div>
+                </div>
+            </div>
+            <!-- END MES MISSIONS PAGE -->
+
+            <!-- MES DOCUMENTS PAGE (Formateur) -->
+            <div id="page-mes-documents" class="page-content" style="display:none;">
+                <div style="margin-bottom: 2rem;">
+                    <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-900);">Mes documents</h2>
+                    <p style="color: var(--gray-600); margin-top: 0.5rem;">Gérez vos documents contractuels</p>
+                </div>
+
+                <!-- Contrat de prestation -->
+                <div style="background: white; border-radius: var(--radius-xl); padding: 2rem; box-shadow: var(--shadow-sm);">
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+                        <div style="width: 48px; height: 48px; background: var(--primary-purple); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                            <svg width="24" height="24" fill="none" stroke="white" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--gray-900);">Contrat de prestation</h3>
+                            <p style="color: var(--gray-600); font-size: 0.875rem;" id="contract-status">Statut : En attente du template</p>
+                        </div>
+                    </div>
+
+                    <div style="background: var(--gray-50); border-radius: var(--radius-md); padding: 1.5rem; border: 1px dashed var(--gray-300);">
+                        <p style="color: var(--gray-600); text-align: center;">
+                            <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display: inline-block; vertical-align: middle; margin-right: 0.5rem;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            La fonctionnalité de signature électronique sera bientôt disponible.
+                        </p>
+                    </div>
+
+                    <!-- Boutons d'action (désactivés pour l'instant) -->
+                    <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
+                        <button disabled style="padding: 0.75rem 1.5rem; background: var(--gray-300); color: var(--gray-500); border: none; border-radius: var(--radius-md); font-weight: 600; cursor: not-allowed;">
+                            Voir le contrat
+                        </button>
+                        <button disabled style="padding: 0.75rem 1.5rem; background: var(--gray-300); color: var(--gray-500); border: none; border-radius: var(--radius-md); font-weight: 600; cursor: not-allowed;">
+                            Signer
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <!-- END MES DOCUMENTS PAGE -->
+
+            <!-- ==================== PAGES CLIENT ==================== -->
+
+            <!-- MA FORMATION PAGE (Client) -->
+            <div id="page-ma-formation" class="page-content" style="display:none;">
+                <div style="margin-bottom: 2rem;">
+                    <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-900);">Ma formation en cours</h2>
+                    <p style="color: var(--gray-600); margin-top: 0.5rem;">Suivez votre formation et accédez à vos documents</p>
+                </div>
+
+                <!-- Sélecteur d'entreprise (affiché seulement si plusieurs entreprises) -->
+                <div id="client-company-selector" style="display: none; margin-bottom: 1.5rem; background: white; border: 1px solid var(--gray-200); border-radius: var(--radius-xl); padding: 1rem 1.5rem;">
+                    <label style="font-size: 0.875rem; font-weight: 600; color: var(--gray-700); margin-bottom: 0.5rem; display: block;">Sélectionnez votre entreprise :</label>
+                    <select id="client-company-select" onchange="CRMApp.onClientCompanyChange(this.value)" style="width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--gray-300); border-radius: var(--radius-md); font-size: 1rem; color: var(--gray-900); background: white; cursor: pointer;">
+                    </select>
+                </div>
+
+                <!-- Message si pas de formation liée -->
+                <div id="client-no-formation" style="display: none; background: #dbeafe; border: 1px solid #93c5fd; border-radius: var(--radius-xl); padding: 2rem; text-align: center;">
+                    <svg width="48" height="48" fill="none" stroke="#1e40af" viewBox="0 0 24 24" style="margin: 0 auto 1rem;">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                    </svg>
+                    <h3 style="color: #1e40af; font-weight: 600; margin-bottom: 0.5rem;">Aucune formation en cours</h3>
+                    <p style="color: #1e40af;">Vous n'avez pas de formation active pour le moment. Consultez notre catalogue pour découvrir nos offres.</p>
+                </div>
+
+                <!-- Contenu de la formation -->
+                <div id="client-formation-content" style="display: none;">
+                    <!-- Carte résumé de la formation -->
+                    <div id="client-formation-summary" style="background: linear-gradient(135deg, var(--primary-purple) 0%, var(--primary-pink) 100%); border-radius: var(--radius-xl); padding: 2rem; color: white; margin-bottom: 2rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+                            <div>
+                                <h3 id="client-formation-name" style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem;">Nom de la formation</h3>
+                                <p id="client-formation-dates" style="opacity: 0.9; font-size: 0.875rem;">Dates</p>
+                            </div>
+                            <div id="client-formation-status" style="padding: 0.5rem 1rem; background: rgba(255,255,255,0.2); border-radius: 9999px; font-weight: 600; font-size: 0.875rem;">
+                                En cours
+                            </div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-top: 1.5rem;">
+                            <div style="background: rgba(255,255,255,0.1); padding: 1rem; border-radius: var(--radius-md);">
+                                <div style="font-size: 0.75rem; opacity: 0.8;">Lieu</div>
+                                <div id="client-formation-location" style="font-weight: 600;">-</div>
+                            </div>
+                            <div style="background: rgba(255,255,255,0.1); padding: 1rem; border-radius: var(--radius-md);">
+                                <div style="font-size: 0.75rem; opacity: 0.8;">Durée</div>
+                                <div id="client-formation-duration" style="font-weight: 600;">- jours</div>
+                            </div>
+                            <div style="background: rgba(255,255,255,0.1); padding: 1rem; border-radius: var(--radius-md);">
+                                <div style="font-size: 0.75rem; opacity: 0.8;">Heures</div>
+                                <div id="client-formation-hours" style="font-weight: 600;">- h</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Onglets de la formation -->
+                    <div style="background: white; border-radius: var(--radius-xl); box-shadow: var(--shadow-sm); overflow: hidden;">
+                        <!-- Navigation des onglets -->
+                        <div style="display: flex; border-bottom: 1px solid var(--gray-200); overflow-x: auto;">
+                            <button class="client-tab-btn active" data-tab="infos" onclick="CRMApp.switchClientFormationTab('infos')"
+                                style="padding: 1rem 1.5rem; background: none; border: none; cursor: pointer; font-weight: 500; color: var(--primary-purple); border-bottom: 2px solid var(--primary-purple); white-space: nowrap;">
+                                Informations
+                            </button>
+                            <button class="client-tab-btn" data-tab="pedagogie" onclick="CRMApp.switchClientFormationTab('pedagogie')"
+                                style="padding: 1rem 1.5rem; background: none; border: none; cursor: pointer; font-weight: 500; color: var(--gray-500); border-bottom: 2px solid transparent; white-space: nowrap;">
+                                Contenu pédagogique
+                            </button>
+                            <button class="client-tab-btn" data-tab="documents" onclick="CRMApp.switchClientFormationTab('documents')"
+                                style="padding: 1rem 1.5rem; background: none; border: none; cursor: pointer; font-weight: 500; color: var(--gray-500); border-bottom: 2px solid transparent; white-space: nowrap;">
+                                Documents
+                            </button>
+                            <button class="client-tab-btn" data-tab="questionnaires" onclick="CRMApp.switchClientFormationTab('questionnaires')"
+                                style="padding: 1rem 1.5rem; background: none; border: none; cursor: pointer; font-weight: 500; color: var(--gray-500); border-bottom: 2px solid transparent; white-space: nowrap;">
+                                Questionnaires
+                            </button>
+                        </div>
+
+                        <!-- Contenu des onglets -->
+                        <div style="padding: 1.5rem;">
+                            <!-- Onglet Informations -->
+                            <div id="client-tab-infos" class="client-tab-content" style="display: block;">
+                                <div id="client-formation-infos">
+                                    <!-- Contenu chargé dynamiquement -->
+                                </div>
+                            </div>
+
+                            <!-- Onglet Contenu pédagogique -->
+                            <div id="client-tab-pedagogie" class="client-tab-content" style="display: none;">
+                                <div id="client-formation-pedagogie">
+                                    <!-- Contenu chargé dynamiquement -->
+                                </div>
+                            </div>
+
+                            <!-- Onglet Documents -->
+                            <div id="client-tab-documents" class="client-tab-content" style="display: none;">
+                                <div id="client-formation-documents">
+                                    <!-- Documents chargés dynamiquement -->
+                                </div>
+                            </div>
+
+                            <!-- Onglet Questionnaires -->
+                            <div id="client-tab-questionnaires" class="client-tab-content" style="display: none;">
+                                <div id="client-formation-questionnaires">
+                                    <div style="text-align: center; padding: 3rem; color: var(--gray-500);">
+                                        <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin: 0 auto 1rem; opacity: 0.5;">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                                        </svg>
+                                        <p style="font-weight: 500; margin-bottom: 0.5rem;">Questionnaires de satisfaction</p>
+                                        <p style="font-size: 0.875rem;">Cette fonctionnalité sera bientôt disponible.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- END MA FORMATION PAGE -->
+
+            <!-- CATALOGUE PAGE (Client) -->
+            <div id="page-catalogue" class="page-content" style="display:none;">
+                <div style="margin-bottom: 2rem;">
+                    <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-900);">Catalogue de formations</h2>
+                    <p style="color: var(--gray-600); margin-top: 0.5rem;">Découvrez nos formations disponibles</p>
+                </div>
+
+                <div style="background: white; border-radius: var(--radius-xl); padding: 3rem; box-shadow: var(--shadow-sm); text-align: center;">
+                    <svg width="64" height="64" fill="none" stroke="var(--gray-400)" viewBox="0 0 24 24" style="margin: 0 auto 1.5rem;">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                    </svg>
+                    <h3 style="font-size: 1.25rem; font-weight: 600; color: var(--gray-700); margin-bottom: 0.5rem;">Catalogue en cours de construction</h3>
+                    <p style="color: var(--gray-500); max-width: 400px; margin: 0 auto;">
+                        Notre catalogue de formations sera bientôt disponible. Vous pourrez y découvrir toutes nos offres de formation.
+                    </p>
+                </div>
+            </div>
+            <!-- END CATALOGUE PAGE -->
+
+            <!-- ==================== END PAGES CLIENT ==================== -->
+
+        </main>
+    </div>
+
+    <!-- ⚠️ ANCIENS SCRIPTS DÉSACTIVÉS - Utilisation de Supabase maintenant -->
+    <!-- <script src="crm-data.js"></script> -->
+    <!-- <script src="auth-system.js"></script> -->
+
+    <!-- Ancien code JavaScript dans index.html - DÉSACTIVÉ -->
+    <script style="display:none;">
+        // CE CODE N'EST PLUS UTILISÉ - Voir index-supabase.js
+        /*
+            // ==================== CRM Application Logic ====================
+            const CRMApp = {
+                currentPage: 'dashboard',
+                currentVeilleType: 'formation',
+    
+                init() {
+                    this.updateDashboardStats();
+                    this.setupNavigation();
+                    this.loadFormations();
+                    this.loadVeille();
+                    this.loadSupports();
+                    this.loadTemplates();
+                    this.loadUsers();
+                    this.checkExpiringDocuments();
+                },
+    
+                setupNavigation() {
+                    document.querySelectorAll('.nav-item').forEach(item => {
+                        item.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            const page = item.getAttribute('data-page');
+                            if (page) {
+                                this.showPage(page);
+                                document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                                item.classList.add('active');
+                            }
+                        });
+                    });
+                },
+    
+                showPage(pageName) {
+                    document.querySelectorAll('.page-content').forEach(page => {
+                        page.style.display = 'none';
+                    });
+    
+                    const targetPage = document.getElementById(`page-${pageName}`);
+                    if (targetPage) {
+                        targetPage.style.display = 'block';
+                        this.currentPage = pageName;
+                    }
+    
+                    // Reload users when navigating to access management page
+                    if (pageName === 'acces') {
+                        setTimeout(() => UserManagement.loadUsers(), 100);
+                    }
+    
+                    document.querySelector('.header-title').textContent =
+                        pageName === 'dashboard' ? 'Tableau de bord' :
+                            pageName === 'formations' ? 'Formation 2026' :
+                                pageName === 'veille' ? 'Veille' :
+                                    pageName === 'bpf' ? 'BPF' :
+                                        pageName === 'biblio-supports' ? 'Bibliothèque Supports' :
+                                            pageName === 'biblio-templates' ? 'Bibliothèque Templates' :
+                                                pageName === 'acces' ? 'Gestion des Accès' :
+                                                    pageName === 'parametres' ? 'Paramètres' : 'CRM';
+                },
+    
+                updateDashboardStats() {
+                    const stats = CRMData.getDashboardStats();
+                    document.getElementById('kpi-learners').textContent = stats.learnersCount;
+                    document.getElementById('kpi-completed').textContent = stats.formationsCompleted;
+                    document.getElementById('kpi-in-progress').textContent = stats.formationsInProgress;
+                    document.getElementById('kpi-client-access').textContent = stats.clientAccesses;
+                },
+    
+                addFormation() {
+                    const clientName = prompt('Nom du client:');
+                    if (clientName) {
+                        CRMData.addFormation({
+                            clientName,
+                            aprilFormation: 'À planifier',
+                            status: 'in_progress'
+                        });
+                        this.loadFormations();
+                    }
+                },
+    
+                loadFormations() {
+                    const data = CRMData.getData();
+                    const tbody = document.getElementById('formations-tbody');
+                    tbody.innerHTML = data.formations.map(f => `
+                        <tr style="border-bottom: 1px solid var(--gray-200);">
+                            <td style="padding: 1rem;">${f.clientName}</td>
+                            <td style="padding: 1rem;">${f.aprilFormation}</td>
+                            <td style="padding: 1rem;">
+                                <span style="padding: 0.25rem 0.75rem; background: ${f.status === 'completed' ? '#d1fae5' : '#fef3c7'}; color: ${f.status === 'completed' ? '#065f46' : '#92400e'}; border-radius: 9999px; font-size: 0.875rem; font-weight: 500;">
+                                    ${f.status === 'completed' ? 'Terminée' : 'En cours'}
+                                </span>
+                            </td>
+                            <td style="padding: 1rem;">${f.documents?.length || 0} fichier(s)</td>
+                            <td style="padding: 1rem; text-align: center;">
+                                <button onclick="CRMApp.viewFormation(${f.id})" style="padding: 0.5rem 1rem; background: var(--gray-100); border: none; border-radius: var(--radius-md); cursor: pointer;">Voir</button>
+                            </td>
+                        </tr>
+                    `).join('');
+                },
+    
+                viewFormation(id) {
+                    alert(`Détails de la formation #${id} - Fonctionnalité à implémenter`);
+                },
+    
+                filterVeille(type) {
+                    this.currentVeilleType = type;
+                    document.querySelectorAll('.veille-filter-btn').forEach(btn => {
+                        if (btn.getAttribute('data-type') === type) {
+                            btn.style.background = 'var(--primary-pink)';
+                            btn.style.color = 'white';
+                        } else {
+                            btn.style.background = 'var(--gray-200)';
+                            btn.style.color = 'var(--gray-700)';
+                        }
+                    });
+                    this.loadVeille();
+                },
+    
+                loadVeille() {
+                    const data = CRMData.getData();
+                    const container = document.getElementById('veille-container');
+                    const items = data.veille[this.currentVeilleType] || [];
+    
+                    container.innerHTML = items.length ? items.map(item => `
+                        <div style="background: white; padding: 1.5rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); border-left: 4px solid var(--primary-pink);">
+                            <h4 style="font-weight: 600; color: var(--gray-900); margin-bottom: 0.5rem;">${item.title}</h4>
+                            <p style="color: var(--gray-600); font-size: 0.875rem; margin-bottom: 0.75rem;">${item.description}</p>
+                            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.875rem; color: var(--gray-500);">
+                                <span>${new Date(item.createdAt).toLocaleDateString('fr-FR')}</span>
+                                <button onclick="CRMData.toggleVeilleRead('${this.currentVeilleType}', ${item.id}); CRMApp.loadVeille();" style="padding: 0.25rem 0.75rem; background: ${item.read ? 'var(--gray-200)' : 'var(--primary-green)'}; color: ${item.read ? 'var(--gray-700)' : 'white'}; border: none; border-radius: var(--radius-sm); cursor: pointer;">
+                                    ${item.read ? 'Lu' : 'Marquer lu'}
+                                </button>
+                            </div>
+                        </div>
+                    `).join('') : '<p style="text-align: center; color: var(--gray-500); padding: 2rem;">Aucune veille pour cette catégorie</p>';
+                },
+    
+                addVeille() {
+                    const title = prompt('Titre de la veille:');
+                    if (title) {
+                        const description = prompt('Description:');
+                        CRMData.addVeille(this.currentVeilleType, { title, description: description || '' });
+                        this.loadVeille();
+                    }
+                },
+    
+                loadSupports() {
+                    ['vente', 'marketing', 'reseaux_sociaux'].forEach(category => {
+                        const data = CRMData.getData();
+                        const supports = data.pedagogical_library[category] || [];
+                        const container = document.getElementById(`supports-${category}`);
+                        container.innerHTML = supports.length ? supports.map(s => `
+                            <div style="padding: 0.75rem; background: var(--gray-50); border-radius: var(--radius-md); font-size: 0.875rem;">
+                                📄 ${s.name}
+                            </div>
+                        `).join('') : '<p style="color: var(--gray-400); font-size: 0.875rem;">Aucun support</p>';
+                    });
+                },
+    
+                uploadSupport() {
+                    const category = prompt('Catégorie (vente/marketing/reseaux_sociaux):');
+                    const name = prompt('Nom du support:');
+                    if (category && name) {
+                        CRMData.addToPedagogicalLibrary(category, { name });
+                        this.loadSupports();
+                    }
+                },
+    
+                loadTemplates() {
+                    const data = CRMData.getData();
+                    const formateurs = data.templates_library.formateurs || [];
+                    document.getElementById('templates-formateurs').innerHTML = formateurs.map(t => `
+                        <div style="padding: 1rem; background: var(--gray-50); border-radius: var(--radius-md); margin-top: 0.5rem;">
+                            <strong>${t.name}</strong><br>
+                            <span style="font-size: 0.875rem; color: var(--gray-600);">Expire: ${t.expiryDate || 'N/A'}</span>
+                        </div>
+                    `).join('') || '<p>Aucun document</p>';
+                },
+    
+                uploadTemplate(category) {
+                    const name = prompt('Nom du document:');
+                    if (name) {
+                        const expiryDate = category === 'formateurs' ? prompt('Date d\'expiration (YYYY-MM-DD):') : null;
+                        CRMData.addTemplate(category, { name, expiryDate });
+                        this.loadTemplates();
+                        this.checkExpiringDocuments();
+                    }
+                },
+    
+                checkExpiringDocuments() {
+                    const expiring = CRMData.getExpiringDocuments();
+                    const alert = document.getElementById('expiring-docs');
+                    const list = document.getElementById('expiring-list');
+                    if (expiring.length > 0) {
+                        alert.style.display = 'block';
+                        list.innerHTML = expiring.map(d => `<li>${d.name} - Expire le ${new Date(d.expiryDate).toLocaleDateString('fr-FR')}</li>`).join('');
+                    } else {
+                        alert.style.display = 'none';
+                    }
+                },
+    
+                loadUsers() {
+                    const data = CRMData.getData();
+                    const tbody = document.getElementById('users-tbody');
+                    tbody.innerHTML = data.users.map(u => `
+                        <tr style="border-bottom: 1px solid var(--gray-200);">
+                            <td style="padding: 1rem;">${u.name}</td>
+                            <td style="padding: 1rem;">${u.email}</td>
+                            <td style="padding: 1rem;">
+                                <span style="padding: 0.25rem 0.75rem; background: ${u.role === 'admin' ? '#dbeafe' : u.role === 'formateur' ? '#fef3c7' : '#d1fae5'}; color: ${u.role === 'admin' ? '#1e40af' : u.role === 'formateur' ? '#92400e' : '#065f46'}; border-radius: 9999px; font-size: 0.875rem; font-weight: 500;">
+                                    ${u.role.charAt(0).toUpperCase() + u.role.slice(1)}
+                                </span>
+                            </td>
+                            <td style="padding: 1rem;">${new Date(u.created).toLocaleDateString('fr-FR')}</td>
+                            <td style="padding: 1rem; text-align: center;">
+                                <button style="padding: 0.5rem 1rem; background: var(--gray-100); border: none; border-radius: var(--radius-md); cursor: pointer;">Éditer</button>
+                            </td>
+                        </tr>
+                    `).join('');
+                },
+    
+                addUser() {
+                    const name = prompt('Nom:');
+                    const email = prompt('Email:');
+                    const role = prompt('Rôle (admin/formateur/client):');
+                    if (name && email && role) {
+                        CRMData.addUser({ name, email, role });
+                        this.loadUsers();
+                    }
+                }
+            };
+    
+            // ==================== User Management Logic ====================
+            const UserManagement = {
+                currentUser: null,
+    
+                init() {
+                    // Load users on access page
+                    this.loadUsers();
+                    this.setupSearch();
+                },
+    
+                loadUsers() {
+                    const currentUser = AuthSystem.checkSession();
+                    if (!currentUser) return;
+    
+                    const result = AuthSystem.getAllUsers(currentUser.id);
+                    if (!result.success) {
+                        alert(result.message);
+                        return;
+                    }
+    
+                    const users = result.users;
+                    this.renderUsers(users);
+                    this.updateStats(users);
+                },
+    
+                updateStats(users) {
+                    document.getElementById('total-users').textContent = users.length;
+                    document.getElementById('total-admins').textContent = users.filter(u => u.role === 'admin').length;
+                    document.getElementById('total-formateurs').textContent = users.filter(u => u.role === 'formateur').length;
+                    document.getElementById('total-clients').textContent = users.filter(u => u.role === 'client').length;
+                },
+    
+                renderUsers(users) {
+                    const tbody = document.getElementById('users-tbody');
+                    tbody.innerHTML = users.map(user => `
+                        <tr style="border-bottom: 1px solid var(--gray-200); transition: background 150ms;">
+                            <td style="padding: 1rem; font-weight: 500; color: var(--gray-900);">${user.name}</td>
+                            <td style="padding: 1rem; color: var(--gray-700);">${user.email}</td>
+                            <td style="padding: 1rem;">
+                                <span style="padding: 0.25rem 0.75rem; background: ${
+                                    user.role === 'admin' ? '#dbeafe' :
+                                    user.role === 'formateur' ? '#fef3c7' : '#d1fae5'
+                                }; color: ${
+                                    user.role === 'admin' ? '#1e40af' :
+                                    user.role === 'formateur' ? '#92400e' : '#065f46'
+                                }; border-radius: 9999px; font-size: 0.875rem; font-weight: 500;">
+                                    ${user.role === 'admin' ? 'Admin' : user.role === 'formateur' ? 'Formateur' : 'Client'}
+                                </span>
+                            </td>
+                            <td style="padding: 1rem;">
+                                <span style="padding: 0.25rem 0.75rem; background: ${user.active ? '#d1fae5' : '#fee2e2'}; color: ${user.active ? '#065f46' : '#991b1b'}; border-radius: 9999px; font-size: 0.875rem; font-weight: 500;">
+                                    ${user.active ? '✓ Actif' : '✗ Inactif'}
+                                </span>
+                            </td>
+                            <td style="padding: 1rem; color: var(--gray-600); font-size: 0.875rem;">
+                                ${user.lastLogin ? new Date(user.lastLogin).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Jamais'}
+                            </td>
+                            <td style="padding: 1rem; text-align: center;">
+                                <div style="display: flex; gap: 0.5rem; justify-content: center;">
+                                    <button onclick="UserManagement.editUser(${user.id})"
+                                        style="padding: 0.5rem 1rem; background: var(--gray-100); border: none; border-radius: var(--radius-md); cursor: pointer; font-size: 0.875rem; color: var(--gray-700); font-weight: 500;">
+                                        Éditer
+                                    </button>
+                                    <button onclick="UserManagement.showResetPasswordModal(${user.id})"
+                                        style="padding: 0.5rem 1rem; background: var(--primary-orange); color: white; border: none; border-radius: var(--radius-md); cursor: pointer; font-size: 0.875rem; font-weight: 500;">
+                                        Mot de passe
+                                    </button>
+                                    <button onclick="UserManagement.deleteUser(${user.id})"
+                                        style="padding: 0.5rem 1rem; background: #fee2e2; color: #991b1b; border: none; border-radius: var(--radius-md); cursor: pointer; font-size: 0.875rem; font-weight: 500;">
+                                        Supprimer
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `).join('');
+                },
+    
+                setupSearch() {
+                    const searchInput = document.getElementById('user-search');
+                    if (searchInput) {
+                        searchInput.addEventListener('input', (e) => {
+                            const query = e.target.value.toLowerCase();
+                            const currentUser = AuthSystem.checkSession();
+                            const result = AuthSystem.getAllUsers(currentUser.id);
+    
+                            if (result.success) {
+                                const filtered = result.users.filter(user =>
+                                    user.name.toLowerCase().includes(query) ||
+                                    user.email.toLowerCase().includes(query)
+                                );
+                                this.renderUsers(filtered);
+                            }
+                        });
+                    }
+                },
+    
+                showAddUserModal() {
+                    document.getElementById('modal-title').textContent = 'Nouvel Utilisateur';
+                    document.getElementById('userForm').reset();
+                    document.getElementById('user-id').value = '';
+                    document.getElementById('password-section').style.display = 'block';
+                    document.getElementById('user-password').required = true;
+                    document.getElementById('userModal').style.display = 'flex';
+                },
+    
+                editUser(userId) {
+                    const currentUser = AuthSystem.checkSession();
+                    const result = AuthSystem.getAllUsers(currentUser.id);
+    
+                    if (result.success) {
+                        const user = result.users.find(u => u.id === userId);
+                        if (user) {
+                            document.getElementById('modal-title').textContent = 'Modifier l\'utilisateur';
+                            document.getElementById('user-id').value = user.id;
+                            document.getElementById('user-name').value = user.name;
+                            document.getElementById('user-email').value = user.email;
+                            document.getElementById('user-role').value = user.role;
+                            document.getElementById('user-active').checked = user.active;
+                            document.getElementById('password-section').style.display = 'none';
+                            document.getElementById('user-password').required = false;
+                            document.getElementById('userModal').style.display = 'flex';
+                        }
+                    }
+                },
+    
+                closeModal() {
+                    document.getElementById('userModal').style.display = 'none';
+                },
+    
+                saveUser(event) {
+                    event.preventDefault();
+    
+                    const currentUser = AuthSystem.checkSession();
+                    if (!currentUser) return;
+    
+                    const userId = document.getElementById('user-id').value;
+                    const name = document.getElementById('user-name').value;
+                    const email = document.getElementById('user-email').value;
+                    const role = document.getElementById('user-role').value;
+                    const password = document.getElementById('user-password').value;
+                    const active = document.getElementById('user-active').checked;
+    
+                    let result;
+    
+                    if (userId) {
+                        // Update existing user
+                        result = AuthSystem.updateUser(currentUser.id, parseInt(userId), { name, email, role, active });
+                    } else {
+                        // Add new user
+                        result = AuthSystem.addUser(currentUser.id, { name, email, role, password });
+                    }
+    
+                    if (result.success) {
+                        alert(result.message);
+                        this.closeModal();
+                        this.loadUsers();
+                    } else {
+                        alert(result.message);
+                    }
+                },
+    
+                deleteUser(userId) {
+                    if (!confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action est irréversible.')) {
+                        return;
+                    }
+    
+                    const currentUser = AuthSystem.checkSession();
+                    if (!currentUser) return;
+    
+                    const result = AuthSystem.deleteUser(currentUser.id, userId);
+    
+                    if (result.success) {
+                        alert(result.message);
+                        this.loadUsers();
+                    } else {
+                        alert(result.message);
+                    }
+                },
+    
+                showResetPasswordModal(userId) {
+                    document.getElementById('reset-user-id').value = userId;
+                    document.getElementById('resetPasswordModal').style.display = 'flex';
+                },
+    
+                closeResetPasswordModal() {
+                    document.getElementById('resetPasswordModal').style.display = 'none';
+                },
+    
+                resetPassword(event) {
+                    event.preventDefault();
+    
+                    const currentUser = AuthSystem.checkSession();
+                    if (!currentUser) return;
+    
+                    const userId = parseInt(document.getElementById('reset-user-id').value);
+                    const newPassword = document.getElementById('reset-password').value;
+    
+                    const result = AuthSystem.resetPassword(currentUser.id, userId, newPassword);
+    
+                    if (result.success) {
+                        alert(result.message);
+                        this.closeResetPasswordModal();
+                    } else {
+                        alert(result.message);
+                    }
+                }
+            };
+    
+            // ==================== Authentication Logic ====================
+            const authPage = document.getElementById('authPage');
+            const dashboardPage = document.getElementById('dashboardPage');
+            const loginForm = document.getElementById('loginForm');
+            const logoutBtn = document.getElementById('logoutBtn');
+    
+            // Check if user is already logged in
+            window.addEventListener('DOMContentLoaded', () => {
+                const currentUser = AuthSystem.checkSession();
+                if (currentUser) {
+                    showDashboard(currentUser);
+                }
+            });
+    
+            // Login form submission
+            loginForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+    
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+    
+                const result = AuthSystem.login(email, password);
+    
+                if (result.success) {
+                    showDashboard(result.user);
+                } else {
+                    alert(result.message);
+                }
+            });
+    
+            // Logout
+            logoutBtn.addEventListener('click', () => {
+                AuthSystem.logout();
+                showAuth();
+            });
+    
+            // Show dashboard
+            function showDashboard(user) {
+                authPage.classList.add('hidden');
+                dashboardPage.classList.add('active');
+    
+                // Update user display
+                const userName = user.name || user.email.split('@')[0];
+                const userNameElement = document.querySelector('.user-name');
+                const userAvatarElement = document.querySelector('.user-avatar');
+    
+                if (userNameElement) {
+                    userNameElement.textContent = userName;
+                }
+                if (userAvatarElement) {
+                    userAvatarElement.textContent = userName.charAt(0).toUpperCase();
+                }
+    
+                // Initialize CRM App
+                CRMApp.init();
+                UserManagement.init();
+            }
+    
+            // Show auth page
+            function showAuth() {
+                authPage.classList.remove('hidden');
+                dashboardPage.classList.remove('active');
+            }
+    
+            // Toggle password visibility
+            function togglePasswordVisibility() {
+                const passwordInput = document.getElementById('password');
+                const eyeIcon = document.getElementById('eyeIcon');
+    
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    eyeIcon.innerHTML = `
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path>
+                    `;
+                } else {
+                    passwordInput.type = 'password';
+                    eyeIcon.innerHTML = `
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                    `;
+                }
+            }
+    
+            // Navigation handler
+            document.addEventListener('click', (e) => {
+                const navItem = e.target.closest('.nav-item');
+                if (navItem) {
+                    e.preventDefault();
+                    document.querySelectorAll('.nav-item').forEach(item => {
+                        item.classList.remove('active');
+                    });
+                    navItem.classList.add('active');
+                }
+            });
+        */
+    </script>
+
+    <!-- ==================== SUPABASE INTEGRATION ==================== -->
+    <!-- Supabase Client Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Supabase Configuration -->
+    <script src="src/config/supabase-config.js"></script>
+
+    <!-- Supabase Authentication System (Version 2 - Simplifiée) -->
+    <script src="src/auth/supabase-auth-v2.js"></script>
+
+    <!-- Supabase Data Management -->
+    <script src="src/data/supabase-data.js"></script>
+
+    <!-- Services -->
+    <script src="src/utils/google-docs-service.js"></script>
+
+    <!-- CRM App Logic with Supabase (remplace l'ancien code localStorage) -->
+    <script src="src/app/index-supabase.js"></script>
+
+    <!-- Formation Form Component (Formulaire complet avec onglets) -->
+    <link rel="stylesheet" href="assets/css/formation-form.css">
+    <script src="src/components/formation-form.js"></script>
+
+    <!--
+    ⚠️ ANCIENS SCRIPTS DÉSACTIVÉS - Utilisation de Supabase maintenant
+    <script src="crm-data.js"></script>
+    <script src="auth-system.js"></script>
+    -->
+</body>
+
+</html>
