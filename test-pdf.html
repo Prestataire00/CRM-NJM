@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Test PDF - NJM Templates</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        h1 { color: #7b3f9e; }
+        #status { background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .buttons { display: flex; gap: 10px; flex-wrap: wrap; }
+        button { padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: bold; color: white; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-fiche { background: #e36a3a; }
+        .btn-convention { background: #7b3f9e; }
+        .btn-contrat { background: #e91e8c; }
+        .btn-presence { background: #b8c944; color: #333; }
+        .btn-certificat { background: #0284c7; }
+    </style>
+</head>
+<body>
+    <h1>Test des 5 Templates PDF - NJM Conseil</h1>
+    <p id="status">Chargement...</p>
+    <div class="buttons">
+        <button class="btn-fiche" disabled onclick="testFiche()">Fiche pedagogique</button>
+        <button class="btn-convention" disabled onclick="testConvention()">Convention</button>
+        <button class="btn-contrat" disabled onclick="testContrat()">Contrat sous-traitance</button>
+        <button class="btn-presence" disabled onclick="testPresence()">Feuille de presence</button>
+        <button class="btn-certificat" disabled onclick="testCertificat()">Certificat + Attestation</button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        const sampleData = {
+            formation_name: 'Techniques de vente',
+            target_audience: 'commercial, technico-commercial, conseiller commercial',
+            prerequisites: 'avoir une bonne connaissance de l\'offre (produits, services) et des tarifs',
+            hours_per_learner: 7,
+            number_of_days: 1,
+            objectives: '-etre capable de mettre en oeuvre les techniques d\'ecoute active tout en menant la direction de la vente\n-etre capable de valoriser les prix et services\n-etre capable de verrouiller la vente',
+            module_1: '-1-Les bases\n-les bases de ce qu\'est un vendeur\n-les etapes de la vente\n\n2-La decouverte et l\'argumentation\n-focus sur la phase de decouverte\n-identifier les motivations',
+            methods_tools: 'mises en situation, accompagnement terrain, techniques de vente (SONCAS, CAP...), PNL, methode AEC, outils de coaching',
+            evaluation_methodology: 'par un questionnaire individuel en ligne, en fin de formation.',
+            added_value: 'les outils personnalises et la mise en pratique avec des outils de coaching.',
+            access_delays: 'les dates disponibles le sont a partir du 01/03/2026.',
+            company_name: 'IA INFINITY',
+            client_name: 'IA INFINITY',
+            company_address: '25 rue romain rolland',
+            company_postal_code: '45100',
+            company_director_name: 'Le Pennec',
+            company_director_title: 'dirigeant',
+            client_email: 'contact@iainfinity.fr',
+            start_date: '2026-03-13',
+            end_date: '2026-03-13',
+            training_location: 'Marseille',
+            total_amount: 2000,
+            subcontractor_first_name: 'Quentin',
+            subcontractor_last_name: 'Durand',
+            learners_data: [
+                { first_name: 'Ismael', last_name: 'Le Pennec', hours: 7 },
+                { first_name: 'Loris', last_name: 'Vichot', hours: 7 }
+            ],
+            attendance_sheets: [
+                { day: 1, date: '2026-03-13', learners_hours: [
+                    { learner_name: 'Ismael Le Pennec', hours: 7 },
+                    { learner_name: 'Loris Vichot', hours: 7 }
+                ]}
+            ]
+        };
+
+        window.addEventListener('load', function() {
+            const status = document.getElementById('status');
+            const checks = [];
+
+            if (typeof window.jspdf !== 'undefined') {
+                checks.push('jsPDF charge');
+            } else {
+                checks.push('jsPDF NON charge');
+                status.innerHTML = checks.join('<br>');
+                return;
+            }
+
+            const script = document.createElement('script');
+            script.src = 'pdf-generator.js?v=' + Date.now();
+            script.onload = function() {
+                if (typeof PdfGenerator !== 'undefined') {
+                    checks.push('PdfGenerator charge');
+                    document.querySelectorAll('button').forEach(b => b.disabled = false);
+                } else {
+                    checks.push('PdfGenerator NON charge');
+                }
+                status.innerHTML = checks.join('<br>');
+            };
+            script.onerror = function() {
+                checks.push('Erreur chargement pdf-generator.js');
+                status.innerHTML = checks.join('<br>');
+            };
+            document.body.appendChild(script);
+        });
+
+        function log(msg) {
+            document.getElementById('status').innerHTML += '<br>' + msg;
+        }
+
+        function testFiche() {
+            log('Generation fiche pedagogique...');
+            PdfGenerator.generatePedagogicalSheet(sampleData).then(r => log(r.success ? 'Fiche OK' : 'Erreur: ' + r.message)).catch(e => { log('Erreur: ' + e.message); console.error(e); });
+        }
+
+        function testConvention() {
+            log('Generation convention...');
+            PdfGenerator.generateConvention(sampleData).then(r => log(r.success ? 'Convention OK' : 'Erreur: ' + r.message)).catch(e => { log('Erreur: ' + e.message); console.error(e); });
+        }
+
+        function testContrat() {
+            log('Generation contrat sous-traitance...');
+            PdfGenerator.generateContratSousTraitance(sampleData).then(r => log(r.success ? 'Contrat OK' : 'Erreur: ' + r.message)).catch(e => { log('Erreur: ' + e.message); console.error(e); });
+        }
+
+        function testPresence() {
+            log('Generation feuille de presence...');
+            PdfGenerator.generateAttendanceSheet(sampleData).then(r => log(r.success ? 'Feuille OK' : 'Erreur: ' + r.message)).catch(e => { log('Erreur: ' + e.message); console.error(e); });
+        }
+
+        function testCertificat() {
+            log('Generation certificat + attestation...');
+            PdfGenerator.generateCertificate(sampleData).then(r => log(r.success ? 'Certificat OK' : 'Erreur: ' + r.message)).catch(e => { log('Erreur: ' + e.message); console.error(e); });
+        }
+    </script>
+</body>
+</html>

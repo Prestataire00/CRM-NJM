@@ -1,0 +1,25 @@
+{
+  "name": "crm_njm-main",
+  "version": "1.0.0",
+  "description": "Application web complète de gestion de formations, apprenants et ressources pédagogiques, connectée à Supabase.",
+  "main": "auth-system.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Prestataire00/CRM-NJM.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Prestataire00/CRM-NJM/issues"
+  },
+  "homepage": "https://github.com/Prestataire00/CRM-NJM#readme",
+  "dependencies": {
+    "supabase": "^2.81.3"
+  }
+}

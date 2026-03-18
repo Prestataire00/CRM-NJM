@@ -38,16 +38,10 @@ if (typeof SupabaseData !== 'undefined') {
 console.log('==================');
 
 /**
- * Convertit une URL Google Docs/Drive en URL d'export PDF
+ * Retourne l'URL du document (compatible avec les anciens docs Google et les nouveaux PDF locaux)
  */
 function toPdfUrl(url) {
     if (!url) return '';
-    // Google Docs: https://docs.google.com/document/d/{ID}/edit... → export PDF
-    const docsMatch = url.match(/docs\.google\.com\/document\/d\/([^/]+)/);
-    if (docsMatch) {
-        return `https://docs.google.com/document/d/${docsMatch[1]}/export?format=pdf`;
-    }
-    // Google Drive file: déjà un lien Drive, on le garde tel quel
     return url;
 }
 
@@ -190,23 +184,36 @@ const CRMApp = {
         if (formation.formation_documents && formation.formation_documents.length > 0) {
             documentsHtml = formation.formation_documents.map(doc => {
                 const docTypes = {
+                    'fiche_pedagogique': { icon: '📝', label: 'Fiche pédagogique', color: '#ea580c' },
+                    'google_doc': { icon: '📝', label: 'Fiche pédagogique', color: '#ea580c' },
                     'convention': { icon: '📄', label: 'Convention', color: '#7c3aed' },
                     'attendance_sheet': { icon: '📋', label: 'Feuille de présence', color: '#059669' },
-                    'certificate': { icon: '🏅', label: 'Attestation', color: '#dc2626' },
+                    'certificate': { icon: '🏅', label: 'Certificat / Attestation', color: '#dc2626' },
                     'program': { icon: '📚', label: 'Programme', color: '#0284c7' },
                     'convocation': { icon: '📨', label: 'Convocation', color: '#ea580c' },
-                    'contrat_sous_traitance': { icon: '📝', label: 'Contrat de prestation', color: '#b45309' }
+                    'contrat_sous_traitance': { icon: '📝', label: 'Contrat sous-traitance', color: '#b45309' }
                 };
                 const docType = docTypes[doc.type] || { icon: '📑', label: doc.type || 'Document', color: '#0284c7' };
 
-                // Récupérer l'URL du document en PDF pour l'espace formateur
-                const docUrl = toPdfUrl(doc.document_url || doc.url || doc.google_doc_url || '');
+                const docUrl = doc.document_url || doc.url || '';
+                const isGenerated = docUrl.startsWith('generate://');
+
+                // Pour les documents générés à la volée, extraire formationId et type
+                let onClickAttr = '';
+                if (isGenerated) {
+                    const parts = docUrl.replace('generate://', '').split('/');
+                    const genType = parts[0];
+                    const genId = parts[1];
+                    onClickAttr = `event.preventDefault(); CRMApp.openDocument(${genId}, '${genType}')`;
+                } else if (!docUrl || docUrl === '#') {
+                    onClickAttr = `event.preventDefault(); alert('URL du document non disponible')`;
+                }
 
                 return `
-                    <a href="${docUrl || '#'}" target="_blank" rel="noopener noreferrer"
+                    <a href="${isGenerated ? '#' : (toPdfUrl(docUrl) || '#')}" ${isGenerated ? '' : 'target="_blank" rel="noopener noreferrer"'}
                        style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: var(--gray-50); border-radius: var(--radius-md); text-decoration: none; color: var(--gray-900); margin-bottom: 0.5rem; transition: background 0.2s; cursor: pointer;"
                        onmouseover="this.style.background='var(--gray-100)'" onmouseout="this.style.background='var(--gray-50)'"
-                       onclick="if(!this.href || this.href.endsWith('#')) { event.preventDefault(); alert('URL du document non disponible'); }">
+                       ${onClickAttr ? `onclick="${onClickAttr}"` : ''}>
                         <span style="font-size: 1.5rem;">${docType.icon}</span>
                         <div style="flex: 1;">
                             <div style="font-weight: 500;">${doc.name || docType.label}</div>
@@ -631,10 +638,11 @@ const CRMApp = {
             const docs = formation.formation_documents || [];
 
             // Documents statiques toujours visibles pour le client
+            // TODO: Mettre à jour les URLs avec celles de Supabase Storage après upload des documents
             const staticDocsList = [
-                { name: 'Document préalable à la formation', type: 'doc_prealable', document_url: 'https://docs.google.com/document/d/1aMsZo2m7cycaLYoldhJeQ13is_5hHK2v/edit' },
-                { name: 'Livret d\'accueil NJM Conseil', type: 'livret_accueil', document_url: 'https://drive.google.com/file/d/1p6qJTI0jan7h1JNtUZ_PkD0oTNyfrG-a/view' },
-                { name: 'Fiche de réclamation', type: 'fiche_reclamation', document_url: 'https://drive.google.com/file/d/1HE_wGaYO4xLF4MvHATWMU_vBJXIjTL9c/view' }
+                { name: 'Document préalable à la formation', type: 'doc_prealable', document_url: '' },
+                { name: 'Livret d\'accueil NJM Conseil', type: 'livret_accueil', document_url: '' },
+                { name: 'Fiche de réclamation', type: 'fiche_reclamation', document_url: '' }
             ];
 
             const allDocs = [...docs, ...staticDocsList];
@@ -645,7 +653,9 @@ const CRMApp = {
                 'attendance_sheet': { icon: '📋', label: 'Feuille de présence', color: '#059669' },
                 'certificate': { icon: '🏅', label: 'Attestation', color: '#dc2626' },
                 'program': { icon: '📚', label: 'Programme', color: '#0284c7' },
+                'fiche_pedagogique': { icon: '📝', label: 'Fiche pédagogique', color: '#ea580c' },
                 'google_doc': { icon: '📝', label: 'Fiche pédagogique', color: '#ea580c' },
+                'contrat_sous_traitance': { icon: '📝', label: 'Contrat sous-traitance', color: '#b45309' },
                 'convocation': { icon: '📨', label: 'Convocation', color: '#0891b2' },
                 'livret_accueil': { icon: '📖', label: 'Livret d\'accueil', color: '#7c3aed' },
                 'fiche_reclamation': { icon: '📝', label: 'Fiche de réclamation', color: '#b45309' }
@@ -655,7 +665,7 @@ const CRMApp = {
                 <div style="display: grid; gap: 1rem;">
                     ${allDocs.map(doc => {
                         const docType = docTypes[doc.type] || { icon: '📑', label: doc.type || 'Document', color: '#6b7280' };
-                        const docUrl = toPdfUrl(doc.document_url || doc.url || doc.google_doc_url || '');
+                        const docUrl = toPdfUrl(doc.document_url || doc.url || '');
 
                         return `
                             <a href="${docUrl || '#'}" target="_blank" rel="noopener noreferrer"
@@ -966,31 +976,20 @@ const CRMApp = {
 
             if (error) throw error;
 
-            if (typeof GoogleDocsService !== 'undefined') {
-                const result = await GoogleDocsService.generatePedagogicalSheet(data);
+            if (typeof PdfGenerator !== 'undefined') {
+                const result = await PdfGenerator.generatePedagogicalSheet(data);
 
                 if (result && result.success) {
-                    // Sauvegarder dans Supabase
-                    const docData = {
-                        name: result.name,
-                        type: 'google_doc',
-                        document_url: result.url,
-                        external_id: result.fileId,
-                        uploaded_at: new Date().toISOString()
-                    };
+                    // Sauvegarder le PDF dans Supabase Storage puis lier
+                    const docData = await this._uploadAndSaveDoc(id, result, 'fiche_pedagogique');
 
-                    const saveResult = await SupabaseData.addFormationDocument(id, docData);
-
-                    if (saveResult.success) {
+                    if (docData) {
                         alert('Fiche pédagogique créée et liée à la formation !');
-                        this.loadFormations(); // Recharger pour voir le compteur de documents
-                    } else {
-                        console.error('Erreur sauvegarde doc:', saveResult);
-                        alert('Fiche créée mais erreur lors de la liaison au CRM: ' + saveResult.message);
+                        this.loadFormations();
                     }
                 }
             } else {
-                alert('Le service Google Docs n\'est pas disponible.');
+                alert('Le service de génération PDF n\'est pas disponible.');
             }
         } catch (error) {
             console.error('Erreur lors de la récupération de la formation:', error);
@@ -1008,31 +1007,19 @@ const CRMApp = {
 
             if (error) throw error;
 
-            if (typeof GoogleDocsService !== 'undefined') {
-                const result = await GoogleDocsService.generateConvention(data);
+            if (typeof PdfGenerator !== 'undefined') {
+                const result = await PdfGenerator.generateConvention(data);
 
                 if (result && result.success) {
-                    // Sauvegarder uniquement dans formation_documents
-                    const docData = {
-                        name: result.name,
-                        type: 'convention',
-                        document_url: result.url,
-                        external_id: result.fileId,
-                        uploaded_at: new Date().toISOString()
-                    };
+                    const docData = await this._uploadAndSaveDoc(id, result, 'convention');
 
-                    const saveResult = await SupabaseData.addFormationDocument(id, docData);
-
-                    if (saveResult.success) {
+                    if (docData) {
                         alert('Convention créée et liée à la formation !');
                         this.loadFormations();
-                    } else {
-                        console.error('Erreur sauvegarde doc:', saveResult);
-                        alert('Convention créée mais erreur lors de la liaison au CRM: ' + saveResult.message);
                     }
                 }
             } else {
-                alert('Le service Google Docs n\'est pas disponible.');
+                alert('Le service de génération PDF n\'est pas disponible.');
             }
         } catch (error) {
             console.error('Erreur lors de la récupération de la formation:', error);
@@ -1055,29 +1042,19 @@ const CRMApp = {
                 return;
             }
 
-            if (typeof GoogleDocsService !== 'undefined') {
-                const result = await GoogleDocsService.generateContratSousTraitance(data);
+            if (typeof PdfGenerator !== 'undefined') {
+                const result = await PdfGenerator.generateContratSousTraitance(data);
 
                 if (result && result.success) {
-                    const docData = {
-                        name: result.name,
-                        type: 'contrat_sous_traitance',
-                        document_url: result.url,
-                        external_id: result.fileId,
-                        uploaded_at: new Date().toISOString()
-                    };
+                    const docData = await this._uploadAndSaveDoc(id, result, 'contrat_sous_traitance');
 
-                    const saveResult = await SupabaseData.addFormationDocument(id, docData);
-
-                    if (saveResult.success) {
+                    if (docData) {
                         alert('Contrat de sous-traitance créé et lié à la formation !');
                         this.loadFormations();
-                    } else {
-                        alert('Contrat créé mais erreur lors de la liaison au CRM: ' + saveResult.message);
                     }
                 }
             } else {
-                alert('Le service Google Docs n\'est pas disponible.');
+                alert('Le service de génération PDF n\'est pas disponible.');
             }
         } catch (error) {
             console.error('Erreur lors de la création du contrat de sous-traitance:', error);
@@ -1095,31 +1072,19 @@ const CRMApp = {
 
             if (error) throw error;
 
-            if (typeof GoogleDocsService !== 'undefined') {
-                const result = await GoogleDocsService.generateAttendanceSheet(data);
+            if (typeof PdfGenerator !== 'undefined') {
+                const result = await PdfGenerator.generateAttendanceSheet(data);
 
                 if (result && result.success) {
-                    // Sauvegarder dans formation_documents
-                    const docData = {
-                        name: result.name,
-                        type: 'attendance_sheet',
-                        document_url: result.url,
-                        external_id: result.fileId,
-                        uploaded_at: new Date().toISOString()
-                    };
+                    const docData = await this._uploadAndSaveDoc(id, result, 'attendance_sheet');
 
-                    const saveResult = await SupabaseData.addFormationDocument(id, docData);
-
-                    if (saveResult.success) {
+                    if (docData) {
                         alert('Feuille de présence créée et liée à la formation !');
                         this.loadFormations();
-                    } else {
-                        console.error('Erreur sauvegarde doc:', saveResult);
-                        alert('Feuille de présence créée mais erreur lors de la liaison au CRM: ' + saveResult.message);
                     }
                 }
             } else {
-                alert('Le service Google Docs n\'est pas disponible.');
+                alert('Le service de génération PDF n\'est pas disponible.');
             }
         } catch (error) {
             console.error('Erreur lors de la récupération de la formation:', error);
@@ -1137,31 +1102,19 @@ const CRMApp = {
 
             if (error) throw error;
 
-            if (typeof GoogleDocsService !== 'undefined') {
-                const result = await GoogleDocsService.generateCertificate(data);
+            if (typeof PdfGenerator !== 'undefined') {
+                const result = await PdfGenerator.generateCertificate(data);
 
                 if (result && result.success) {
-                    // Sauvegarder dans formation_documents
-                    const docData = {
-                        name: result.name,
-                        type: 'certificate',
-                        document_url: result.url,
-                        external_id: result.fileId,
-                        uploaded_at: new Date().toISOString()
-                    };
+                    const docData = await this._uploadAndSaveDoc(id, result, 'certificate');
 
-                    const saveResult = await SupabaseData.addFormationDocument(id, docData);
-
-                    if (saveResult.success) {
+                    if (docData) {
                         alert('Certificat créé et lié à la formation !');
                         this.loadFormations();
-                    } else {
-                        console.error('Erreur sauvegarde doc:', saveResult);
-                        alert('Certificat créé mais erreur lors de la liaison au CRM: ' + saveResult.message);
                     }
                 }
             } else {
-                alert('Le service Google Docs n\'est pas disponible.');
+                alert('Le service de génération PDF n\'est pas disponible.');
             }
         } catch (error) {
             console.error('Erreur lors de la récupération de la formation:', error);
@@ -1169,7 +1122,80 @@ const CRMApp = {
         }
     },
 
-    async deleteDocument(docId, formationName, docType = 'google_doc') {
+    /**
+     * Sauvegarde la référence du document généré dans la BDD
+     * Le PDF est régénéré à la volée quand l'utilisateur clique dessus
+     */
+    async _uploadAndSaveDoc(formationId, result, docType) {
+        try {
+            const docData = {
+                name: result.name,
+                type: docType,
+                document_url: `generate://${docType}/${formationId}`,
+                uploaded_at: new Date().toISOString()
+            };
+
+            const saveResult = await SupabaseData.addFormationDocument(formationId, docData);
+
+            if (!saveResult.success) {
+                console.error('Erreur sauvegarde doc:', saveResult);
+                alert('Document créé mais erreur lors de la liaison au CRM: ' + saveResult.message);
+                return null;
+            }
+
+            return docData;
+        } catch (error) {
+            console.error('Erreur sauvegarde document:', error);
+            alert('Erreur lors de la sauvegarde du document: ' + error.message);
+            return null;
+        }
+    },
+
+    /**
+     * Ouvre un document en le régénérant à la volée depuis les données formation
+     */
+    async openDocument(formationId, docType) {
+        try {
+            const { data, error } = await supabaseClient
+                .from('formations')
+                .select('*')
+                .eq('id', formationId)
+                .single();
+
+            if (error) throw error;
+
+            let result;
+            switch (docType) {
+                case 'fiche_pedagogique':
+                case 'google_doc':
+                    result = await PdfGenerator.generatePedagogicalSheet(data);
+                    break;
+                case 'convention':
+                    result = await PdfGenerator.generateConvention(data);
+                    break;
+                case 'contrat_sous_traitance':
+                    result = await PdfGenerator.generateContratSousTraitance(data);
+                    break;
+                case 'attendance_sheet':
+                    result = await PdfGenerator.generateAttendanceSheet(data);
+                    break;
+                case 'certificate':
+                    result = await PdfGenerator.generateCertificate(data);
+                    break;
+                default:
+                    alert('Type de document inconnu: ' + docType);
+                    return null;
+            }
+
+            return result;
+        } catch (error) {
+            console.error('Erreur régénération document:', error);
+            alert('Erreur lors de l\'ouverture du document: ' + error.message);
+            return null;
+        }
+    },
+
+    async deleteDocument(docId, formationName, docType = 'pdf') {
         let docTypeName;
         switch (docType) {
             case 'convention': docTypeName = 'cette convention'; break;
@@ -1872,7 +1898,7 @@ Nathalie JOULIÉ MORAND`;
                     </div>
                     <div>
                         <label style="display:block;font-weight:600;margin-bottom:0.5rem;color:var(--gray-700);">Lien Google Drive</label>
-                        <input type="url" id="support-url" placeholder="https://docs.google.com/..." style="width:100%;padding:0.75rem;border:1px solid var(--gray-300);border-radius:var(--radius-md);font-size:0.95rem;box-sizing:border-box;">
+                        <input type="url" id="support-url" placeholder="https://..." style="width:100%;padding:0.75rem;border:1px solid var(--gray-300);border-radius:var(--radius-md);font-size:0.95rem;box-sizing:border-box;">
                     </div>
                 </div>
                 <div style="display:flex;gap:1rem;margin-top:1.5rem;justify-content:flex-end;">
@@ -2491,7 +2517,7 @@ const UserManagement = {
 
         const password = user.initial_password || '[mot de passe modifié - veuillez le réinitialiser]';
         const siteUrl = window.location.origin;
-        const docPrealableUrl = 'https://docs.google.com/document/d/1aMsZo2m7cycaLYoldhJeQ13is_5hHK2v/edit';
+        const docPrealableUrl = ''; // TODO: Mettre à jour avec l'URL Supabase Storage
 
         const subject = 'Vos accès à votre espace formation';
         const body = `Bonjour,
@@ -3019,17 +3045,16 @@ const ConvocationEmail = {
     currentFormation: null,
     originalBodyTemplate: '',
 
-    // URLs des documents statiques
+    // URLs des documents statiques (à stocker dans Supabase Storage)
+    // Uploadez les PDF dans le bucket 'documents/static/' et mettez à jour les URLs ci-dessous
     STATIC_DOCUMENTS: {
         livret_accueil: {
             name: 'Livret d\'accueil NJM Conseil',
-            googleDriveId: '1p6qJTI0jan7h1JNtUZ_PkD0oTNyfrG-a',
-            pdfUrl: 'https://drive.google.com/file/d/1p6qJTI0jan7h1JNtUZ_PkD0oTNyfrG-a/view'
+            pdfUrl: '' // TODO: Uploader dans Supabase Storage et renseigner l'URL publique
         },
         fiche_reclamation: {
             name: 'Fiche de réclamation',
-            googleDriveId: '1HE_wGaYO4xLF4MvHATWMU_vBJXIjTL9c',
-            pdfUrl: 'https://drive.google.com/file/d/1HE_wGaYO4xLF4MvHATWMU_vBJXIjTL9c/view'
+            pdfUrl: '' // TODO: Uploader dans Supabase Storage et renseigner l'URL publique
         }
     },
 
@@ -3144,7 +3169,7 @@ Nathalie JOULIÉ MORAND`;
 
         // Liste des pièces jointes requises
         const requiredAttachments = [
-            { name: 'Fiche pédagogique', type: 'google_doc', icon: '📄', color: '#0284c7' },
+            { name: 'Fiche pédagogique', type: 'fiche_pedagogique', icon: '📄', color: '#0284c7' },
             { name: 'Convention', type: 'convention', icon: '📋', color: '#7c3aed' },
             { name: 'Livret d\'accueil', type: 'livret_accueil', icon: '📖', color: '#059669', static: true },
             { name: 'Fiche de réclamation', type: 'fiche_reclamation', icon: '📝', color: '#dc2626', static: true }
@@ -3161,7 +3186,7 @@ Nathalie JOULIÉ MORAND`;
             let pdfUrl = null;
 
             if (attachment.static) {
-                // Documents statiques
+                // Documents statiques (stockés dans Supabase Storage)
                 const staticDoc = this.STATIC_DOCUMENTS[attachment.type];
                 if (staticDoc) {
                     pdfUrl = staticDoc.pdfUrl;
@@ -3169,23 +3194,14 @@ Nathalie JOULIÉ MORAND`;
             } else {
                 // Documents de la formation
                 doc = formationDocs.find(d => {
-                    if (attachment.type === 'google_doc') {
-                        return d.type === 'google_doc' && d.name && d.name.toLowerCase().includes('pédagogique');
+                    if (attachment.type === 'fiche_pedagogique') {
+                        return d.type === 'fiche_pedagogique' && d.name && d.name.toLowerCase().includes('pédagogique');
                     }
                     return d.type === attachment.type;
                 });
 
                 if (doc) {
-                    // Générer l'URL PDF à partir de l'ID Google Doc
-                    if (doc.external_id) {
-                        pdfUrl = `https://docs.google.com/document/d/${doc.external_id}/export?format=pdf`;
-                    } else if (doc.document_url && doc.document_url.includes('/d/')) {
-                        // Extraire l'ID du document depuis l'URL
-                        const match = doc.document_url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-                        if (match) {
-                            pdfUrl = `https://docs.google.com/document/d/${match[1]}/export?format=pdf`;
-                        }
-                    }
+                    pdfUrl = doc.document_url || '';
                 }
             }
 
@@ -3236,7 +3252,7 @@ Nathalie JOULIÉ MORAND`;
         let body = bodyTextarea.value;
 
         // Remplacer le placeholder ou l'ancien lien du questionnaire (Google Forms)
-        const questionnaireRegex = /\[Lien du questionnaire[^\]]*\]|https:\/\/docs\.google\.com\/forms\/d\/[^\s\n]*/g;
+        const questionnaireRegex = /\[Lien du questionnaire[^\]]*\]|https:\/\/[^\s\n]*/g;
 
         if (selectedUrl) {
             body = body.replace(questionnaireRegex, selectedUrl);
@@ -3295,11 +3311,11 @@ Nathalie JOULIÉ MORAND`;
         sendButton.innerHTML = '⏳ Envoi en cours...';
 
         try {
-            // Plus de pièces jointes - les documents sont sur l'espace client
-            const attachments = [];
+            // Préparer les pièces jointes (fiche péda + convention régénérées à la volée)
+            const attachments = await this.prepareAttachments();
 
-            // Envoyer via Gmail API avec pièces jointes
-            const result = await GoogleDocsService.sendEmail(
+            // Envoyer via Resend (Edge Function)
+            const result = await EmailService.sendEmail(
                 toInput.value,
                 subjectInput.value,
                 bodyTextarea.value,
@@ -3313,13 +3329,13 @@ Nathalie JOULIÉ MORAND`;
                     subject: subjectInput.value,
                     questionnaire_url: questionnaireSelect.value || null,
                     attachments: attachments.map(a => ({ name: a.name, mimeType: a.mimeType })),
-                    gmail_message_id: result.messageId,
-                    sent_by: gapi.client.getToken()?.access_token ? 'gmail_api' : 'unknown'
+                    email_message_id: result.messageId,
+                    sent_by: 'resend'
                 };
 
                 await SupabaseData.logConvocationSent(this.currentFormation.id, logData);
 
-                alert('✅ Email envoyé avec succès !\n\nLe mail a été envoyé depuis votre compte Gmail avec ' + attachments.length + ' pièce(s) jointe(s).');
+                alert('✅ Email envoyé avec succès !');
                 this.closeModal();
 
                 // Recharger les formations pour mettre à jour l'icône
@@ -3327,7 +3343,7 @@ Nathalie JOULIÉ MORAND`;
             } else {
                 // En cas d'erreur, proposer l'alternative mailto
                 const useMailto = confirm(
-                    `❌ Erreur lors de l'envoi via Gmail:\n${result.error}\n\nVoulez-vous ouvrir votre client mail par défaut à la place ?`
+                    `❌ Erreur lors de l'envoi:\n${result.error}\n\nVoulez-vous ouvrir votre client mail par défaut à la place ?`
                 );
                 if (useMailto) {
                     const mailtoLink = `mailto:${encodeURIComponent(toInput.value)}?subject=${encodeURIComponent(subjectInput.value)}&body=${encodeURIComponent(bodyTextarea.value)}`;
@@ -3359,52 +3375,41 @@ Nathalie JOULIÉ MORAND`;
         const formation = this.currentFormation;
         const formationDocs = formation.formation_documents || [];
 
-        // 1. Documents dynamiques (Fiche pédagogique et Convention)
-        const docsToAttach = [
-            { type: 'google_doc', name: 'Fiche pédagogique', searchName: 'pédagogique' },
-            { type: 'convention', name: 'Convention', searchName: null }
+        // 1. Documents dynamiques - régénérés à la volée
+        const docsToGenerate = [
+            { type: 'fiche_pedagogique', name: 'Fiche pédagogique', generator: 'generatePedagogicalSheet' },
+            { type: 'convention', name: 'Convention', generator: 'generateConvention' }
         ];
 
-        for (const docConfig of docsToAttach) {
-            let doc = formationDocs.find(d => {
-                if (docConfig.searchName) {
-                    return d.type === docConfig.type && d.name && d.name.toLowerCase().includes(docConfig.searchName);
-                }
-                return d.type === docConfig.type;
-            });
-
-            if (doc) {
-                let docId = doc.external_id;
-                if (!docId && doc.document_url && doc.document_url.includes('/d/')) {
-                    const match = doc.document_url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-                    if (match) docId = match[1];
-                }
-
-                if (docId) {
-                    try {
-                        console.log(`⏳ Téléchargement du document dynamique: ${docConfig.name}...`);
-                        const pdfData = await this.downloadPdfFromGoogleDoc(docId, true); // true = export car c'est un Google Doc
-                        if (pdfData) {
-                            attachments.push({
-                                name: `${docConfig.name} - ${formation.formation_name || 'Formation'}.pdf`,
-                                mimeType: 'application/pdf',
-                                data: pdfData
-                            });
-                        }
-                    } catch (error) {
-                        console.warn(`Impossible de télécharger ${docConfig.name}:`, error);
+        for (const docConfig of docsToGenerate) {
+            // Vérifier que le document a été créé pour cette formation
+            const exists = formationDocs.find(d => d.type === docConfig.type || (docConfig.type === 'fiche_pedagogique' && d.type === 'google_doc'));
+            if (exists && typeof PdfGenerator !== 'undefined' && PdfGenerator[docConfig.generator]) {
+                try {
+                    console.log(`⏳ Génération du PDF: ${docConfig.name}...`);
+                    const result = await PdfGenerator[docConfig.generator](formation);
+                    if (result && result.success && result.blob) {
+                        const base64 = await PdfGenerator.blobToBase64(result.blob);
+                        attachments.push({
+                            name: `${docConfig.name} - ${formation.formation_name || 'Formation'}.pdf`,
+                            mimeType: 'application/pdf',
+                            data: base64
+                        });
+                        console.log(`✅ ${docConfig.name} ajouté en pièce jointe.`);
                     }
+                } catch (error) {
+                    console.warn(`Impossible de générer ${docConfig.name}:`, error);
                 }
             }
         }
 
-        // 2. Documents statiques (Livret d'accueil and Fiche de réclamation)
+        // 2. Documents statiques (Livret d'accueil et Fiche de réclamation)
         for (const key in this.STATIC_DOCUMENTS) {
             const staticDoc = this.STATIC_DOCUMENTS[key];
-            if (staticDoc.googleDriveId) {
+            if (staticDoc.pdfUrl) {
                 try {
                     console.log(`⏳ Téléchargement du document statique: ${staticDoc.name}...`);
-                    const pdfData = await this.downloadPdfFromGoogleDoc(staticDoc.googleDriveId, false); // false = direct car c'est déjà un PDF
+                    const pdfData = await this.downloadPdfFromUrl(staticDoc.pdfUrl);
                     if (pdfData) {
                         attachments.push({
                             name: `${staticDoc.name}.pdf`,
@@ -3423,40 +3428,21 @@ Nathalie JOULIÉ MORAND`;
     },
 
     /**
-     * Télécharge un Google Doc en format PDF et retourne le contenu en base64
+     * Télécharge un PDF depuis une URL et retourne le contenu en base64
      */
-    async downloadPdfFromGoogleDoc(docId, isGoogleDoc = true) {
+    async downloadPdfFromUrl(url) {
         try {
-            // S'assurer que l'utilisateur est authentifié
-            await GoogleDocsService.authenticate();
-
-            const accessToken = gapi.client.getToken().access_token;
-
-            // Si c'est un Google Doc, on utilise /export
-            // Si c'est déjà un PDF (statique), on utilise ?alt=media
-            const url = isGoogleDoc
-                ? `https://www.googleapis.com/drive/v3/files/${docId}/export?mimeType=application/pdf`
-                : `https://www.googleapis.com/drive/v3/files/${docId}?alt=media`;
-
-            // Télécharger le contenu
-            const response = await fetch(url, {
-                headers: {
-                    'Authorization': `Bearer ${accessToken}`
-                }
-            });
+            const response = await fetch(url);
 
             if (!response.ok) {
                 throw new Error(`Erreur HTTP ${response.status}: ${response.statusText}`);
             }
 
-            // Convertir la réponse en blob
             const blob = await response.blob();
 
-            // Convertir le blob en base64
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
                 reader.onloadend = () => {
-                    // Extraire uniquement la partie base64
                     const base64 = reader.result.split(',')[1];
                     resolve(base64);
                 };
@@ -3464,7 +3450,7 @@ Nathalie JOULIÉ MORAND`;
                 reader.readAsDataURL(blob);
             });
         } catch (error) {
-            console.error('Erreur téléchargement fichier Drive:', error);
+            console.error('Erreur téléchargement PDF:', error);
             return null;
         }
     }
@@ -3524,8 +3510,7 @@ const GenericEmail = {
         sendBtn.innerHTML = '⏳ Envoi en cours...';
 
         try {
-            await GoogleDocsService.authenticate();
-            const result = await GoogleDocsService.sendEmail(to, subject, body);
+            const result = await EmailService.sendEmail(to, subject, body);
 
             if (result.success) {
                 alert('Email envoyé avec succès !');

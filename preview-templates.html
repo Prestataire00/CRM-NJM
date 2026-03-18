@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preview Templates PDF - NJM Conseil</title>
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=inter:300,400,500,600,700" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f3f4f6;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        h1 {
+            text-align: center;
+            color: #7b3f9e;
+            margin-bottom: 0.5rem;
+            font-size: 1.75rem;
+        }
+        .subtitle {
+            text-align: center;
+            color: #6b7280;
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.75rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border: 1px solid #e5e7eb;
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(123,63,158,0.15);
+            border-color: #7b3f9e;
+        }
+        .card-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        .card h2 {
+            font-size: 1.1rem;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+        .card p {
+            color: #6b7280;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            margin-bottom: 1.25rem;
+        }
+        .card button {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: linear-gradient(135deg, #e91e8c 0%, #7b3f9e 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+        .card button:hover { opacity: 0.9; }
+        .all-btn {
+            display: block;
+            max-width: 400px;
+            margin: 2rem auto 0;
+            padding: 1rem;
+            background: linear-gradient(135deg, #7b3f9e 0%, #e36a3a 50%, #b8c944 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            transition: opacity 0.2s;
+        }
+        .all-btn:hover { opacity: 0.9; }
+    </style>
+</head>
+<body>
+
+<h1>Preview des Templates PDF</h1>
+<p class="subtitle">Cliquez sur un template pour le générer avec des données fictives</p>
+
+<div class="grid">
+    <div class="card" onclick="previewFichePedagogique()">
+        <div class="card-icon">📋</div>
+        <h2>Fiche Pédagogique</h2>
+        <p>Titre, public visé, prérequis, objectifs, programme, méthodes, évaluation, formateur</p>
+        <button>Générer le PDF</button>
+    </div>
+
+    <div class="card" onclick="previewConvention()">
+        <div class="card-icon">📄</div>
+        <h2>Convention de Formation</h2>
+        <p>Parties, raison sociale, adresse, dirigeant, formation, dates, lieu, montant, signatures</p>
+        <button>Générer le PDF</button>
+    </div>
+
+    <div class="card" onclick="previewContratSousTraitance()">
+        <div class="card-icon">📝</div>
+        <h2>Contrat de Sous-traitance</h2>
+        <p>Donneur d'ordre, sous-traitant, client, dates, heures, obligations</p>
+        <button>Générer le PDF</button>
+    </div>
+
+    <div class="card" onclick="previewFeuillePresence()">
+        <div class="card-icon">✅</div>
+        <h2>Feuille de Présence</h2>
+        <p>1 page par jour, tableau des apprenants, heures, signatures matin/après-midi</p>
+        <button>Générer le PDF</button>
+    </div>
+
+    <div class="card" onclick="previewCertificat()">
+        <div class="card-icon">🏅</div>
+        <h2>Certificat & Attestation</h2>
+        <p>2 pages par apprenant : certificat de réalisation + attestation de fin de formation</p>
+        <button>Générer le PDF</button>
+    </div>
+</div>
+
+<button class="all-btn" onclick="previewAll()">Générer les 5 templates d'un coup</button>
+
+<script src="pdf-generator.js"></script>
+<script>
+    // Données fictives réalistes pour la preview
+    const sampleFormation = {
+        id: 42,
+        formation_name: 'Techniques de vente et négociation commerciale',
+        target_audience: 'Commerciaux et responsables de vente souhaitant perfectionner leurs techniques de closing',
+        prerequisites: 'Aucun prérequis spécifique. Une première expérience commerciale est un plus.',
+        hours_per_learner: 14,
+        number_of_days: 2,
+        objectives: '- Maîtriser les étapes clés de l\'entretien de vente\n- Développer une argumentation percutante\n- Gérer les objections avec assurance\n- Conclure efficacement une négociation',
+        module_1: 'Module 1 : Les fondamentaux de la vente (3h)\n- Comprendre les motivations d\'achat\n- Préparer son entretien commercial\n- Techniques d\'accroche et de questionnement\n\nModule 2 : Argumentation et traitement des objections (4h)\n- Construire un argumentaire structuré\n- Identifier et traiter les objections courantes\n- Techniques de reformulation\n\nModule 3 : Négociation et closing (4h)\n- Les signaux d\'achat\n- Techniques de closing\n- Fidélisation client\n\nModule 4 : Mises en situation (3h)\n- Jeux de rôle\n- Analyse et feedback',
+        methods_tools: 'Apports théoriques, mises en situation, jeux de rôle, études de cas concrets, support de cours remis à chaque participant, vidéoprojecteur',
+        evaluation_methodology: 'Évaluation continue par mises en situation et QCM en fin de formation',
+        added_value: 'Formation animée par une professionnelle de terrain avec 15 ans d\'expérience en développement commercial. Approche 100% orientée pratique.',
+        access_delays: 'Inscription possible jusqu\'à 15 jours avant le début de la formation. Délai d\'accès moyen : 1 mois.',
+
+        // Client
+        company_name: 'SARL Martin & Associés',
+        client_name: 'SARL Martin & Associés',
+        company_address: '12 rue de la République',
+        company_postal_code: '07200 Aubenas',
+        company_director_name: 'Jean-Pierre Martin',
+        company_director_title: 'dirigeant',
+        client_email: 'jpmartin@martinassocies.fr',
+
+        // Dates & lieu
+        start_date: '2026-04-15',
+        end_date: '2026-04-16',
+        training_location: 'Dans les locaux de l\'entreprise - 12 rue de la République, 07200 Aubenas',
+
+        // Financier
+        total_amount: 2800,
+
+        // Sous-traitant
+        subcontractor_first_name: 'Quentin',
+        subcontractor_last_name: 'Durand',
+
+        // Apprenants
+        learners_data: [
+            { first_name: 'Sophie', last_name: 'Dupont', hours: 14 },
+            { first_name: 'Marc', last_name: 'Lefebvre', hours: 14 },
+            { first_name: 'Julie', last_name: 'Bernard', hours: 14 }
+        ],
+
+        // Feuilles de présence (2 jours)
+        attendance_sheets: [
+            {
+                day: 1,
+                date: '2026-04-15',
+                learners_hours: [
+                    { learner_name: 'Sophie Dupont', hours: 7 },
+                    { learner_name: 'Marc Lefebvre', hours: 7 },
+                    { learner_name: 'Julie Bernard', hours: 7 }
+                ]
+            },
+            {
+                day: 2,
+                date: '2026-04-16',
+                learners_hours: [
+                    { learner_name: 'Sophie Dupont', hours: 7 },
+                    { learner_name: 'Marc Lefebvre', hours: 7 },
+                    { learner_name: 'Julie Bernard', hours: 7 }
+                ]
+            }
+        ]
+    };
+
+    function previewFichePedagogique() {
+        PdfGenerator.generatePedagogicalSheet(sampleFormation);
+    }
+
+    function previewConvention() {
+        PdfGenerator.generateConvention(sampleFormation);
+    }
+
+    function previewContratSousTraitance() {
+        PdfGenerator.generateContratSousTraitance(sampleFormation);
+    }
+
+    function previewFeuillePresence() {
+        PdfGenerator.generateAttendanceSheet(sampleFormation);
+    }
+
+    function previewCertificat() {
+        PdfGenerator.generateCertificate(sampleFormation);
+    }
+
+    async function previewAll() {
+        await previewFichePedagogique();
+        setTimeout(() => previewConvention(), 300);
+        setTimeout(() => previewContratSousTraitance(), 600);
+        setTimeout(() => previewFeuillePresence(), 900);
+        setTimeout(() => previewCertificat(), 1200);
+    }
+</script>
+</body>
+</html>

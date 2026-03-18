@@ -235,7 +235,7 @@ const SupabaseData = {
                     subject: logData.subject,
                     questionnaire_url: logData.questionnaire_url,
                     attachments: logData.attachments || [],
-                    gmail_message_id: logData.gmail_message_id,
+                    gmail_message_id: logData.email_message_id || logData.gmail_message_id,
                     sent_by: logData.sent_by
                 }])
                 .select()

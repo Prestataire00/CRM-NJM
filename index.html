@@ -5,9 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CRM NJM Conseil - Authentification</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=inter:300,400,500,600,700" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -713,9 +712,8 @@
             display: none !important;
         }
     </style>
-    <!-- Google API & Identity Services -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script src="https://apis.google.com/js/api.js" async defer></script>
+    <!-- jsPDF pour la génération de documents PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 
 <body>
@@ -2686,23 +2684,24 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <!-- Supabase Configuration -->
-    <script src="src/config/supabase-config.js"></script>
+    <script src="supabase-config.js"></script>
 
     <!-- Supabase Authentication System (Version 2 - Simplifiée) -->
-    <script src="src/auth/supabase-auth-v2.js"></script>
+    <script src="supabase-auth-v2.js"></script>
 
     <!-- Supabase Data Management -->
-    <script src="src/data/supabase-data.js"></script>
+    <script src="supabase-data.js"></script>
 
     <!-- Services -->
-    <script src="src/utils/google-docs-service.js"></script>
+    <script src="pdf-generator.js"></script>
+    <script src="email-service.js"></script>
 
     <!-- CRM App Logic with Supabase (remplace l'ancien code localStorage) -->
-    <script src="src/app/index-supabase.js"></script>
+    <script src="index-supabase.js"></script>
 
     <!-- Formation Form Component (Formulaire complet avec onglets) -->
-    <link rel="stylesheet" href="assets/css/formation-form.css">
-    <script src="src/components/formation-form.js"></script>
+    <link rel="stylesheet" href="formation-form.css">
+    <script src="formation-form.js"></script>
 
     <!--
     ⚠️ ANCIENS SCRIPTS DÉSACTIVÉS - Utilisation de Supabase maintenant
