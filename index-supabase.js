@@ -3067,12 +3067,18 @@ Nathalie Joulie-Morand`;
                         <strong>Questionnaires a froid a envoyer (6 mois) :</strong>
                         <ul style="margin-top: 0.5rem; margin-left: 1rem; list-style: none;">
                             ${alertes.map(a => `
-                                <li style="margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: space-between;">
-                                    <span>${a.formation_name} - ${a.company_name} (terminée le ${a.end_date})</span>
-                                    <button onclick="CRMApp.envoyerQuestionnaireFroid(${a.id})"
-                                        style="padding: 0.25rem 0.75rem; background: #f59e0b; color: white; border: none; border-radius: var(--radius-md); cursor: pointer; font-size: 0.8rem;">
-                                        Envoyer
-                                    </button>
+                                <li style="margin-bottom: 0.75rem; padding: 0.75rem; background: white; border-radius: var(--radius-md); border: 1px solid #fcd34d;">
+                                    <div style="font-weight: 500; margin-bottom: 0.5rem;">${a.formation_name} - ${a.company_name} <span style="color: var(--gray-400); font-weight: 400;">(terminée le ${a.end_date})</span></div>
+                                    <div style="display: flex; gap: 0.5rem;">
+                                        <button onclick="CRMApp.envoyerQuestionnaireFroidDirigeant(${a.id})"
+                                            style="padding: 0.3rem 0.75rem; background: #7c3aed; color: white; border: none; border-radius: var(--radius-md); cursor: pointer; font-size: 0.8rem;">
+                                            📧 Questionnaire dirigeant
+                                        </button>
+                                        <button onclick="CRMApp.envoyerQuestionnaireFroidApprenants(${a.id})"
+                                            style="padding: 0.3rem 0.75rem; background: #0284c7; color: white; border: none; border-radius: var(--radius-md); cursor: pointer; font-size: 0.8rem;">
+                                            📧 Questionnaire apprenants
+                                        </button>
+                                    </div>
                                 </li>
                             `).join('')}
                         </ul>
@@ -3084,7 +3090,18 @@ Nathalie Joulie-Morand`;
         }
     },
 
-    async envoyerQuestionnaireFroid(formationId) {
+    /**
+     * Ajoute le nom de l'entreprise en paramètre pré-rempli dans une URL Google Forms
+     */
+    personalizeFormUrl(url, companyName) {
+        if (!url || !companyName) return url;
+        // Ajouter le nom d'entreprise comme paramètre pré-rempli
+        // Le séparateur dépend de si l'URL a déjà des paramètres
+        const separator = url.includes('?') ? '&' : '?';
+        return url + separator + 'usp=pp_url&entry.company=' + encodeURIComponent(companyName);
+    },
+
+    async envoyerQuestionnaireFroidDirigeant(formationId) {
         try {
             const { data: formation, error } = await supabaseClient
                 .from('formations')
@@ -3098,46 +3115,102 @@ Nathalie Joulie-Morand`;
             if (!clientEmail) { showToast('Email client non renseigné', 'warning'); return; }
 
             const directorName = formation.company_director_name || '';
-            const subject = `Questionnaire a froid - Formation "${formation.formation_name || ''}"`;
+            const companyName = formation.company_name || formation.client_name || '';
+            const subject = `Questionnaire à froid (dirigeant) - Formation "${formation.formation_name || ''}" - ${companyName}`;
             const body = `Bonjour${directorName ? ' ' + directorName : ''},
 
-J'espere que vous allez bien.
+J'espère que vous allez bien.
 
-Il y a maintenant 6 mois que la formation "${formation.formation_name || ''}" s'est terminee. Dans le cadre de la demarche qualite Qualiopi, je souhaiterais recueillir votre retour sur l'impact de cette formation dans votre activite quotidienne.
+Il y a maintenant 6 mois que la formation "${formation.formation_name || ''}" s'est terminée. Dans le cadre de la démarche qualité Qualiopi, je souhaiterais recueillir votre retour sur l'impact de cette formation.
 
-Pourriez-vous prendre quelques minutes pour completer le questionnaire ci-dessous ?
+Pourriez-vous prendre quelques minutes pour compléter ce questionnaire réservé au dirigeant ?
 
 Questionnaire dirigeant :
 [Lien du questionnaire dirigeant]
 
-Pourriez-vous egalement transmettre ce questionnaire a chaque apprenant ayant participe a la formation ?
+Ce retour est précieux pour améliorer continuellement la qualité de mes formations.
+
+En vous remerciant par avance.
+
+Nathalie Joulié-Morand`;
+
+            GenericEmail.show({
+                title: '📧 Questionnaire à froid — Dirigeant',
+                to: clientEmail,
+                subject,
+                body,
+                showQuestionnaires: true
+            });
+        } catch (error) {
+            console.error('Erreur envoi questionnaire dirigeant:', error);
+            showToast('Erreur: ' + error.message, 'error');
+        }
+    },
+
+    async envoyerQuestionnaireFroidApprenants(formationId) {
+        try {
+            const { data: formation, error } = await supabaseClient
+                .from('formations')
+                .select('*')
+                .eq('id', formationId)
+                .single();
+
+            if (error) throw error;
+
+            const clientEmail = formation.client_email;
+            if (!clientEmail) { showToast('Email client non renseigné', 'warning'); return; }
+
+            const directorName = formation.company_director_name || '';
+            const companyName = formation.company_name || formation.client_name || '';
+
+            // Récupérer les noms des apprenants
+            let learnersNames = '';
+            if (formation.learners_data) {
+                const ld = typeof formation.learners_data === 'string' ? JSON.parse(formation.learners_data) : formation.learners_data;
+                learnersNames = ld.map(l => `${l.first_name || ''} ${l.last_name || ''}`.trim()).filter(n => n).join(', ');
+            }
+
+            const subject = `Questionnaire à froid (apprenants) - Formation "${formation.formation_name || ''}" - ${companyName}`;
+            const body = `Bonjour${directorName ? ' ' + directorName : ''},
+
+J'espère que vous allez bien.
+
+Il y a maintenant 6 mois que la formation "${formation.formation_name || ''}" s'est terminée. Dans le cadre de la démarche qualité Qualiopi, je souhaiterais recueillir le retour de chaque apprenant sur l'impact de cette formation dans leur activité quotidienne.
+
+Pourriez-vous transmettre ce questionnaire à chaque apprenant ayant participé à la formation ?
+${learnersNames ? 'Apprenants concernés : ' + learnersNames : ''}
 
 Questionnaire apprenant :
 [Lien du questionnaire apprenant]
 
-Ce retour est precieux pour ameliorer continuellement la qualite de mes formations.
+Ce retour est précieux pour améliorer continuellement la qualité de mes formations.
 
 En vous remerciant par avance.
 
-Nathalie Joulie-Morand`;
+Nathalie Joulié-Morand`;
 
             GenericEmail.show({
-                title: 'Questionnaire à froid (6 mois)',
+                title: '📧 Questionnaire à froid — Apprenants',
                 to: clientEmail,
                 subject,
                 body,
                 showQuestionnaires: true
             });
 
+            // Marquer comme envoyé
             await supabaseClient
                 .from('formations')
                 .update({ questionnaire_froid_sent: true })
                 .eq('id', formationId);
-
         } catch (error) {
-            console.error('Erreur envoi questionnaire a froid:', error);
-            showToast('Erreur préparation du mail', 'error');
+            console.error('Erreur envoi questionnaire apprenants:', error);
+            showToast('Erreur: ' + error.message, 'error');
         }
+    },
+
+    // Garder l'ancienne méthode pour compatibilité (boutons existants)
+    async envoyerQuestionnaireFroid(formationId) {
+        this.envoyerQuestionnaireFroidDirigeant(formationId);
     },
 
     async checkExpiringDocuments() {
@@ -4800,15 +4873,27 @@ const GenericEmail = {
         const select = document.getElementById(selectId);
         if (!select) return;
 
-        const url = select.value;
+        let url = select.value;
+
+        // Personnaliser l'URL avec le nom de l'entreprise (pré-remplissage Google Forms)
+        // Extraire le nom de l'entreprise depuis le sujet ou le corps du mail
+        const subjectInput = document.getElementById('generic-email-subject');
+        if (url && subjectInput) {
+            // Essayer d'extraire le nom de l'entreprise depuis le sujet
+            const subjectMatch = subjectInput.value.match(/- (.+?)$/);
+            if (subjectMatch && subjectMatch[1]) {
+                const companyName = subjectMatch[1].trim();
+                const separator = url.includes('?') ? '&' : '?';
+                url = url + separator + 'usp=pp_url&entry.company=' + encodeURIComponent(companyName);
+            }
+        }
+
         let text = body.value;
 
         if (type === 'eval') {
-            // Remplacer le placeholder évaluation
             text = text.replace(/Questionnaire d'évaluation des acquis :\s*\n?\[?[^\]\n]*\]?/,
                 `Questionnaire d'évaluation des acquis :\n${url || '[Sélectionnez un questionnaire ci-dessus]'}`);
         } else {
-            // Remplacer le placeholder satisfaction
             text = text.replace(/Questionnaire de satisfaction :\s*\n?\[?[^\]\n]*\]?/,
                 `Questionnaire de satisfaction :\n${url || '[Sélectionnez un questionnaire ci-dessus]'}`);
         }
