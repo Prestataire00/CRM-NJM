@@ -1809,6 +1809,7 @@ Nathalie Joulie-Morand`;
     },
 
     async relanceConvention(formationId) {
+        console.log('relanceConvention called with', formationId);
         try {
             const { data: formation, error } = await supabaseClient
                 .from('formations')
