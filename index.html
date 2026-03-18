@@ -2387,6 +2387,10 @@
                                 style="padding: 1rem 1.5rem; background: none; border: none; cursor: pointer; font-weight: 500; color: var(--gray-500); border-bottom: 2px solid transparent; white-space: nowrap;">
                                 Documents
                             </button>
+                            <button class="client-tab-btn" data-tab="supports" onclick="CRMApp.switchClientFormationTab('supports')"
+                                style="padding: 1rem 1.5rem; background: none; border: none; cursor: pointer; font-weight: 500; color: var(--gray-500); border-bottom: 2px solid transparent; white-space: nowrap;">
+                                Supports pédagogiques
+                            </button>
                             <button class="client-tab-btn" data-tab="questionnaires" onclick="CRMApp.switchClientFormationTab('questionnaires')"
                                 style="padding: 1rem 1.5rem; background: none; border: none; cursor: pointer; font-weight: 500; color: var(--gray-500); border-bottom: 2px solid transparent; white-space: nowrap;">
                                 Questionnaires
@@ -2413,6 +2417,13 @@
                             <div id="client-tab-documents" class="client-tab-content" style="display: none;">
                                 <div id="client-formation-documents">
                                     <!-- Documents chargés dynamiquement -->
+                                </div>
+                            </div>
+
+                            <!-- Onglet Supports pédagogiques -->
+                            <div id="client-tab-supports" class="client-tab-content" style="display: none;">
+                                <div id="client-formation-supports">
+                                    <!-- Supports chargés dynamiquement -->
                                 </div>
                             </div>
 

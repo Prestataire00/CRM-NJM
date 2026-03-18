@@ -707,6 +707,50 @@ const CRMApp = {
                 </div>
             `;
         }
+
+        // Charger les supports assignés à cette formation pour le client
+        this.loadClientFormationSupports(formation);
+    },
+
+    async loadClientFormationSupports(formation) {
+        const container = document.getElementById('client-formation-supports');
+        if (!container) return;
+
+        const result = await SupabaseData.getFormationSupports(formation.id);
+        const supports = result.success ? result.data : [];
+
+        if (supports.length === 0) {
+            container.innerHTML = '<p style="color: var(--gray-500); text-align: center; padding: 2rem;">Aucun support pédagogique disponible pour cette formation.</p>';
+            return;
+        }
+
+        const fileIcon = (title) => {
+            const t = (title || '').toLowerCase();
+            if (t.includes('pdf')) return '📕';
+            if (t.includes('pptx') || t.includes('ppt')) return '📊';
+            if (t.includes('xlsx') || t.includes('xls')) return '📗';
+            return '📘';
+        };
+
+        container.innerHTML = `
+            <div style="display: grid; gap: 0.5rem;">
+                ${supports.map(s => `
+                    <a href="${s.file_url || '#'}" target="_blank" rel="noopener noreferrer"
+                       style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: var(--gray-50); border-radius: var(--radius-md); text-decoration: none; color: var(--gray-900); transition: all 0.2s; border: 1px solid transparent;"
+                       onmouseover="this.style.background='white'; this.style.borderColor='var(--gray-200)'; this.style.boxShadow='var(--shadow-sm)';"
+                       onmouseout="this.style.background='var(--gray-50)'; this.style.borderColor='transparent'; this.style.boxShadow='none';">
+                        <span style="font-size: 1.5rem;">${fileIcon(s.title)}</span>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600;">${s.title}</div>
+                            <div style="font-size: 0.75rem; color: var(--gray-500); margin-top: 0.15rem;">${s.description || ''}</div>
+                        </div>
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="opacity: 0.5;">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                        </svg>
+                    </a>
+                `).join('')}
+            </div>
+        `;
     },
 
     renderClientLearnersList(formation) {
@@ -1155,7 +1199,21 @@ const CRMApp = {
                         </div>
                     </div>
                 </div>
+
+                <!-- Supports pédagogiques -->
+                <div class="workflow-section">
+                    <h3 style="display: flex; align-items: center; justify-content: space-between;">
+                        <span>📚 Supports pédagogiques</span>
+                        <button onclick="CRMApp.showAssignSupportModal(${formationId})" style="padding: 0.35rem 0.85rem; background: var(--primary-orange); color: white; border: none; border-radius: var(--radius-md); font-size: 0.8rem; font-weight: 600; cursor: pointer;">+ Assigner</button>
+                    </h3>
+                    <div id="formation-supports-list" style="margin-top: 0.5rem;">
+                        <p style="color: var(--gray-400); font-size: 0.85rem;">Chargement...</p>
+                    </div>
+                </div>
             `;
+
+            // Charger les supports assignés
+            this.loadFormationSupports(formationId);
 
             // Afficher la page
             this.showPage('formation-detail');
@@ -1163,6 +1221,114 @@ const CRMApp = {
         } catch (error) {
             console.error('Erreur affichage detail formation:', error);
             showToast('Erreur: ' + error.message, 'error');
+        }
+    },
+
+    async loadFormationSupports(formationId) {
+        const container = document.getElementById('formation-supports-list');
+        if (!container) return;
+
+        const result = await SupabaseData.getFormationSupports(formationId);
+        const supports = result.success ? result.data : [];
+
+        if (supports.length === 0) {
+            container.innerHTML = '<p style="color: var(--gray-400); font-size: 0.85rem;">Aucun support assigné. Cliquez "+ Assigner" pour en ajouter.</p>';
+            return;
+        }
+
+        const fileIcon = (title) => {
+            const t = (title || '').toLowerCase();
+            if (t.includes('pdf')) return '📕';
+            if (t.includes('pptx') || t.includes('ppt')) return '📊';
+            if (t.includes('xlsx') || t.includes('xls')) return '📗';
+            return '📘';
+        };
+
+        container.innerHTML = supports.map(s => `
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--gray-100);">
+                <span style="font-size: 0.85rem; color: var(--gray-800); display: flex; align-items: center; gap: 0.5rem;">
+                    ${fileIcon(s.title)} ${s.title}
+                    <span style="font-size: 0.7rem; color: var(--gray-400); background: var(--gray-100); padding: 0.1rem 0.4rem; border-radius: 8px;">${this.supportCategoryLabels[s.category] || s.category}</span>
+                </span>
+                <div style="display: flex; gap: 0.5rem;">
+                    ${s.file_url ? `<a href="${s.file_url}" target="_blank" style="font-size: 0.8rem; color: var(--primary-purple); text-decoration: none; padding: 0.2rem 0.5rem; background: #f3f0ff; border-radius: var(--radius-sm);">Ouvrir</a>` : ''}
+                    <button onclick="CRMApp.removeSupportFromFormation(${formationId}, ${s.id})" style="background: none; border: none; color: var(--gray-400); cursor: pointer; font-size: 0.8rem;">✕</button>
+                </div>
+            </div>
+        `).join('');
+    },
+
+    async showAssignSupportModal(formationId) {
+        // Charger tous les supports disponibles
+        const allSupports = [];
+        for (const cat of this.supportCategories) {
+            const result = await SupabaseData.getPedagogicalLibrary(cat);
+            if (result.success) {
+                result.data.forEach(s => allSupports.push(s));
+            }
+        }
+
+        // Charger les supports déjà assignés
+        const assigned = await SupabaseData.getFormationSupports(formationId);
+        const assignedIds = new Set((assigned.data || []).map(s => s.id));
+
+        // Grouper par catégorie
+        const byCategory = {};
+        allSupports.forEach(s => {
+            if (assignedIds.has(s.id)) return; // Exclure les déjà assignés
+            const cat = this.supportCategoryLabels[s.category] || s.category;
+            if (!byCategory[cat]) byCategory[cat] = [];
+            byCategory[cat].push(s);
+        });
+
+        const modal = document.createElement('div');
+        modal.id = 'assign-support-modal';
+        modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10000;';
+        modal.innerHTML = `
+            <div style="background:white;border-radius:var(--radius-xl);padding:2rem;width:600px;max-width:90%;max-height:80vh;overflow-y:auto;box-shadow:var(--shadow-lg);">
+                <h3 style="font-size:1.125rem;font-weight:700;margin-bottom:1rem;">Assigner des supports à cette formation</h3>
+                <input type="search" id="assign-support-search" placeholder="Rechercher un support..." oninput="document.querySelectorAll('#assign-support-list .support-assign-item').forEach(el => el.style.display = el.textContent.toLowerCase().includes(this.value.toLowerCase()) ? '' : 'none')" style="width:100%;padding:0.6rem 1rem;border:1px solid var(--gray-300);border-radius:var(--radius-md);margin-bottom:1rem;box-sizing:border-box;">
+                <div id="assign-support-list" style="max-height: 50vh; overflow-y: auto;">
+                    ${Object.entries(byCategory).map(([cat, supports]) => `
+                        <div style="margin-bottom: 1rem;">
+                            <div style="font-weight: 600; font-size: 0.85rem; color: var(--gray-700); margin-bottom: 0.5rem; padding: 0.25rem 0; border-bottom: 1px solid var(--gray-200);">${cat} (${supports.length})</div>
+                            ${supports.map(s => `
+                                <div class="support-assign-item" style="display: flex; align-items: center; justify-content: space-between; padding: 0.4rem 0.5rem; border-radius: var(--radius-sm);" onmouseover="this.style.background='var(--gray-50)'" onmouseout="this.style.background='transparent'">
+                                    <span style="font-size: 0.85rem;">${s.title}</span>
+                                    <button onclick="CRMApp.assignSupport(${formationId}, ${s.id}, this)" style="padding: 0.2rem 0.6rem; background: var(--primary-purple); color: white; border: none; border-radius: var(--radius-sm); cursor: pointer; font-size: 0.75rem;">Ajouter</button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `).join('')}
+                </div>
+                <div style="margin-top:1rem;text-align:right;">
+                    <button onclick="document.getElementById('assign-support-modal').remove()" style="padding:0.6rem 1.25rem;background:var(--gray-200);color:var(--gray-700);border:none;border-radius:var(--radius-md);cursor:pointer;font-weight:500;">Fermer</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    },
+
+    async assignSupport(formationId, supportId, btn) {
+        const result = await SupabaseData.assignSupportToFormation(formationId, supportId);
+        if (result.success) {
+            btn.textContent = '✓';
+            btn.disabled = true;
+            btn.style.background = '#059669';
+            showToast('Support assigné !', 'success');
+            this.loadFormationSupports(formationId);
+        } else {
+            showToast('Erreur: ' + result.message, 'error');
+        }
+    },
+
+    async removeSupportFromFormation(formationId, supportId) {
+        const result = await SupabaseData.removeSupportFromFormation(formationId, supportId);
+        if (result.success) {
+            showToast('Support retiré', 'info');
+            this.loadFormationSupports(formationId);
+        } else {
+            showToast('Erreur: ' + result.message, 'error');
         }
     },
 

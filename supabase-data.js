@@ -613,6 +613,55 @@ const SupabaseData = {
         }
     },
 
+    // ==================== FORMATION SUPPORTS ====================
+
+    async getFormationSupports(formationId) {
+        try {
+            const { data, error } = await supabaseClient
+                .from('formation_supports')
+                .select('*, pedagogical_library(*)')
+                .eq('formation_id', formationId);
+
+            if (error) throw error;
+            return { success: true, data: (data || []).map(fs => fs.pedagogical_library).filter(Boolean) };
+        } catch (error) {
+            console.error('Error getting formation supports:', error);
+            return { success: false, data: [], message: error.message };
+        }
+    },
+
+    async assignSupportToFormation(formationId, supportId) {
+        try {
+            const { data, error } = await supabaseClient
+                .from('formation_supports')
+                .insert([{ formation_id: formationId, support_id: supportId }])
+                .select()
+                .single();
+
+            if (error) throw error;
+            return { success: true, data };
+        } catch (error) {
+            console.error('Error assigning support:', error);
+            return { success: false, message: error.message };
+        }
+    },
+
+    async removeSupportFromFormation(formationId, supportId) {
+        try {
+            const { error } = await supabaseClient
+                .from('formation_supports')
+                .delete()
+                .eq('formation_id', formationId)
+                .eq('support_id', supportId);
+
+            if (error) throw error;
+            return { success: true };
+        } catch (error) {
+            console.error('Error removing support:', error);
+            return { success: false, message: error.message };
+        }
+    },
+
     // ==================== TEMPLATES LIBRARY ====================
 
     // Get templates by category
