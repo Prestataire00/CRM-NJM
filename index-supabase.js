@@ -2381,6 +2381,129 @@ Nathalie Joulie-Morand`;
         });
     },
 
+    uploadSupportFile() {
+        const currentCat = this.currentSupportCategory || this.supportCategories[0];
+        const categoryOptionsHtml = this.supportCategories.map(c =>
+            `<option value="${c}" ${c === currentCat ? 'selected' : ''}>${this.supportCategoryLabels[c]}</option>`
+        ).join('');
+
+        // Collecter les sous-dossiers existants pour la catégorie active
+        const existingSubfolders = new Set();
+        (this.allSupportsCache[currentCat] || []).forEach(s => {
+            if (s.description) existingSubfolders.add(s.description);
+        });
+        const subfolderOptions = [...existingSubfolders].sort().map(s =>
+            `<option value="${s}">${s}</option>`
+        ).join('');
+
+        const modal = document.createElement('div');
+        modal.id = 'upload-support-file-modal';
+        modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10000;';
+        modal.innerHTML = `
+            <div style="background:white;border-radius:var(--radius-xl);padding:2rem;width:500px;max-width:90%;box-shadow:var(--shadow-lg);">
+                <h3 style="font-size:1.125rem;font-weight:700;color:var(--gray-900);margin-bottom:1.5rem;">Ajouter un support pédagogique</h3>
+                <div style="display:grid;gap:1rem;">
+                    <div>
+                        <label style="display:block;font-weight:600;margin-bottom:0.5rem;color:var(--gray-700);">Fichier *</label>
+                        <input type="file" id="sf-file" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.csv" style="width:100%;padding:0.75rem;border:1px solid var(--gray-300);border-radius:var(--radius-md);box-sizing:border-box;">
+                    </div>
+                    <div>
+                        <label style="display:block;font-weight:600;margin-bottom:0.5rem;color:var(--gray-700);">Catégorie</label>
+                        <select id="sf-category" onchange="CRMApp.updateSubfolderOptions(this.value)" style="width:100%;padding:0.75rem;border:1px solid var(--gray-300);border-radius:var(--radius-md);">
+                            ${categoryOptionsHtml}
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display:block;font-weight:600;margin-bottom:0.5rem;color:var(--gray-700);">Sous-dossier (optionnel)</label>
+                        <div style="display:flex;gap:0.5rem;">
+                            <select id="sf-subfolder" style="flex:1;padding:0.75rem;border:1px solid var(--gray-300);border-radius:var(--radius-md);">
+                                <option value="">Racine (pas de sous-dossier)</option>
+                                ${subfolderOptions}
+                            </select>
+                            <input type="text" id="sf-new-subfolder" placeholder="Ou créer un nouveau..." style="flex:1;padding:0.75rem;border:1px solid var(--gray-300);border-radius:var(--radius-md);box-sizing:border-box;">
+                        </div>
+                    </div>
+                    <div>
+                        <label style="display:block;font-weight:600;margin-bottom:0.5rem;color:var(--gray-700);">Nom (optionnel)</label>
+                        <input type="text" id="sf-title" placeholder="Nom du fichier sera utilisé par défaut" style="width:100%;padding:0.75rem;border:1px solid var(--gray-300);border-radius:var(--radius-md);box-sizing:border-box;">
+                    </div>
+                </div>
+                <div style="display:flex;gap:1rem;margin-top:1.5rem;justify-content:flex-end;">
+                    <button onclick="document.getElementById('upload-support-file-modal').remove()" style="padding:0.75rem 1.5rem;background:var(--gray-200);color:var(--gray-700);border:none;border-radius:var(--radius-md);font-weight:600;cursor:pointer;">Annuler</button>
+                    <button onclick="CRMApp.submitSupportFile()" style="padding:0.75rem 1.5rem;background:var(--primary-orange);color:white;border:none;border-radius:var(--radius-md);font-weight:600;cursor:pointer;">Ajouter</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    },
+
+    updateSubfolderOptions(category) {
+        const subfolders = new Set();
+        (this.allSupportsCache[category] || []).forEach(s => {
+            if (s.description) subfolders.add(s.description);
+        });
+        const select = document.getElementById('sf-subfolder');
+        if (select) {
+            select.innerHTML = '<option value="">Racine (pas de sous-dossier)</option>' +
+                [...subfolders].sort().map(s => `<option value="${s}">${s}</option>`).join('');
+        }
+    },
+
+    async submitSupportFile() {
+        const fileInput = document.getElementById('sf-file');
+        const file = fileInput && fileInput.files[0];
+        const category = document.getElementById('sf-category').value;
+        const existingSubfolder = document.getElementById('sf-subfolder').value;
+        const newSubfolder = document.getElementById('sf-new-subfolder').value.trim();
+        const titleInput = document.getElementById('sf-title').value.trim();
+
+        if (!file) {
+            showToast('Veuillez sélectionner un fichier', 'warning');
+            return;
+        }
+
+        const subfolder = newSubfolder || existingSubfolder || '';
+        const title = titleInput || file.name.replace(/\.[^.]+$/, '').replace(/_/g, ' ');
+
+        try {
+            // Upload dans Supabase Storage
+            const fileName = `supports/${category}/${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
+            const { data: uploadData, error: uploadError } = await supabaseClient.storage
+                .from('documents')
+                .upload(fileName, file, { contentType: file.type, upsert: true });
+
+            if (uploadError) {
+                showToast('Erreur upload: ' + uploadError.message, 'error');
+                return;
+            }
+
+            const { data: urlData } = supabaseClient.storage
+                .from('documents')
+                .getPublicUrl(fileName);
+
+            const file_url = urlData ? urlData.publicUrl : '';
+
+            // Sauvegarder en BDD
+            const result = await SupabaseData.addToPedagogicalLibrary(category, {
+                title,
+                description: subfolder,
+                file_url
+            });
+
+            document.getElementById('upload-support-file-modal').remove();
+
+            if (result.success) {
+                showToast('Support ajouté !', 'success');
+                await this.loadSupports();
+            } else {
+                showToast(result.message, 'error');
+            }
+        } catch (error) {
+            console.error('Erreur upload support:', error);
+            showToast('Erreur: ' + error.message, 'error');
+        }
+    },
+
     uploadSupport() {
         const categoryOptionsHtml = this.supportCategories.map(c =>
             `<option value="${c}">${this.supportCategoryLabels[c]}</option>`
