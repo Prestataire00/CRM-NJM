@@ -59,6 +59,7 @@ const CRMApp = {
         await this.loadTemplates();
         await this.loadUsers();
         await this.checkExpiringDocuments();
+        await this.checkQuestionnairesFroid();
     },
 
     // ==================== FORMATEUR VIEW ====================
@@ -960,6 +961,7 @@ const CRMApp = {
                         <button style="padding: 0.5rem 1rem; background: var(--gray-100); border: none; border-radius: var(--radius-md); cursor: pointer; color: var(--gray-700); font-weight: 500;">Actions ▼</button>
                         <div class="dropdown-content">
                             <button onclick="CRMApp.viewFormation(${f.id})">Détails</button>
+                            <button onclick="CRMApp.inviterClient(${f.id})" style="color: #0284c7; font-weight: 500;">🔑 Inviter client (accès)</button>
                             <button onclick="CRMApp.sendConvocation(${f.id})" style="color: #7c3aed; font-weight: 500;">📧 Envoi de la convocation</button>
                             <button onclick="CRMApp.relanceConvention(${f.id})" style="color: #b45309; font-weight: 500;">📩 Relancer convention</button>
                             <button onclick="CRMApp.relanceQuestionnaires(${f.id})" style="color: #dc2626; font-weight: 500;">📋 Relancer questionnaires</button>
@@ -969,6 +971,7 @@ const CRMApp = {
                             <button onclick="CRMApp.createContratSousTraitance(${f.id})" style="color: #7c3aed; font-weight: 500;">📝 Contrat sous-traitance</button>
                             <button onclick="CRMApp.createAttendanceSheet(${f.id})">Créer feuille de présence</button>
                             <button onclick="CRMApp.createCertificate(${f.id})">Créer certificat</button>
+                            <button onclick="CRMApp.envoyerVersBPF(${f.id})" style="color: #059669; font-weight: 500;">📊 Envoyer vers BPF</button>
                             <button onclick="CRMApp.deleteFormation(${f.id})" style="color: #991b1b;">Supprimer</button>
                         </div>
                     </div>
@@ -1265,6 +1268,117 @@ const CRMApp = {
             } else {
                 alert('Erreur lors de la suppression : ' + result.message);
             }
+        }
+    },
+
+    async envoyerVersBPF(formationId) {
+        try {
+            const { data: formation, error } = await supabaseClient
+                .from('formations')
+                .select('*')
+                .eq('id', formationId)
+                .single();
+
+            if (error) throw error;
+
+            // Calculer le nombre d'apprenants
+            let learnersCount = 0;
+            let learnersData = [];
+            if (formation.learners_data) {
+                learnersData = typeof formation.learners_data === 'string'
+                    ? JSON.parse(formation.learners_data)
+                    : formation.learners_data;
+                learnersCount = learnersData.length;
+            }
+
+            // Calculer l'année fiscale
+            const startDate = formation.start_date ? new Date(formation.start_date) : new Date();
+            const year = startDate.getMonth() >= 9 ? startDate.getFullYear() : startDate.getFullYear() - 1;
+
+            const bpfData = {
+                formation_type: formation.formation_name || '',
+                company_name: formation.company_name || formation.client_name || '',
+                year: year,
+                amount_ht: formation.total_amount || 0,
+                number_of_learners: learnersCount,
+                total_hours: formation.hours_per_learner || 0,
+                formation_id: formationId
+            };
+
+            if (!confirm(`Envoyer cette formation vers le BPF ?\n\n• ${bpfData.formation_type}\n• ${bpfData.company_name}\n• ${bpfData.amount_ht} € HT\n• ${bpfData.number_of_learners} apprenant(s)\n• ${bpfData.total_hours}h`)) {
+                return;
+            }
+
+            const result = await SupabaseData.addBPF(bpfData);
+
+            if (result.success) {
+                alert('Formation envoyée vers le BPF avec succès !');
+                this.loadBPF();
+            } else {
+                alert('Erreur : ' + result.message);
+            }
+        } catch (error) {
+            console.error('Erreur envoi BPF:', error);
+            alert('Erreur lors de l\'envoi vers le BPF.');
+        }
+    },
+
+    async inviterClient(formationId) {
+        try {
+            const { data: formation, error } = await supabaseClient
+                .from('formations')
+                .select('*')
+                .eq('id', formationId)
+                .single();
+
+            if (error) throw error;
+
+            const clientEmail = formation.client_email;
+            if (!clientEmail) {
+                alert('Aucun email client renseigné pour cette formation.\nVeuillez d\'abord renseigner l\'email dans la fiche formation.');
+                return;
+            }
+
+            // Récupérer les identifiants du compte client
+            let clientLogin = clientEmail;
+            let clientPassword = '[mot de passe non disponible]';
+            const profileResult = await SupabaseData.getProfileByEmail(clientEmail);
+            if (profileResult.success && profileResult.data) {
+                clientPassword = profileResult.data.initial_password || '[voir avec l\'administrateur]';
+            }
+
+            const siteUrl = window.location.origin;
+            const directorName = formation.company_director_name || '';
+            const subject = `Vos accès à votre espace formation - ${formation.formation_name || 'Formation'}`;
+            const body = `Bonjour${directorName ? ' ' + directorName : ''},
+
+J'ai créé pour vous un espace confidentiel où vous retrouverez tous les documents relatifs à la formation.
+
+En voici l'accès : ${siteUrl}
+Votre identifiant : ${clientLogin}
+Votre mot de passe : ${clientPassword}
+
+Conservez-les précieusement.
+
+Vous y trouverez :
+-la convention de formation. Merci de me la retourner signée.
+-la fiche pédagogique, telle que nous l'avons réfléchie ensemble
+-le livret d'accueil d'NJM Conseil (pour les apprenants)
+-la fiche de réclamation (pour les apprenants)
+
+Cordialement
+
+Nathalie Joulie-Morand`;
+
+            GenericEmail.show({
+                title: '🔑 Invitation client - Accès espace formation',
+                to: clientEmail,
+                subject,
+                body
+            });
+        } catch (error) {
+            console.error('Erreur invitation client:', error);
+            alert('Erreur lors de la préparation du mail.');
         }
     },
 
@@ -2047,6 +2161,113 @@ Nathalie Joulie-Morand`;
             } else {
                 alert('Erreur : ' + result.message);
             }
+        }
+    },
+
+    async checkQuestionnairesFroid() {
+        try {
+            const { data: formations, error } = await supabaseClient
+                .from('formations')
+                .select('*')
+                .eq('status', 'completed');
+
+            if (error || !formations) return;
+
+            const now = new Date();
+            const sixMonths = 6 * 30 * 24 * 60 * 60 * 1000;
+            const alertes = [];
+
+            formations.forEach(f => {
+                if (!f.end_date) return;
+                const endDate = new Date(f.end_date);
+                const diff = now - endDate;
+                if (diff >= sixMonths && !f.questionnaire_froid_sent) {
+                    alertes.push({
+                        id: f.id,
+                        formation_name: f.formation_name,
+                        company_name: f.company_name || f.client_name,
+                        end_date: endDate.toLocaleDateString('fr-FR')
+                    });
+                }
+            });
+
+            const alertContainer = document.getElementById('questionnaire-froid-alertes');
+            if (alertContainer && alertes.length > 0) {
+                alertContainer.style.display = 'block';
+                alertContainer.innerHTML = `
+                    <div style="padding: 1rem; background: #fef3c7; border-left: 4px solid #f59e0b; border-radius: var(--radius-md); margin-bottom: 1rem;">
+                        <strong>Questionnaires a froid a envoyer (6 mois) :</strong>
+                        <ul style="margin-top: 0.5rem; margin-left: 1rem; list-style: none;">
+                            ${alertes.map(a => `
+                                <li style="margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: space-between;">
+                                    <span>${a.formation_name} - ${a.company_name} (terminee le ${a.end_date})</span>
+                                    <button onclick="CRMApp.envoyerQuestionnaireFroid(${a.id})"
+                                        style="padding: 0.25rem 0.75rem; background: #f59e0b; color: white; border: none; border-radius: var(--radius-md); cursor: pointer; font-size: 0.8rem;">
+                                        Envoyer
+                                    </button>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+        } catch (error) {
+            console.error('Erreur verification questionnaires a froid:', error);
+        }
+    },
+
+    async envoyerQuestionnaireFroid(formationId) {
+        try {
+            const { data: formation, error } = await supabaseClient
+                .from('formations')
+                .select('*')
+                .eq('id', formationId)
+                .single();
+
+            if (error) throw error;
+
+            const clientEmail = formation.client_email;
+            if (!clientEmail) { alert('Aucun email client renseigne.'); return; }
+
+            const directorName = formation.company_director_name || '';
+            const subject = `Questionnaire a froid - Formation "${formation.formation_name || ''}"`;
+            const body = `Bonjour${directorName ? ' ' + directorName : ''},
+
+J'espere que vous allez bien.
+
+Il y a maintenant 6 mois que la formation "${formation.formation_name || ''}" s'est terminee. Dans le cadre de la demarche qualite Qualiopi, je souhaiterais recueillir votre retour sur l'impact de cette formation dans votre activite quotidienne.
+
+Pourriez-vous prendre quelques minutes pour completer le questionnaire ci-dessous ?
+
+Questionnaire dirigeant :
+[Lien du questionnaire dirigeant]
+
+Pourriez-vous egalement transmettre ce questionnaire a chaque apprenant ayant participe a la formation ?
+
+Questionnaire apprenant :
+[Lien du questionnaire apprenant]
+
+Ce retour est precieux pour ameliorer continuellement la qualite de mes formations.
+
+En vous remerciant par avance.
+
+Nathalie Joulie-Morand`;
+
+            GenericEmail.show({
+                title: 'Questionnaire a froid (6 mois)',
+                to: clientEmail,
+                subject,
+                body
+            });
+
+            await supabaseClient
+                .from('formations')
+                .update({ questionnaire_froid_sent: true })
+                .eq('id', formationId);
+
+        } catch (error) {
+            console.error('Erreur envoi questionnaire a froid:', error);
+            alert('Erreur lors de la preparation du mail.');
         }
     },
 
