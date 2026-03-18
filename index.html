@@ -1567,6 +1567,47 @@
 
             <!-- GESTION DES ACCÈS PAGE -->
             <div id="page-acces" class="page-content" style="display:none;">
+                <!-- Header -->
+                <div style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-900);">Gestion des Accès</h2>
+                    </div>
+                    <button onclick="UserManagement.showAddUserModal()" style="padding: 0.6rem 1.25rem; background: var(--primary-purple); color: white; border: none; border-radius: var(--radius-md); font-weight: 600; cursor: pointer;">+ Nouvel utilisateur</button>
+                </div>
+
+                <!-- Stats -->
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+                    <div style="background: white; padding: 1rem 1.25rem; border-radius: var(--radius-xl); box-shadow: var(--shadow-sm); border-left: 4px solid var(--primary-purple); display: flex; align-items: center; gap: 1rem;">
+                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--gray-900);" id="total-clients">0</div>
+                        <div style="font-size: 0.85rem; color: var(--gray-600);">Clients</div>
+                    </div>
+                    <div style="background: white; padding: 1rem 1.25rem; border-radius: var(--radius-xl); box-shadow: var(--shadow-sm); border-left: 4px solid var(--primary-orange); display: flex; align-items: center; gap: 1rem;">
+                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--gray-900);" id="total-formateurs">0</div>
+                        <div style="font-size: 0.85rem; color: var(--gray-600);">Formateurs</div>
+                    </div>
+                    <div style="background: white; padding: 1rem 1.25rem; border-radius: var(--radius-xl); box-shadow: var(--shadow-sm); border-left: 4px solid var(--primary-pink); display: flex; align-items: center; gap: 1rem;">
+                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--gray-900);" id="total-admins">0</div>
+                        <div style="font-size: 0.85rem; color: var(--gray-600);">Admins</div>
+                    </div>
+                </div>
+
+                <!-- Onglets -->
+                <div style="display: flex; gap: 0; margin-bottom: 1.5rem; border-bottom: 2px solid var(--gray-200);">
+                    <button onclick="UserManagement.showTab('clients')" id="tab-clients" style="padding: 0.75rem 1.5rem; border: none; background: none; cursor: pointer; font-weight: 600; font-size: 0.9rem; color: var(--primary-purple); border-bottom: 2px solid var(--primary-purple); margin-bottom: -2px;">Clients</button>
+                    <button onclick="UserManagement.showTab('formateurs')" id="tab-formateurs" style="padding: 0.75rem 1.5rem; border: none; background: none; cursor: pointer; font-weight: 500; font-size: 0.9rem; color: var(--gray-500); margin-bottom: -2px;">Formateurs</button>
+                    <button onclick="UserManagement.showTab('admins')" id="tab-admins" style="padding: 0.75rem 1.5rem; border: none; background: none; cursor: pointer; font-weight: 500; font-size: 0.9rem; color: var(--gray-500); margin-bottom: -2px;">Admins</button>
+                </div>
+
+                <!-- Recherche -->
+                <div style="margin-bottom: 1rem;">
+                    <input type="search" id="user-search" placeholder="Rechercher un utilisateur..." oninput="UserManagement.filterUsers()" style="width: 100%; max-width: 400px; padding: 0.6rem 1rem 0.6rem 2.5rem; border: 1px solid var(--gray-300); border-radius: var(--radius-md); font-size: 0.9rem; background: white url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2716%27 height=%2716%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%239ca3af%27 stroke-width=%272%27%3E%3Ccircle cx=%2711%27 cy=%2711%27 r=%278%27/%3E%3Cpath d=%27m21 21-4.3-4.3%27/%3E%3C/svg%3E') no-repeat 0.75rem center;">
+                </div>
+
+                <!-- Contenu des onglets -->
+                <div id="acces-tab-content"></div>
+
+                <!-- Keep old structure hidden for compatibility -->
+                <div style="display:none;">
                 <div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
                     <div>
                         <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-900);">Gestion des Accès</h2>

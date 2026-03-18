@@ -2993,6 +2993,8 @@ Nathalie Joulie-Morand`;
 // ==================== User Management Logic ====================
 const UserManagement = {
     currentUser: null,
+    allUsers: [],
+    currentTab: 'clients',
 
     init() {
         this.loadUsers();
@@ -3006,13 +3008,131 @@ const UserManagement = {
 
         const result = await SupabaseAuth.getAllUsers(currentUser.id);
         if (!result.success) {
-            alert(result.message);
+            showToast(result.message, 'error');
             return;
         }
 
-        const users = result.users;
-        this.renderUsers(users);
-        this.updateStats(users);
+        this.allUsers = result.users;
+        this.renderUsers(this.allUsers);
+        this.updateStats(this.allUsers);
+        this.showTab(this.currentTab);
+    },
+
+    showTab(tabName) {
+        this.currentTab = tabName;
+
+        // Mettre à jour les onglets visuellement
+        ['clients', 'formateurs', 'admins'].forEach(t => {
+            const btn = document.getElementById(`tab-${t}`);
+            if (btn) {
+                const isActive = t === tabName;
+                btn.style.color = isActive ? 'var(--primary-purple)' : 'var(--gray-500)';
+                btn.style.fontWeight = isActive ? '600' : '500';
+                btn.style.borderBottom = isActive ? '2px solid var(--primary-purple)' : 'none';
+            }
+        });
+
+        const container = document.getElementById('acces-tab-content');
+        if (!container) return;
+
+        const roleMap = { clients: 'client', formateurs: 'formateur', admins: 'admin' };
+        const filtered = this.allUsers.filter(u => u.role === roleMap[tabName]);
+
+        if (tabName === 'clients') {
+            this.renderClientCards(container, filtered);
+        } else {
+            this.renderUserTable(container, filtered, tabName);
+        }
+    },
+
+    renderClientCards(container, clients) {
+        if (clients.length === 0) {
+            container.innerHTML = '<div style="text-align: center; padding: 3rem; color: var(--gray-500);">Aucun client. Cliquez "+ Nouvel utilisateur" pour en créer un.</div>';
+            return;
+        }
+
+        container.innerHTML = `<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1rem;">
+            ${clients.map(u => {
+                const companies = u.client_names || [];
+                const companyTags = companies.length > 0
+                    ? companies.map(c => `<span style="display: inline-block; padding: 0.2rem 0.6rem; background: #ede9fe; color: #7c3aed; border-radius: 12px; font-size: 0.75rem; font-weight: 500;">${c}</span>`).join(' ')
+                    : '<span style="color: var(--gray-400); font-size: 0.8rem;">Aucune entreprise liée</span>';
+
+                const statusBadge = u.active
+                    ? '<span style="display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.75rem; color: #059669; background: #d1fae5; padding: 0.15rem 0.5rem; border-radius: 10px;">Actif</span>'
+                    : '<span style="display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.75rem; color: #dc2626; background: #fee2e2; padding: 0.15rem 0.5rem; border-radius: 10px;">Inactif</span>';
+
+                const passwordSection = u.initial_password
+                    ? `<div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <code style="background: var(--gray-100); padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">${u.initial_password}</code>
+                        <button onclick="UserManagement.copyToClipboard('${u.initial_password}')" style="background: none; border: none; cursor: pointer; font-size: 0.7rem; color: var(--primary-purple);">Copier</button>
+                       </div>`
+                    : '<span style="font-size: 0.75rem; color: var(--gray-400);">Modifié par l\'utilisateur</span>';
+
+                return `<div class="user-card" style="background: white; border-radius: var(--radius-xl); padding: 1.25rem; box-shadow: var(--shadow-sm); border: 1px solid var(--gray-200);">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.75rem;">
+                        <div>
+                            <div style="font-weight: 600; font-size: 1rem; color: var(--gray-900);">${u.name || 'Sans nom'}</div>
+                            <div style="font-size: 0.85rem; color: var(--gray-500); margin-top: 0.15rem;">${u.email}</div>
+                        </div>
+                        ${statusBadge}
+                    </div>
+
+                    <div style="margin-bottom: 0.75rem; display: flex; gap: 0.35rem; flex-wrap: wrap;">
+                        ${companyTags}
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; font-size: 0.8rem; color: var(--gray-600);">
+                        🔑 ${passwordSection}
+                    </div>
+
+                    <div style="display: flex; gap: 0.5rem; padding-top: 0.75rem; border-top: 1px solid var(--gray-100);">
+                        <button onclick="UserManagement.sendWelcomeEmail('${u.id}')" style="flex: 1; padding: 0.4rem; background: var(--primary-purple); color: white; border: none; border-radius: var(--radius-md); cursor: pointer; font-size: 0.8rem; font-weight: 500;">📧 Envoyer accès</button>
+                        <button onclick="UserManagement.editUser('${u.id}')" style="padding: 0.4rem 0.75rem; background: var(--gray-100); color: var(--gray-700); border: none; border-radius: var(--radius-md); cursor: pointer; font-size: 0.8rem;">Modifier</button>
+                        <button onclick="UserManagement.deleteUser('${u.id}')" style="padding: 0.4rem 0.75rem; background: none; color: #dc2626; border: 1px solid #fca5a5; border-radius: var(--radius-md); cursor: pointer; font-size: 0.8rem;">Suppr.</button>
+                    </div>
+                </div>`;
+            }).join('')}
+        </div>`;
+    },
+
+    renderUserTable(container, users, tabName) {
+        if (users.length === 0) {
+            container.innerHTML = '<div style="text-align: center; padding: 3rem; color: var(--gray-500);">Aucun utilisateur dans cette catégorie.</div>';
+            return;
+        }
+
+        container.innerHTML = `<div style="background: white; border-radius: var(--radius-xl); padding: 1rem; box-shadow: var(--shadow-sm);">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="border-bottom: 2px solid var(--gray-200);">
+                        <th style="text-align: left; padding: 0.75rem; font-weight: 600; color: var(--gray-700); font-size: 0.85rem;">Nom</th>
+                        <th style="text-align: left; padding: 0.75rem; font-weight: 600; color: var(--gray-700); font-size: 0.85rem;">Email</th>
+                        <th style="text-align: left; padding: 0.75rem; font-weight: 600; color: var(--gray-700); font-size: 0.85rem;">Statut</th>
+                        <th style="text-align: right; padding: 0.75rem; font-weight: 600; color: var(--gray-700); font-size: 0.85rem;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${users.map(u => `<tr style="border-bottom: 1px solid var(--gray-100);">
+                        <td style="padding: 0.75rem; font-weight: 500;">${u.name || 'Sans nom'}</td>
+                        <td style="padding: 0.75rem; color: var(--gray-600); font-size: 0.9rem;">${u.email}</td>
+                        <td style="padding: 0.75rem;">${u.active ? '<span style="color: #059669; font-size: 0.8rem;">Actif</span>' : '<span style="color: #dc2626; font-size: 0.8rem;">Inactif</span>'}</td>
+                        <td style="padding: 0.75rem; text-align: right;">
+                            <button onclick="UserManagement.editUser('${u.id}')" style="padding: 0.3rem 0.6rem; background: var(--gray-100); border: none; border-radius: var(--radius-sm); cursor: pointer; font-size: 0.8rem;">Modifier</button>
+                        </td>
+                    </tr>`).join('')}
+                </tbody>
+            </table>
+        </div>`;
+    },
+
+    filterUsers() {
+        const search = (document.getElementById('user-search')?.value || '').toLowerCase();
+        const cards = document.querySelectorAll('.user-card, #acces-tab-content tr');
+        cards.forEach(card => {
+            const text = card.textContent.toLowerCase();
+            card.style.display = text.includes(search) ? '' : 'none';
+        });
     },
 
     updateStats(users) {

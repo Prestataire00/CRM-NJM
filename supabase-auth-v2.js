@@ -250,22 +250,39 @@ const SupabaseAuth = {
                 }
             }
 
+            // Récupérer les noms des clients
+            const allClientIds = [...new Set(Object.values(profileClientsMap).flat())];
+            const clientNamesMap = {};
+            if (allClientIds.length > 0) {
+                const { data: clientsData } = await supabaseClient
+                    .from('clients')
+                    .select('id, company_name')
+                    .in('id', allClientIds);
+                if (clientsData) {
+                    clientsData.forEach(c => { clientNamesMap[c.id] = c.company_name; });
+                }
+            }
+
             return {
                 success: true,
-                users: users.map(u => ({
-                    id: u.id,
-                    name: u.name,
-                    email: u.email,
-                    role: u.role,
-                    active: u.active,
-                    created: u.created_at,
-                    lastLogin: u.last_login,
-                    mustChangePassword: u.must_change_password,
-                    subcontractor_id: u.subcontractor_id,
-                    client_id: u.client_id,
-                    client_ids: profileClientsMap[u.id] || (u.client_id ? [u.client_id] : []),
-                    initial_password: u.initial_password
-                }))
+                users: users.map(u => {
+                    const cIds = profileClientsMap[u.id] || (u.client_id ? [u.client_id] : []);
+                    return {
+                        id: u.id,
+                        name: u.name,
+                        email: u.email,
+                        role: u.role,
+                        active: u.active,
+                        created: u.created_at,
+                        lastLogin: u.last_login,
+                        mustChangePassword: u.must_change_password,
+                        subcontractor_id: u.subcontractor_id,
+                        client_id: u.client_id,
+                        client_ids: cIds,
+                        client_names: cIds.map(id => clientNamesMap[id] || 'Entreprise #' + id),
+                        initial_password: u.initial_password
+                    };
+                })
             };
         } catch (error) {
             console.error('Exception getAllUsers:', error);
