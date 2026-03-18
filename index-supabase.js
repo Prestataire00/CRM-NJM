@@ -2582,6 +2582,84 @@ Nathalie Joulie-Morand`;
         }
     },
 
+    uploadQualiopi(phase) {
+        const phaseLabels = { avant: 'Avant la formation', pendant: 'Pendant la formation', apres: 'Après la formation' };
+        const modal = document.createElement('div');
+        modal.id = 'upload-qualiopi-modal';
+        modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10000;';
+        modal.innerHTML = `
+            <div style="background:white;border-radius:var(--radius-xl);padding:2rem;width:500px;max-width:90%;box-shadow:var(--shadow-lg);">
+                <h3 style="font-size:1.125rem;font-weight:700;color:var(--gray-900);margin-bottom:1.5rem;">Ajouter un document Qualiopi — ${phaseLabels[phase] || phase}</h3>
+                <div style="display:grid;gap:1rem;">
+                    <div>
+                        <label style="display:block;font-weight:600;margin-bottom:0.5rem;color:var(--gray-700);">Fichier</label>
+                        <input type="file" id="qualiopi-file" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx" style="width:100%;padding:0.75rem;border:1px solid var(--gray-300);border-radius:var(--radius-md);box-sizing:border-box;">
+                    </div>
+                    <div>
+                        <label style="display:block;font-weight:600;margin-bottom:0.5rem;color:var(--gray-700);">Nom (optionnel, sinon nom du fichier)</label>
+                        <input type="text" id="qualiopi-title" placeholder="Ex: Convention de formation TYPE" style="width:100%;padding:0.75rem;border:1px solid var(--gray-300);border-radius:var(--radius-md);box-sizing:border-box;">
+                    </div>
+                </div>
+                <div style="display:flex;gap:1rem;margin-top:1.5rem;justify-content:flex-end;">
+                    <button onclick="document.getElementById('upload-qualiopi-modal').remove()" style="padding:0.75rem 1.5rem;background:var(--gray-200);color:var(--gray-700);border:none;border-radius:var(--radius-md);font-weight:600;cursor:pointer;">Annuler</button>
+                    <button onclick="CRMApp.submitQualiopi('${phase}')" style="padding:0.75rem 1.5rem;background:var(--primary-purple);color:white;border:none;border-radius:var(--radius-md);font-weight:600;cursor:pointer;">Ajouter</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    },
+
+    async submitQualiopi(phase) {
+        const fileInput = document.getElementById('qualiopi-file');
+        const titleInput = document.getElementById('qualiopi-title');
+        const file = fileInput && fileInput.files[0];
+
+        if (!file) {
+            showToast('Veuillez sélectionner un fichier', 'warning');
+            return;
+        }
+
+        const title = titleInput.value.trim() || file.name.replace(/\.[^.]+$/, '').replace(/_/g, ' ');
+
+        try {
+            // Upload dans Supabase Storage
+            const fileName = `qualiopi/${phase}/${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
+            const { data: uploadData, error: uploadError } = await supabaseClient.storage
+                .from('documents')
+                .upload(fileName, file, { contentType: file.type, upsert: true });
+
+            if (uploadError) {
+                showToast('Erreur upload: ' + uploadError.message, 'error');
+                return;
+            }
+
+            const { data: urlData } = supabaseClient.storage
+                .from('documents')
+                .getPublicUrl(fileName);
+
+            const file_url = urlData ? urlData.publicUrl : '';
+
+            // Mettre à jour le manifeste local (ajouter au JSON)
+            const response = await fetch('assets/qualiopi-manifest.json');
+            const manifest = await response.json();
+            const ext = '.' + file.name.split('.').pop().toLowerCase();
+            manifest[phase] = manifest[phase] || [];
+            manifest[phase].push({ title, file_url, ext });
+
+            // Note: en prod il faudrait sauvegarder le manifeste côté serveur
+            // Pour l'instant on recharge depuis le manifeste + ce nouvel item en mémoire
+
+            document.getElementById('upload-qualiopi-modal').remove();
+            showToast('Document Qualiopi ajouté !', 'success');
+
+            // Recharger l'affichage
+            await this.loadTemplates();
+        } catch (error) {
+            console.error('Erreur upload Qualiopi:', error);
+            showToast('Erreur: ' + error.message, 'error');
+        }
+    },
+
     async uploadTemplate(category) {
         const title = prompt('Nom du document:');
         if (title) {
