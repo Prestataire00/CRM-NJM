@@ -1816,7 +1816,6 @@ Nathalie Joulie-Morand`;
     },
 
     async sendConvocation(formationId) {
-        window.alert('STEP 1: sendConvocation ID=' + formationId);
         try {
             const { data: formation, error } = await supabaseClient
                 .from('formations')
@@ -1824,16 +1823,12 @@ Nathalie Joulie-Morand`;
                 .eq('id', formationId)
                 .single();
 
-            window.alert('STEP 2: data=' + (formation ? 'OK' : 'null') + ' error=' + (error ? error.message : 'none'));
-
             if (error) throw error;
 
             ConvocationEmail.show(formation);
-            // Vérifier l'état du modal
-            const m = document.getElementById('convocationModal');
-            window.alert('Modal display=' + m.style.display + ' offsetWidth=' + m.offsetWidth + ' offsetHeight=' + m.offsetHeight + ' children=' + m.children.length);
         } catch (error) {
-            window.alert('CATCH: ' + error.message + '\n' + error.stack);
+            console.error('Erreur sendConvocation:', error);
+            showToast('Erreur: ' + error.message, 'error');
         }
     },
 
