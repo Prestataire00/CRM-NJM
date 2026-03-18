@@ -1828,9 +1828,10 @@ Nathalie Joulie-Morand`;
 
             if (error) throw error;
 
-            window.alert('STEP 3: calling ConvocationEmail.show()');
             ConvocationEmail.show(formation);
-            window.alert('STEP 4: done');
+            // Vérifier l'état du modal
+            const m = document.getElementById('convocationModal');
+            window.alert('Modal display=' + m.style.display + ' offsetWidth=' + m.offsetWidth + ' offsetHeight=' + m.offsetHeight + ' children=' + m.children.length);
         } catch (error) {
             window.alert('CATCH: ' + error.message + '\n' + error.stack);
         }
