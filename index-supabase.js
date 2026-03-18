@@ -967,10 +967,10 @@ const CRMApp = {
                             <div style="border-top: 1px solid #e5e7eb; margin: 4px 0; padding-top: 2px;">
                                 <span style="font-size: 0.65rem; color: #9ca3af; padding: 0 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">Documents</span>
                             </div>
-                            <button onclick="CRMApp.createPedagogicalSheet(${f.id})">📄 Fiche pedagogique</button>
+                            <button onclick="CRMApp.createPedagogicalSheet(${f.id})">📄 Fiche pédagogique</button>
                             <button onclick="CRMApp.createConvention(${f.id})">📑 Convention</button>
                             <button onclick="CRMApp.createContratSousTraitance(${f.id})">📝 Contrat sous-traitance</button>
-                            <button onclick="CRMApp.createAttendanceSheet(${f.id})">📋 Feuille de presence</button>
+                            <button onclick="CRMApp.createAttendanceSheet(${f.id})">📋 Feuille de présence</button>
                             <button onclick="CRMApp.createCertificate(${f.id})">🏅 Certificat + Attestation</button>
 
                             <div style="border-top: 1px solid #e5e7eb; margin: 4px 0; padding-top: 2px;">
@@ -1063,11 +1063,11 @@ const CRMApp = {
 
             // Workflow items
             const workflow = [
-                { label: 'Fiche pedagogique', done: hasDoc('fiche_pedagogique'), actionLabel: hasDoc('fiche_pedagogique') ? 'Ouvrir' : 'Creer', actionClass: hasDoc('fiche_pedagogique') ? 'open' : 'generate', action: hasDoc('fiche_pedagogique') ? `CRMApp.openDocument(${formationId}, 'fiche_pedagogique')` : `CRMApp.createPedagogicalSheet(${formationId})` },
+                { label: 'Fiche pédagogique', done: hasDoc('fiche_pedagogique'), actionLabel: hasDoc('fiche_pedagogique') ? 'Ouvrir' : 'Creer', actionClass: hasDoc('fiche_pedagogique') ? 'open' : 'generate', action: hasDoc('fiche_pedagogique') ? `CRMApp.openDocument(${formationId}, 'fiche_pedagogique')` : `CRMApp.createPedagogicalSheet(${formationId})` },
                 { label: 'Convention', done: hasDoc('convention'), actionLabel: hasDoc('convention') ? 'Ouvrir' : 'Creer', actionClass: hasDoc('convention') ? 'open' : 'generate', action: hasDoc('convention') ? `CRMApp.openDocument(${formationId}, 'convention')` : `CRMApp.createConvention(${formationId})` },
                 { label: 'Inviter le client (acces)', done: false, actionLabel: 'Envoyer', actionClass: 'send', action: `CRMApp.inviterClient(${formationId})` },
                 { label: 'Convocation', done: hasConvocation, actionLabel: hasConvocation ? 'Renvoyer' : 'Envoyer', actionClass: 'send', action: `CRMApp.sendConvocation(${formationId})` },
-                { label: 'Feuille de presence', done: hasDoc('attendance_sheet'), actionLabel: hasDoc('attendance_sheet') ? 'Ouvrir' : 'Creer', actionClass: hasDoc('attendance_sheet') ? 'open' : 'generate', action: hasDoc('attendance_sheet') ? `CRMApp.openDocument(${formationId}, 'attendance_sheet')` : `CRMApp.createAttendanceSheet(${formationId})` },
+                { label: 'Feuille de présence', done: hasDoc('attendance_sheet'), actionLabel: hasDoc('attendance_sheet') ? 'Ouvrir' : 'Creer', actionClass: hasDoc('attendance_sheet') ? 'open' : 'generate', action: hasDoc('attendance_sheet') ? `CRMApp.openDocument(${formationId}, 'attendance_sheet')` : `CRMApp.createAttendanceSheet(${formationId})` },
                 { label: 'Mail fin de formation', done: false, actionLabel: 'Envoyer', actionClass: 'send', action: `CRMApp.sendMailFinFormation(${formationId})` },
                 { label: 'Certificat + Attestation', done: hasDoc('certificate'), actionLabel: hasDoc('certificate') ? 'Ouvrir' : 'Creer', actionClass: hasDoc('certificate') ? 'open' : 'generate', action: hasDoc('certificate') ? `CRMApp.openDocument(${formationId}, 'certificate')` : `CRMApp.createCertificate(${formationId})` },
                 { label: 'Envoyer vers BPF', done: false, actionLabel: 'Envoyer', actionClass: 'send', action: `CRMApp.envoyerVersBPF(${formationId})` },
@@ -1103,10 +1103,10 @@ const CRMApp = {
                     </div>
                     <div style="display: flex; align-items: center; gap: 1rem;">
                         <select class="status-badge-select ${statusColors[formation.status] || 'planned'}" onchange="CRMApp.updateFormationStatus(${formationId}, this.value)" id="detail-status-select">
-                            <option value="planned" ${formation.status === 'planned' ? 'selected' : ''}>Planifiee</option>
+                            <option value="planned" ${formation.status === 'planned' ? 'selected' : ''}>Planifiée</option>
                             <option value="in_progress" ${formation.status === 'in_progress' ? 'selected' : ''}>En cours</option>
-                            <option value="completed" ${formation.status === 'completed' ? 'selected' : ''}>Terminee</option>
-                            <option value="cancelled" ${formation.status === 'cancelled' ? 'selected' : ''}>Annulee</option>
+                            <option value="completed" ${formation.status === 'completed' ? 'selected' : ''}>Terminée</option>
+                            <option value="cancelled" ${formation.status === 'cancelled' ? 'selected' : ''}>Annulée</option>
                         </select>
                         <button onclick="FormationForm.show(${formationId})" style="padding: 0.5rem 1rem; background: var(--gray-100); border: none; border-radius: var(--radius-md); cursor: pointer; font-weight: 500; color: var(--gray-700);">
                             Modifier les infos
@@ -1116,7 +1116,7 @@ const CRMApp = {
 
                 <!-- Workflow -->
                 <div class="workflow-section">
-                    <h3>Prochaines etapes</h3>
+                    <h3>Prochaines étapes</h3>
                     ${workflow.map(w => `
                         <div class="workflow-item">
                             <div class="left">
@@ -1132,9 +1132,9 @@ const CRMApp = {
                 <div class="detail-grid">
                     <div class="workflow-section">
                         <h3>Documents (${docs.length})</h3>
-                        ${docs.length === 0 ? '<p style="color: var(--gray-500); font-size: 0.9rem;">Aucun document genere</p>' :
+                        ${docs.length === 0 ? '<p style="color: var(--gray-500); font-size: 0.9rem;">Aucun document généré</p>' :
                         docs.map(doc => {
-                            const typeLabels = { 'fiche_pedagogique': 'Fiche pedagogique', 'google_doc': 'Fiche pedagogique', 'convention': 'Convention', 'attendance_sheet': 'Feuille de presence', 'certificate': 'Certificat', 'contrat_sous_traitance': 'Contrat sous-traitance' };
+                            const typeLabels = { 'fiche_pedagogique': 'Fiche pédagogique', 'google_doc': 'Fiche pédagogique', 'convention': 'Convention', 'attendance_sheet': 'Feuille de présence', 'certificate': 'Certificat', 'contrat_sous_traitance': 'Contrat sous-traitance' };
                             return `<div style="display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--gray-100);">
                                 <span style="font-size: 0.9rem; color: var(--gray-700);">${doc.name || typeLabels[doc.type] || doc.type}</span>
                                 <button onclick="CRMApp.openDocument(${formationId}, '${doc.type}')" style="padding: 0.25rem 0.6rem; background: var(--gray-100); border: none; border-radius: var(--radius-sm); cursor: pointer; font-size: 0.8rem;">Ouvrir</button>
@@ -1143,8 +1143,8 @@ const CRMApp = {
                     </div>
 
                     <div class="workflow-section">
-                        <h3>Emails envoyes (${convocLogs.length})</h3>
-                        ${convocLogs.length === 0 ? '<p style="color: var(--gray-500); font-size: 0.9rem;">Aucun email envoye</p>' :
+                        <h3>Emails envoyés (${convocLogs.length})</h3>
+                        ${convocLogs.length === 0 ? '<p style="color: var(--gray-500); font-size: 0.9rem;">Aucun email envoyé</p>' :
                         convocLogs.map(log => `<div style="display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--gray-100);">
                             <div>
                                 <span style="font-size: 0.85rem; font-weight: 500;">${log.subject || 'Convocation'}</span>
@@ -2401,7 +2401,7 @@ Nathalie Joulie-Morand`;
                         <ul style="margin-top: 0.5rem; margin-left: 1rem; list-style: none;">
                             ${alertes.map(a => `
                                 <li style="margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: space-between;">
-                                    <span>${a.formation_name} - ${a.company_name} (terminee le ${a.end_date})</span>
+                                    <span>${a.formation_name} - ${a.company_name} (terminée le ${a.end_date})</span>
                                     <button onclick="CRMApp.envoyerQuestionnaireFroid(${a.id})"
                                         style="padding: 0.25rem 0.75rem; background: #f59e0b; color: white; border: none; border-radius: var(--radius-md); cursor: pointer; font-size: 0.8rem;">
                                         Envoyer
