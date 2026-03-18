@@ -962,6 +962,7 @@ const CRMApp = {
                             <button onclick="CRMApp.viewFormation(${f.id})">Détails</button>
                             <button onclick="CRMApp.sendConvocation(${f.id})" style="color: #7c3aed; font-weight: 500;">📧 Envoi de la convocation</button>
                             <button onclick="CRMApp.relanceConvention(${f.id})" style="color: #b45309; font-weight: 500;">📩 Relancer convention</button>
+                            <button onclick="CRMApp.relanceQuestionnaires(${f.id})" style="color: #dc2626; font-weight: 500;">📋 Relancer questionnaires</button>
                             <button onclick="CRMApp.sendMailFinFormation(${f.id})" style="color: #059669; font-weight: 500;">📧 Mail fin de formation</button>
                             <button onclick="CRMApp.createPedagogicalSheet(${f.id})">Créer fiche pédagogique</button>
                             <button onclick="CRMApp.createConvention(${f.id})">Créer convention</button>
@@ -1392,6 +1393,51 @@ Nathalie JOULIÉ MORAND`;
             });
         } catch (error) {
             console.error('Erreur mail fin de formation:', error);
+            alert('Erreur lors de la préparation du mail.');
+        }
+    },
+
+    async relanceQuestionnaires(formationId) {
+        try {
+            const { data: formation, error } = await supabaseClient
+                .from('formations')
+                .select('*')
+                .eq('id', formationId)
+                .single();
+
+            if (error) throw error;
+
+            const clientEmail = formation.client_email;
+            if (!clientEmail) {
+                alert('Aucun email client renseigné pour cette formation.');
+                return;
+            }
+
+            const subject = `Questionnaires post-formation "${formation.formation_name || 'Formation'}"`;
+            const body = `Bonjour,
+
+J'espère que vous allez bien.
+
+A l'issue de la formation, je vous ai transmis un mail avec 2 questionnaires à compléter par chaque apprenant. Ces derniers sont importants pour mesurer l'impact de la formation et pour répondre aux exigences de la démarche qualité Qualiopi.
+
+Sauf erreur de ma part, les questionnaires n'ont pas été complétés à ce jour. Pouvez-vous les transmettre à nouveau aux apprenants et leur demander de les remplir au plus tôt ?
+
+Questionnaire d'évaluation des acquis :
+
+Questionnaire de satisfaction :
+
+En vous remerciant par avance
+
+Nathalie Joulie-Morand`;
+
+            GenericEmail.show({
+                title: '📋 Relance questionnaires',
+                to: clientEmail,
+                subject,
+                body
+            });
+        } catch (error) {
+            console.error('Erreur relance questionnaires:', error);
             alert('Erreur lors de la préparation du mail.');
         }
     },

@@ -251,7 +251,7 @@ const PdfGenerator = {
             const colWidths = [30, 55, 45, 50];
 
             const rows = [[
-                `${formation.hours_per_learner || 0}h\n\n${formation.number_of_days || 0} jours`,
+                `${formation.hours_per_learner || 0}h\n\n${formation.number_of_days || 0} ${(formation.number_of_days || 0) <= 1 ? 'jour' : 'jours'}`,
                 formation.objectives || 'RAS',
                 formation.module_1 || 'Commerce',
                 formation.methods_tools || 'RAS'
@@ -387,8 +387,22 @@ const PdfGenerator = {
             const currentDate = new Date().toLocaleDateString('fr-FR');
             const startDate = this.formatDate(formation.start_date);
             const endDate = this.formatDate(formation.end_date);
-            const isSameDate = startDate === endDate;
-            const dates = isSameDate ? startDate : `Du ${startDate} au ${endDate}`;
+            // Lister chaque jour individuellement (demande cliente)
+            let dates = startDate;
+            if (startDate !== endDate && formation.start_date && formation.end_date) {
+                // Générer la liste des jours entre start et end
+                const daysList = [];
+                const current = new Date(formation.start_date);
+                const end = new Date(formation.end_date);
+                while (current <= end) {
+                    // Exclure les week-ends (samedi=6, dimanche=0)
+                    if (current.getDay() !== 0 && current.getDay() !== 6) {
+                        daysList.push(current.toLocaleDateString('fr-FR'));
+                    }
+                    current.setDate(current.getDate() + 1);
+                }
+                dates = daysList.length > 0 ? daysList.join(', ') : `${startDate}, ${endDate}`;
+            }
             const learnersData = this.parseLearners(formation);
             const learnersNames = learnersData.map(l => this.getLearnerName(l)).filter(n => n).join(', ');
 
@@ -433,7 +447,7 @@ const PdfGenerator = {
             doc.text(formation.company_postal_code || '', indent, y); y += 6;
 
             doc.setFont('helvetica', 'normal');
-            doc.text(`Représenté par ${formation.company_director_name || ''} agissant en qualité de ${formation.company_director_title || 'dirigeant'}`, margin, y); y += 6;
+            doc.text(`Représenté par ${formation.company_director_name || ''}  agissant en qualité de ${formation.company_director_title || 'dirigeant(e)'}`, margin, y); y += 6;
             doc.text('Ci-après désigné "le Client",', margin, y); y += 8;
 
             // Texte légal

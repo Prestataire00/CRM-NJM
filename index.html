@@ -835,7 +835,7 @@
                             d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
                         </path>
                     </svg>
-                    Bibliothèque Templates
+                    Bibliothèque Qualiopi
                 </a>
 
                 <a href="#acces" class="nav-item" data-page="acces">
@@ -1291,17 +1291,16 @@
             <!-- BIBLIOTHÈQUE TEMPLATES PAGE -->
             <div id="page-biblio-templates" class="page-content" style="display:none;">
                 <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-900); margin-bottom: 2rem;">
-                    Bibliothèque
-                    Templates</h2>
+                    Bibliothèque Qualiopi</h2>
 
                 <div style="display: grid; gap: 1.5rem;">
-                    <div
-                        style="background: white; border-radius: var(--radius-xl); padding: 1.5rem; box-shadow: var(--shadow-sm);">
+                    <!-- Avant la formation -->
+                    <div style="background: white; border-radius: var(--radius-xl); padding: 1.5rem; box-shadow: var(--shadow-sm);">
                         <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--gray-900); margin-bottom: 1rem;">
-                            Documents Formateurs</h3>
+                            📋 Avant la formation</h3>
                         <div id="expiring-docs"
                             style="margin-bottom: 1rem; padding: 1rem; background: #fef3c7; border-left: 4px solid #f59e0b; border-radius: var(--radius-md); display: none;">
-                            <strong>⚠️ Documents prochainement expirés:</strong>
+                            <strong>Documents prochainement expirés:</strong>
                             <ul id="expiring-list" style="margin-top: 0.5rem; margin-left: 1.5rem;"></ul>
                         </div>
                         <button onclick="CRMApp.uploadTemplate('formateurs')"
@@ -1310,14 +1309,24 @@
                         <div id="templates-formateurs" style="margin-top: 1rem;"></div>
                     </div>
 
-                    <div
-                        style="background: white; border-radius: var(--radius-xl); padding: 1.5rem; box-shadow: var(--shadow-sm);">
+                    <!-- Pendant la formation -->
+                    <div style="background: white; border-radius: var(--radius-xl); padding: 1.5rem; box-shadow: var(--shadow-sm);">
                         <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--gray-900); margin-bottom: 1rem;">
-                            Documents Pédagogiques</h3>
+                            📝 Pendant la formation</h3>
                         <button onclick="CRMApp.uploadTemplate('pedagogiques')"
                             style="padding: 0.75rem 1.5rem; background: var(--primary-pink); color: white; border: none; border-radius: var(--radius-md); font-weight: 600; cursor: pointer;">+
-                            Ajouter Template</button>
+                            Ajouter Document</button>
                         <div id="templates-pedagogiques" style="margin-top: 1rem;"></div>
+                    </div>
+
+                    <!-- Après la formation -->
+                    <div style="background: white; border-radius: var(--radius-xl); padding: 1.5rem; box-shadow: var(--shadow-sm);">
+                        <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--gray-900); margin-bottom: 1rem;">
+                            ✅ Après la formation</h3>
+                        <button onclick="CRMApp.uploadTemplate('apres')"
+                            style="padding: 0.75rem 1.5rem; background: var(--primary-green); color: white; border: none; border-radius: var(--radius-md); font-weight: 600; cursor: pointer;">+
+                            Ajouter Document</button>
+                        <div id="templates-apres" style="margin-top: 1rem;"></div>
                     </div>
                 </div>
             </div>
@@ -2197,7 +2206,7 @@
                                 pageName === 'veille' ? 'Veille' :
                                     pageName === 'bpf' ? 'BPF' :
                                         pageName === 'biblio-supports' ? 'Bibliothèque Supports' :
-                                            pageName === 'biblio-templates' ? 'Bibliothèque Templates' :
+                                            pageName === 'biblio-templates' ? 'Bibliothèque Qualiopi' :
                                                 pageName === 'acces' ? 'Gestion des Accès' :
                                                     pageName === 'parametres' ? 'Paramètres' : 'CRM';
                 },
