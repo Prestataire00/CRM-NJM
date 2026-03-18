@@ -1029,11 +1029,166 @@ const CRMApp = {
     },
 
     viewFormation(id) {
-        // Ouvrir le formulaire en mode édition
-        if (typeof FormationForm !== 'undefined') {
-            FormationForm.show(id);
-        } else {
-            alert(`Détails de la formation #${id} - FormationForm non disponible`);
+        this.showFormationDetail(id);
+    },
+
+    async showFormationDetail(formationId) {
+        try {
+            const { data: formation, error } = await supabaseClient
+                .from('formations')
+                .select('*, formation_documents(*)')
+                .eq('id', formationId)
+                .single();
+
+            if (error) throw error;
+
+            // Récupérer les logs de convocation
+            const convocResult = await SupabaseData.getConvocationLogs(formationId);
+            const convocLogs = convocResult.success ? convocResult.data : [];
+
+            // Déterminer les documents existants
+            const docs = formation.formation_documents || [];
+            const hasDoc = (type) => docs.some(d => d.type === type || (type === 'fiche_pedagogique' && d.type === 'google_doc'));
+            const hasConvocation = convocLogs.length > 0;
+
+            // Infos formatées
+            const startDate = formation.start_date ? new Date(formation.start_date).toLocaleDateString('fr-FR') : 'N/A';
+            const endDate = formation.end_date ? new Date(formation.end_date).toLocaleDateString('fr-FR') : 'N/A';
+            const learnersData = typeof formation.learners_data === 'string' ? JSON.parse(formation.learners_data || '[]') : (formation.learners_data || []);
+
+            const statusColors = {
+                'planned': 'planned', 'in_progress': 'in_progress',
+                'completed': 'completed', 'cancelled': 'cancelled'
+            };
+
+            // Workflow items
+            const workflow = [
+                { label: 'Fiche pedagogique', done: hasDoc('fiche_pedagogique'), actionLabel: hasDoc('fiche_pedagogique') ? 'Ouvrir' : 'Creer', actionClass: hasDoc('fiche_pedagogique') ? 'open' : 'generate', action: hasDoc('fiche_pedagogique') ? `CRMApp.openDocument(${formationId}, 'fiche_pedagogique')` : `CRMApp.createPedagogicalSheet(${formationId})` },
+                { label: 'Convention', done: hasDoc('convention'), actionLabel: hasDoc('convention') ? 'Ouvrir' : 'Creer', actionClass: hasDoc('convention') ? 'open' : 'generate', action: hasDoc('convention') ? `CRMApp.openDocument(${formationId}, 'convention')` : `CRMApp.createConvention(${formationId})` },
+                { label: 'Inviter le client (acces)', done: false, actionLabel: 'Envoyer', actionClass: 'send', action: `CRMApp.inviterClient(${formationId})` },
+                { label: 'Convocation', done: hasConvocation, actionLabel: hasConvocation ? 'Renvoyer' : 'Envoyer', actionClass: 'send', action: `CRMApp.sendConvocation(${formationId})` },
+                { label: 'Feuille de presence', done: hasDoc('attendance_sheet'), actionLabel: hasDoc('attendance_sheet') ? 'Ouvrir' : 'Creer', actionClass: hasDoc('attendance_sheet') ? 'open' : 'generate', action: hasDoc('attendance_sheet') ? `CRMApp.openDocument(${formationId}, 'attendance_sheet')` : `CRMApp.createAttendanceSheet(${formationId})` },
+                { label: 'Mail fin de formation', done: false, actionLabel: 'Envoyer', actionClass: 'send', action: `CRMApp.sendMailFinFormation(${formationId})` },
+                { label: 'Certificat + Attestation', done: hasDoc('certificate'), actionLabel: hasDoc('certificate') ? 'Ouvrir' : 'Creer', actionClass: hasDoc('certificate') ? 'open' : 'generate', action: hasDoc('certificate') ? `CRMApp.openDocument(${formationId}, 'certificate')` : `CRMApp.createCertificate(${formationId})` },
+                { label: 'Envoyer vers BPF', done: false, actionLabel: 'Envoyer', actionClass: 'send', action: `CRMApp.envoyerVersBPF(${formationId})` },
+            ];
+
+            // Contrat sous-traitance si sous-traitant
+            if (formation.subcontractor_first_name) {
+                workflow.splice(2, 0, {
+                    label: 'Contrat sous-traitance', done: hasDoc('contrat_sous_traitance'),
+                    actionLabel: hasDoc('contrat_sous_traitance') ? 'Ouvrir' : 'Creer',
+                    actionClass: hasDoc('contrat_sous_traitance') ? 'open' : 'generate',
+                    action: hasDoc('contrat_sous_traitance') ? `CRMApp.openDocument(${formationId}, 'contrat_sous_traitance')` : `CRMApp.createContratSousTraitance(${formationId})`
+                });
+            }
+
+            const container = document.getElementById('formation-detail-content');
+            container.innerHTML = `
+                <!-- Header -->
+                <div class="formation-detail-header">
+                    <div>
+                        <button onclick="CRMApp.showPage('formations')" style="background: none; border: none; cursor: pointer; color: var(--primary-purple); font-weight: 500; margin-bottom: 0.5rem; padding: 0; font-size: 0.9rem;">
+                            ← Retour aux formations
+                        </button>
+                        <h2>${formation.formation_name || 'Formation'}</h2>
+                        <div class="meta">
+                            ${formation.company_name || formation.client_name || 'Client'} &bull;
+                            ${startDate}${startDate !== endDate ? ' - ' + endDate : ''} &bull;
+                            ${formation.training_location || ''} &bull;
+                            ${learnersData.length} apprenant(s) &bull;
+                            ${formation.hours_per_learner || 0}h &bull;
+                            ${formation.total_amount || 0} EUR HT
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <select class="status-badge-select ${statusColors[formation.status] || 'planned'}" onchange="CRMApp.updateFormationStatus(${formationId}, this.value)" id="detail-status-select">
+                            <option value="planned" ${formation.status === 'planned' ? 'selected' : ''}>Planifiee</option>
+                            <option value="in_progress" ${formation.status === 'in_progress' ? 'selected' : ''}>En cours</option>
+                            <option value="completed" ${formation.status === 'completed' ? 'selected' : ''}>Terminee</option>
+                            <option value="cancelled" ${formation.status === 'cancelled' ? 'selected' : ''}>Annulee</option>
+                        </select>
+                        <button onclick="FormationForm.show(${formationId})" style="padding: 0.5rem 1rem; background: var(--gray-100); border: none; border-radius: var(--radius-md); cursor: pointer; font-weight: 500; color: var(--gray-700);">
+                            Modifier les infos
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Workflow -->
+                <div class="workflow-section">
+                    <h3>Prochaines etapes</h3>
+                    ${workflow.map(w => `
+                        <div class="workflow-item">
+                            <div class="left">
+                                <div class="check ${w.done ? 'done' : 'todo'}">${w.done ? '✓' : ''}</div>
+                                <span class="label ${w.done ? 'done' : ''}">${w.label}</span>
+                            </div>
+                            <button class="action-btn ${w.actionClass}" onclick="${w.action}">${w.actionLabel}</button>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <!-- Documents & Emails -->
+                <div class="detail-grid">
+                    <div class="workflow-section">
+                        <h3>Documents (${docs.length})</h3>
+                        ${docs.length === 0 ? '<p style="color: var(--gray-500); font-size: 0.9rem;">Aucun document genere</p>' :
+                        docs.map(doc => {
+                            const typeLabels = { 'fiche_pedagogique': 'Fiche pedagogique', 'google_doc': 'Fiche pedagogique', 'convention': 'Convention', 'attendance_sheet': 'Feuille de presence', 'certificate': 'Certificat', 'contrat_sous_traitance': 'Contrat sous-traitance' };
+                            return `<div style="display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--gray-100);">
+                                <span style="font-size: 0.9rem; color: var(--gray-700);">${doc.name || typeLabels[doc.type] || doc.type}</span>
+                                <button onclick="CRMApp.openDocument(${formationId}, '${doc.type}')" style="padding: 0.25rem 0.6rem; background: var(--gray-100); border: none; border-radius: var(--radius-sm); cursor: pointer; font-size: 0.8rem;">Ouvrir</button>
+                            </div>`;
+                        }).join('')}
+                    </div>
+
+                    <div class="workflow-section">
+                        <h3>Emails envoyes (${convocLogs.length})</h3>
+                        ${convocLogs.length === 0 ? '<p style="color: var(--gray-500); font-size: 0.9rem;">Aucun email envoye</p>' :
+                        convocLogs.map(log => `<div style="display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--gray-100);">
+                            <div>
+                                <span style="font-size: 0.85rem; font-weight: 500;">${log.subject || 'Convocation'}</span>
+                                <div style="font-size: 0.75rem; color: var(--gray-500);">${new Date(log.sent_at || log.created_at).toLocaleDateString('fr-FR')} - ${log.sent_to}</div>
+                            </div>
+                        </div>`).join('')}
+
+                        <div style="margin-top: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <button onclick="CRMApp.relanceConvention(${formationId})" style="padding: 0.35rem 0.75rem; background: #fef3c7; border: 1px solid #fcd34d; border-radius: var(--radius-md); cursor: pointer; font-size: 0.8rem;">Relancer convention</button>
+                            <button onclick="CRMApp.relanceQuestionnaires(${formationId})" style="padding: 0.35rem 0.75rem; background: #fee2e2; border: 1px solid #fca5a5; border-radius: var(--radius-md); cursor: pointer; font-size: 0.8rem;">Relancer questionnaires</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Afficher la page
+            this.showPage('formation-detail');
+
+        } catch (error) {
+            console.error('Erreur affichage detail formation:', error);
+            showToast('Erreur: ' + error.message, 'error');
+        }
+    },
+
+    async updateFormationStatus(formationId, newStatus) {
+        try {
+            const { error } = await supabaseClient
+                .from('formations')
+                .update({ status: newStatus })
+                .eq('id', formationId);
+
+            if (error) throw error;
+
+            // Mettre a jour le badge visuel
+            const select = document.getElementById('detail-status-select');
+            if (select) {
+                select.className = 'status-badge-select ' + newStatus;
+            }
+
+            showToast('Statut mis a jour', 'success');
+            this.loadFormations(); // Mettre a jour le tableau en arriere-plan
+        } catch (error) {
+            console.error('Erreur mise a jour statut:', error);
+            showToast('Erreur: ' + error.message, 'error');
         }
     },
 
