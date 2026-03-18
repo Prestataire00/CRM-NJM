@@ -1768,7 +1768,7 @@ const CRMApp = {
 
             const clientEmail = formation.client_email;
             if (!clientEmail) {
-                alert('Aucun email client renseigné pour cette formation.\nVeuillez d\'abord renseigner l\'email dans la fiche formation.');
+                window.alert('Email client non renseigné pour cette formation. Modifiez la fiche pour ajouter un email.');
                 return;
             }
 
@@ -1811,14 +1811,12 @@ Nathalie Joulie-Morand`;
             });
         } catch (error) {
             console.error('Erreur invitation client:', error);
-            showToast('Erreur préparation du mail', 'error');
+            window.alert('Erreur inviterClient: ' + error.message);
         }
     },
 
     async sendConvocation(formationId) {
-        window.alert('DEBUG: sendConvocation appelé avec ID=' + formationId);
         try {
-            // Récupérer les données de la formation
             const { data: formation, error } = await supabaseClient
                 .from('formations')
                 .select('*, formation_documents(*)')
@@ -1830,8 +1828,8 @@ Nathalie Joulie-Morand`;
             // Ouvrir le modal de convocation
             ConvocationEmail.show(formation);
         } catch (error) {
-            console.error('Erreur lors de la récupération de la formation:', error);
-            showToast('Impossible de récupérer la formation', 'error');
+            console.error('Erreur sendConvocation:', error);
+            window.alert('Erreur sendConvocation: ' + error.message);
         }
     },
 
