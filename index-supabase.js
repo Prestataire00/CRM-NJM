@@ -1816,6 +1816,7 @@ Nathalie Joulie-Morand`;
     },
 
     async sendConvocation(formationId) {
+        window.alert('DEBUG: sendConvocation appelé avec ID=' + formationId);
         try {
             // Récupérer les données de la formation
             const { data: formation, error } = await supabaseClient
