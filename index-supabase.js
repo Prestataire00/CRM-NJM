@@ -959,20 +959,32 @@ const CRMApp = {
                 <td style="padding: 1rem; text-align: center;">
                     <div class="dropdown">
                         <button style="padding: 0.5rem 1rem; background: var(--gray-100); border: none; border-radius: var(--radius-md); cursor: pointer; color: var(--gray-700); font-weight: 500;">Actions ▼</button>
-                        <div class="dropdown-content">
-                            <button onclick="CRMApp.viewFormation(${f.id})">Détails</button>
-                            <button onclick="CRMApp.inviterClient(${f.id})" style="color: #0284c7; font-weight: 500;">🔑 Inviter client (accès)</button>
-                            <button onclick="CRMApp.sendConvocation(${f.id})" style="color: #7c3aed; font-weight: 500;">📧 Envoi de la convocation</button>
-                            <button onclick="CRMApp.relanceConvention(${f.id})" style="color: #b45309; font-weight: 500;">📩 Relancer convention</button>
-                            <button onclick="CRMApp.relanceQuestionnaires(${f.id})" style="color: #dc2626; font-weight: 500;">📋 Relancer questionnaires</button>
-                            <button onclick="CRMApp.sendMailFinFormation(${f.id})" style="color: #059669; font-weight: 500;">📧 Mail fin de formation</button>
-                            <button onclick="CRMApp.createPedagogicalSheet(${f.id})">Créer fiche pédagogique</button>
-                            <button onclick="CRMApp.createConvention(${f.id})">Créer convention</button>
-                            <button onclick="CRMApp.createContratSousTraitance(${f.id})" style="color: #7c3aed; font-weight: 500;">📝 Contrat sous-traitance</button>
-                            <button onclick="CRMApp.createAttendanceSheet(${f.id})">Créer feuille de présence</button>
-                            <button onclick="CRMApp.createCertificate(${f.id})">Créer certificat</button>
-                            <button onclick="CRMApp.envoyerVersBPF(${f.id})" style="color: #059669; font-weight: 500;">📊 Envoyer vers BPF</button>
-                            <button onclick="CRMApp.deleteFormation(${f.id})" style="color: #991b1b;">Supprimer</button>
+                        <div class="dropdown-content" style="min-width: 220px;">
+                            <button onclick="CRMApp.viewFormation(${f.id})" style="font-weight: 500;">📋 Voir / Modifier</button>
+
+                            <div style="border-top: 1px solid #e5e7eb; margin: 4px 0; padding-top: 2px;">
+                                <span style="font-size: 0.65rem; color: #9ca3af; padding: 0 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">Documents</span>
+                            </div>
+                            <button onclick="CRMApp.createPedagogicalSheet(${f.id})">📄 Fiche pedagogique</button>
+                            <button onclick="CRMApp.createConvention(${f.id})">📑 Convention</button>
+                            <button onclick="CRMApp.createContratSousTraitance(${f.id})">📝 Contrat sous-traitance</button>
+                            <button onclick="CRMApp.createAttendanceSheet(${f.id})">📋 Feuille de presence</button>
+                            <button onclick="CRMApp.createCertificate(${f.id})">🏅 Certificat + Attestation</button>
+
+                            <div style="border-top: 1px solid #e5e7eb; margin: 4px 0; padding-top: 2px;">
+                                <span style="font-size: 0.65rem; color: #9ca3af; padding: 0 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">Emails</span>
+                            </div>
+                            <button onclick="CRMApp.inviterClient(${f.id})" style="color: #0284c7;">🔑 Inviter client (acces)</button>
+                            <button onclick="CRMApp.sendConvocation(${f.id})" style="color: #7c3aed;">📧 Convocation</button>
+                            <button onclick="CRMApp.relanceConvention(${f.id})" style="color: #b45309;">📩 Relance convention</button>
+                            <button onclick="CRMApp.sendMailFinFormation(${f.id})" style="color: #059669;">✅ Mail fin de formation</button>
+                            <button onclick="CRMApp.relanceQuestionnaires(${f.id})" style="color: #dc2626;">📊 Relance questionnaires</button>
+
+                            <div style="border-top: 1px solid #e5e7eb; margin: 4px 0; padding-top: 2px;">
+                                <span style="font-size: 0.65rem; color: #9ca3af; padding: 0 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">Admin</span>
+                            </div>
+                            <button onclick="CRMApp.envoyerVersBPF(${f.id})" style="color: #059669;">📈 Envoyer vers BPF</button>
+                            <button onclick="CRMApp.deleteFormation(${f.id})" style="color: #991b1b;">🗑 Supprimer</button>
                         </div>
                     </div>
                 </td>
