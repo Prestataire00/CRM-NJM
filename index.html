@@ -2131,6 +2131,43 @@
                         <input type="text" id="generic-email-subject"
                             style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: var(--radius-md); font-family: inherit;">
                     </div>
+                    <!-- Sélecteurs de questionnaires (masqués par défaut) -->
+                    <div id="generic-email-questionnaires" style="display: none; margin-bottom: 1.5rem; background: #f9fafb; padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--gray-200);">
+                        <label style="display: block; font-weight: 600; color: var(--gray-800); margin-bottom: 0.75rem; font-size: 0.9rem;">Insérer des liens questionnaires dans le mail</label>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                            <div>
+                                <label style="display: block; font-size: 0.8rem; color: var(--gray-600); margin-bottom: 0.25rem;">Questionnaire évaluation des acquis</label>
+                                <select id="generic-email-quest-eval" onchange="GenericEmail.insertQuestionnaire('eval')" style="width: 100%; padding: 0.5rem; border: 1px solid var(--gray-300); border-radius: var(--radius-md); font-size: 0.85rem;">
+                                    <option value="">-- Sélectionner --</option>
+                                    <optgroup label="Techniques de vente">
+                                        <option value="https://docs.google.com/forms/d/1U4DVl8HIrSE1KXBjOhr0sEIYl6gNLefz0HR4bJg871w/viewform">Techniques de vente 1</option>
+                                        <option value="https://docs.google.com/forms/d/10HEK5pAdmcvJVuaXoXQnIXXdgFvnISkScALcKYVes4A/viewform">Techniques de vente 2</option>
+                                        <option value="https://docs.google.com/forms/d/1o3kUgM3pGaPSEYSXlIvESUSLpMa5754VzB8yZ3SyqN8/viewform">Techniques de vente 3</option>
+                                        <option value="https://docs.google.com/forms/d/1_l3VjROXs1Bp_O6L4_mU_tZoYunqdlm_s_PMyXu0DBU/viewform">Techniques de vente 4</option>
+                                    </optgroup>
+                                    <optgroup label="Management">
+                                        <option value="https://docs.google.com/forms/d/1Xh4ry2rzIlkxIsmXNm9BJl6R08SO5hsJbpYsJHzxYQI/viewform">Management 1</option>
+                                        <option value="https://docs.google.com/forms/d/1hF8egxucpogO3V5mx5-LV-B2_jaeC0S_76WMJ9IGlyg/viewform">Manager commercial</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 0.8rem; color: var(--gray-600); margin-bottom: 0.25rem;">Questionnaire de satisfaction</label>
+                                <select id="generic-email-quest-satis" onchange="GenericEmail.insertQuestionnaire('satis')" style="width: 100%; padding: 0.5rem; border: 1px solid var(--gray-300); border-radius: var(--radius-md); font-size: 0.85rem;">
+                                    <option value="">-- Sélectionner --</option>
+                                    <optgroup label="Techniques de vente">
+                                        <option value="https://docs.google.com/forms/d/1U4DVl8HIrSE1KXBjOhr0sEIYl6gNLefz0HR4bJg871w/viewform">Techniques de vente 1</option>
+                                        <option value="https://docs.google.com/forms/d/10HEK5pAdmcvJVuaXoXQnIXXdgFvnISkScALcKYVes4A/viewform">Techniques de vente 2</option>
+                                    </optgroup>
+                                    <optgroup label="Management">
+                                        <option value="https://docs.google.com/forms/d/1Xh4ry2rzIlkxIsmXNm9BJl6R08SO5hsJbpYsJHzxYQI/viewform">Management 1</option>
+                                        <option value="https://docs.google.com/forms/d/1hF8egxucpogO3V5mx5-LV-B2_jaeC0S_76WMJ9IGlyg/viewform">Manager commercial</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
                     <div style="margin-bottom: 1.5rem;">
                         <label style="display: block; font-weight: 500; color: var(--gray-700); margin-bottom: 0.5rem;">Corps du mail</label>
                         <textarea id="generic-email-body"

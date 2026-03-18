@@ -1704,7 +1704,8 @@ Nathalie JOULIÉ MORAND`;
                 title: '📧 Mail fin de formation',
                 to: clientEmail,
                 subject,
-                body
+                body,
+                showQuestionnaires: true
             });
         } catch (error) {
             console.error('Erreur mail fin de formation:', error);
@@ -1749,7 +1750,8 @@ Nathalie Joulie-Morand`;
                 title: '📋 Relance questionnaires',
                 to: clientEmail,
                 subject,
-                body
+                body,
+                showQuestionnaires: true
             });
         } catch (error) {
             console.error('Erreur relance questionnaires:', error);
@@ -2455,10 +2457,11 @@ En vous remerciant par avance.
 Nathalie Joulie-Morand`;
 
             GenericEmail.show({
-                title: 'Questionnaire a froid (6 mois)',
+                title: 'Questionnaire à froid (6 mois)',
                 to: clientEmail,
                 subject,
-                body
+                body,
+                showQuestionnaires: true
             });
 
             await supabaseClient
@@ -3952,17 +3955,52 @@ const GenericEmail = {
         if (modal) modal.style.display = 'none';
     },
 
-    show({ title, to, subject, body }) {
+    show({ title, to, subject, body, showQuestionnaires = false }) {
         document.getElementById('generic-email-title').textContent = title || 'Envoi de mail';
         document.getElementById('generic-email-to').value = to || '';
         document.getElementById('generic-email-subject').value = subject || '';
         document.getElementById('generic-email-body').value = body || '';
+
+        // Afficher/masquer les sélecteurs de questionnaires
+        const questSection = document.getElementById('generic-email-questionnaires');
+        if (questSection) {
+            questSection.style.display = showQuestionnaires ? 'block' : 'none';
+            // Reset les selects
+            const evalSelect = document.getElementById('generic-email-quest-eval');
+            const satisSelect = document.getElementById('generic-email-quest-satis');
+            if (evalSelect) evalSelect.value = '';
+            if (satisSelect) satisSelect.value = '';
+        }
 
         const sendBtn = document.getElementById('generic-email-send-btn');
         sendBtn.disabled = false;
         sendBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg> Envoyer le mail';
 
         document.getElementById('genericEmailModal').style.display = 'flex';
+    },
+
+    insertQuestionnaire(type) {
+        const body = document.getElementById('generic-email-body');
+        if (!body) return;
+
+        const selectId = type === 'eval' ? 'generic-email-quest-eval' : 'generic-email-quest-satis';
+        const select = document.getElementById(selectId);
+        if (!select) return;
+
+        const url = select.value;
+        let text = body.value;
+
+        if (type === 'eval') {
+            // Remplacer le placeholder évaluation
+            text = text.replace(/Questionnaire d'évaluation des acquis :\s*\n?\[?[^\]\n]*\]?/,
+                `Questionnaire d'évaluation des acquis :\n${url || '[Sélectionnez un questionnaire ci-dessus]'}`);
+        } else {
+            // Remplacer le placeholder satisfaction
+            text = text.replace(/Questionnaire de satisfaction :\s*\n?\[?[^\]\n]*\]?/,
+                `Questionnaire de satisfaction :\n${url || '[Sélectionnez un questionnaire ci-dessus]'}`);
+        }
+
+        body.value = text;
     },
 
     copyToClipboard() {
