@@ -195,22 +195,25 @@ const CRMApp = {
                 };
                 const docType = docTypes[doc.type] || { icon: '📑', label: doc.type || 'Document', color: '#0284c7' };
 
-                const docUrl = doc.document_url || doc.url || '';
-                const isGenerated = docUrl.startsWith('generate://');
+                // Types de documents régénérables localement (pas besoin d'URL externe)
+                const regenerableTypes = ['fiche_pedagogique', 'google_doc', 'convention', 'contrat_sous_traitance', 'attendance_sheet', 'certificate'];
+                const canRegenerate = regenerableTypes.includes(doc.type);
 
-                // Pour les documents générés à la volée, extraire formationId et type
+                // Tous les documents de type connu sont régénérés à la volée
                 let onClickAttr = '';
-                if (isGenerated) {
-                    const parts = docUrl.replace('generate://', '').split('/');
-                    const genType = parts[0];
-                    const genId = parts[1];
-                    onClickAttr = `event.preventDefault(); CRMApp.openDocument(${genId}, '${genType}')`;
-                } else if (!docUrl || docUrl === '#') {
-                    onClickAttr = `event.preventDefault(); alert('URL du document non disponible')`;
+                if (canRegenerate) {
+                    onClickAttr = `event.preventDefault(); CRMApp.openDocument(${formation.id}, '${doc.type}')`;
+                } else {
+                    const docUrl = doc.document_url || doc.url || '';
+                    if (!docUrl || docUrl === '#' || docUrl.startsWith('generate://')) {
+                        onClickAttr = `event.preventDefault(); alert('URL du document non disponible')`;
+                    }
                 }
 
+                const displayUrl = canRegenerate ? '#' : (toPdfUrl(doc.document_url || doc.url || '') || '#');
+
                 return `
-                    <a href="${isGenerated ? '#' : (toPdfUrl(docUrl) || '#')}" ${isGenerated ? '' : 'target="_blank" rel="noopener noreferrer"'}
+                    <a href="${displayUrl}" ${canRegenerate ? '' : 'target="_blank" rel="noopener noreferrer"'}
                        style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: var(--gray-50); border-radius: var(--radius-md); text-decoration: none; color: var(--gray-900); margin-bottom: 0.5rem; transition: background 0.2s; cursor: pointer;"
                        onmouseover="this.style.background='var(--gray-100)'" onmouseout="this.style.background='var(--gray-50)'"
                        ${onClickAttr ? `onclick="${onClickAttr}"` : ''}>
@@ -665,14 +668,29 @@ const CRMApp = {
                 <div style="display: grid; gap: 1rem;">
                     ${allDocs.map(doc => {
                         const docType = docTypes[doc.type] || { icon: '📑', label: doc.type || 'Document', color: '#6b7280' };
-                        const docUrl = toPdfUrl(doc.document_url || doc.url || '');
+
+                        // Types régénérables localement
+                        const regenerableTypes = ['fiche_pedagogique', 'google_doc', 'convention', 'contrat_sous_traitance', 'attendance_sheet', 'certificate'];
+                        const canRegenerate = regenerableTypes.includes(doc.type) && formation.id;
+
+                        let onClickAttr = '';
+                        if (canRegenerate) {
+                            onClickAttr = `event.preventDefault(); CRMApp.openDocument(${formation.id}, '${doc.type}')`;
+                        } else {
+                            const docUrl = doc.document_url || doc.url || '';
+                            if (!docUrl || docUrl === '#' || docUrl.startsWith('generate://')) {
+                                onClickAttr = `event.preventDefault(); alert('Document non disponible')`;
+                            }
+                        }
+
+                        const displayUrl = canRegenerate ? '#' : (toPdfUrl(doc.document_url || doc.url || '') || '#');
 
                         return `
-                            <a href="${docUrl || '#'}" target="_blank" rel="noopener noreferrer"
+                            <a href="${displayUrl}" ${canRegenerate ? '' : 'target="_blank" rel="noopener noreferrer"'}
                                style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: var(--gray-50); border-radius: var(--radius-md); text-decoration: none; color: var(--gray-900); transition: all 0.2s; border: 1px solid transparent;"
                                onmouseover="this.style.background='white'; this.style.borderColor='var(--gray-200)'; this.style.boxShadow='var(--shadow-sm)';"
                                onmouseout="this.style.background='var(--gray-50)'; this.style.borderColor='transparent'; this.style.boxShadow='none';"
-                               onclick="if(!this.href || this.href.endsWith('#')) { event.preventDefault(); alert('URL du document non disponible'); }">
+                               ${onClickAttr ? `onclick="${onClickAttr}"` : ''}>
                                 <span style="font-size: 2rem;">${docType.icon}</span>
                                 <div style="flex: 1;">
                                     <div style="font-weight: 600; color: var(--gray-900);">${doc.name || docType.label}</div>
