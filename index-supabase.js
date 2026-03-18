@@ -48,6 +48,7 @@ function toPdfUrl(url) {
 const CRMApp = {
     currentPage: 'dashboard',
     currentVeilleType: 'formation',
+    allFormations: [], // Stockage pour le filtrage
 
     async init() {
         this.setupNavigation();
@@ -163,7 +164,7 @@ const CRMApp = {
 
         const formation = result.data.find(f => f.id === formationId);
         if (!formation) {
-            alert('Formation non trouvée');
+            showToast('Formation non trouvée', 'error');
             return;
         }
 
@@ -207,7 +208,7 @@ const CRMApp = {
                 } else {
                     const docUrl = doc.document_url || doc.url || '';
                     if (!docUrl || docUrl === '#' || docUrl.startsWith('generate://')) {
-                        onClickAttr = `event.preventDefault(); alert('URL du document non disponible')`;
+                        onClickAttr = `event.preventDefault(); showToast('Document non disponible', 'warning')`;
                     }
                 }
 
@@ -680,7 +681,7 @@ const CRMApp = {
                         } else {
                             const docUrl = doc.document_url || doc.url || '';
                             if (!docUrl || docUrl === '#' || docUrl.startsWith('generate://')) {
-                                onClickAttr = `event.preventDefault(); alert('Document non disponible')`;
+                                onClickAttr = `event.preventDefault(); showToast('Document non disponible', 'warning')`;
                             }
                         }
 
@@ -864,11 +865,12 @@ const CRMApp = {
 
         if (!result.success) {
             console.error('❌ Erreur lors du chargement des formations:', result.message);
-            alert('❌ Erreur de chargement: ' + result.message);
+            showToast('Erreur chargement: ' + result.message, 'error');
             return;
         }
 
         const formations = result.data;
+        this.allFormations = formations; // Stocker pour le filtrage
         console.log(`📋 Formations à afficher: ${formations.length}`);
         console.log('📁 Détails:', formations);
 
@@ -943,7 +945,7 @@ const CRMApp = {
 
                     return `
                             <div style="margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
-                                <a href="#" onclick="event.preventDefault(); ${canRegen ? `CRMApp.openDocument(${f.id}, '${doc.type}')` : (doc.document_url ? `window.open('${doc.document_url}', '_blank')` : `alert('Document non disponible')`)}" style="color: ${color}; text-decoration: none; font-size: 0.875rem; display: flex; align-items: center; gap: 4px; flex: 1; cursor: pointer;">
+                                <a href="#" onclick="event.preventDefault(); ${canRegen ? `CRMApp.openDocument(${f.id}, '${doc.type}')` : (doc.document_url ? `window.open('${doc.document_url}', '_blank')` : `showToast('Document non disponible', 'warning')`)}" style="color: ${color}; text-decoration: none; font-size: 0.875rem; display: flex; align-items: center; gap: 4px; flex: 1; cursor: pointer;">
                                     ${icon}
                                     <span style="flex: 1;">${doc.name || 'Document'}</span>
                                 </a>
@@ -994,6 +996,38 @@ const CRMApp = {
         console.log('✅ HTML généré et inséré dans le tbody');
     },
 
+    filterFormations() {
+        const search = (document.getElementById('formations-search')?.value || '').toLowerCase();
+        const statusFilter = document.getElementById('formations-status-filter')?.value || '';
+
+        const tbody = document.getElementById('formations-tbody');
+        if (!tbody) return;
+
+        const rows = tbody.querySelectorAll('tr');
+        let visibleCount = 0;
+
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            const statusCell = row.querySelector('td:nth-child(3)');
+            const statusText = statusCell ? statusCell.textContent.trim().toLowerCase() : '';
+
+            let matchesSearch = !search || text.includes(search);
+            let matchesStatus = !statusFilter;
+
+            if (statusFilter) {
+                const statusMap = { 'planned': 'planifi', 'in_progress': 'en cours', 'completed': 'termin' };
+                matchesStatus = statusText.includes(statusMap[statusFilter] || statusFilter);
+            }
+
+            if (matchesSearch && matchesStatus) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    },
+
     viewFormation(id) {
         // Ouvrir le formulaire en mode édition
         if (typeof FormationForm !== 'undefined') {
@@ -1021,7 +1055,7 @@ const CRMApp = {
                     const docData = await this._uploadAndSaveDoc(id, result, 'fiche_pedagogique');
 
                     if (docData) {
-                        alert('Fiche pédagogique créée et liée à la formation !');
+                        showToast('Fiche pédagogique créée !', 'success');
                         this.loadFormations();
                     }
                 }
@@ -1030,7 +1064,7 @@ const CRMApp = {
             }
         } catch (error) {
             console.error('Erreur lors de la récupération de la formation:', error);
-            alert('Erreur: Impossible de récupérer les données de la formation.');
+            showToast('Impossible de récupérer la formation', 'error');
         }
     },
 
@@ -1051,7 +1085,7 @@ const CRMApp = {
                     const docData = await this._uploadAndSaveDoc(id, result, 'convention');
 
                     if (docData) {
-                        alert('Convention créée et liée à la formation !');
+                        showToast('Convention créée !', 'success');
                         this.loadFormations();
                     }
                 }
@@ -1060,7 +1094,7 @@ const CRMApp = {
             }
         } catch (error) {
             console.error('Erreur lors de la récupération de la formation:', error);
-            alert('Erreur: Impossible de récupérer les données de la formation.');
+            showToast('Impossible de récupérer la formation', 'error');
         }
     },
 
@@ -1075,7 +1109,7 @@ const CRMApp = {
             if (error) throw error;
 
             if (!data.subcontractor_first_name) {
-                alert('Aucun sous-traitant associé à cette formation.');
+                showToast('Aucun sous-traitant associé', 'warning');
                 return;
             }
 
@@ -1086,7 +1120,7 @@ const CRMApp = {
                     const docData = await this._uploadAndSaveDoc(id, result, 'contrat_sous_traitance');
 
                     if (docData) {
-                        alert('Contrat de sous-traitance créé et lié à la formation !');
+                        showToast('Contrat sous-traitance créé !', 'success');
                         this.loadFormations();
                     }
                 }
@@ -1095,7 +1129,7 @@ const CRMApp = {
             }
         } catch (error) {
             console.error('Erreur lors de la création du contrat de sous-traitance:', error);
-            alert('Erreur: Impossible de créer le contrat de sous-traitance.');
+            showToast('Erreur création contrat', 'error');
         }
     },
 
@@ -1116,7 +1150,7 @@ const CRMApp = {
                     const docData = await this._uploadAndSaveDoc(id, result, 'attendance_sheet');
 
                     if (docData) {
-                        alert('Feuille de présence créée et liée à la formation !');
+                        showToast('Feuille de présence créée !', 'success');
                         this.loadFormations();
                     }
                 }
@@ -1125,7 +1159,7 @@ const CRMApp = {
             }
         } catch (error) {
             console.error('Erreur lors de la récupération de la formation:', error);
-            alert('Erreur: Impossible de récupérer les données de la formation.');
+            showToast('Impossible de récupérer la formation', 'error');
         }
     },
 
@@ -1146,7 +1180,7 @@ const CRMApp = {
                     const docData = await this._uploadAndSaveDoc(id, result, 'certificate');
 
                     if (docData) {
-                        alert('Certificat créé et lié à la formation !');
+                        showToast('Certificat créé !', 'success');
                         this.loadFormations();
                     }
                 }
@@ -1155,7 +1189,7 @@ const CRMApp = {
             }
         } catch (error) {
             console.error('Erreur lors de la récupération de la formation:', error);
-            alert('Erreur: Impossible de récupérer les données de la formation.');
+            showToast('Impossible de récupérer la formation', 'error');
         }
     },
 
@@ -1176,14 +1210,14 @@ const CRMApp = {
 
             if (!saveResult.success) {
                 console.error('Erreur sauvegarde doc:', saveResult);
-                alert('Document créé mais erreur lors de la liaison au CRM: ' + saveResult.message);
+                showToast('Erreur liaison: ' + saveResult.message, 'error');
                 return null;
             }
 
             return docData;
         } catch (error) {
             console.error('Erreur sauvegarde document:', error);
-            alert('Erreur lors de la sauvegarde du document: ' + error.message);
+            showToast('Erreur sauvegarde: ' + error.message, 'error');
             return null;
         }
     },
@@ -1220,7 +1254,7 @@ const CRMApp = {
                     result = await PdfGenerator.generateCertificate(data);
                     break;
                 default:
-                    alert('Type de document inconnu: ' + docType);
+                    showToast('Type de document inconnu: ' + docType, 'error');
                     return null;
             }
 
@@ -1262,11 +1296,11 @@ const CRMApp = {
                 await this.loadFormations();
             } else {
                 console.error('Erreur lors de la suppression:', result);
-                alert('Erreur lors de la suppression : ' + result.message);
+                showToast('Erreur suppression: ' + result.message, 'error');
             }
         } catch (error) {
             console.error('Exception dans deleteDocument:', error);
-            alert('Erreur inattendue lors de la suppression : ' + error.message);
+            showToast('Erreur: ' + error.message, 'error');
         }
     },
 
@@ -1278,7 +1312,7 @@ const CRMApp = {
                 await this.loadFormations();
                 await this.updateDashboardStats();
             } else {
-                alert('Erreur lors de la suppression : ' + result.message);
+                showToast('Erreur suppression: ' + result.message, 'error');
             }
         }
     },
@@ -1324,10 +1358,10 @@ const CRMApp = {
             const result = await SupabaseData.addBPF(bpfData);
 
             if (result.success) {
-                alert('Formation envoyée vers le BPF avec succès !');
+                showToast('Formation envoyée vers le BPF !', 'success');
                 this.loadBPF();
             } else {
-                alert('Erreur : ' + result.message);
+                showToast(result.message, 'error');
             }
         } catch (error) {
             console.error('Erreur envoi BPF:', error);
@@ -1390,7 +1424,7 @@ Nathalie Joulie-Morand`;
             });
         } catch (error) {
             console.error('Erreur invitation client:', error);
-            alert('Erreur lors de la préparation du mail.');
+            showToast('Erreur préparation du mail', 'error');
         }
     },
 
@@ -1409,7 +1443,7 @@ Nathalie Joulie-Morand`;
             ConvocationEmail.show(formation);
         } catch (error) {
             console.error('Erreur lors de la récupération de la formation:', error);
-            alert('Erreur: Impossible de récupérer les données de la formation.');
+            showToast('Impossible de récupérer la formation', 'error');
         }
     },
 
@@ -1453,7 +1487,7 @@ Nathalie Joulie-Morand`;
             });
         } catch (error) {
             console.error('Erreur relance convention:', error);
-            alert('Erreur lors de la préparation de la relance.');
+            showToast('Erreur préparation relance', 'error');
         }
     },
 
@@ -1469,7 +1503,7 @@ Nathalie Joulie-Morand`;
 
             const clientEmail = formation.client_email;
             if (!clientEmail) {
-                alert('Aucun email client renseigné pour cette formation.');
+                showToast('Email client non renseigné', 'warning');
                 return;
             }
 
@@ -1519,7 +1553,7 @@ Nathalie JOULIÉ MORAND`;
             });
         } catch (error) {
             console.error('Erreur mail fin de formation:', error);
-            alert('Erreur lors de la préparation du mail.');
+            showToast('Erreur préparation du mail', 'error');
         }
     },
 
@@ -1535,7 +1569,7 @@ Nathalie JOULIÉ MORAND`;
 
             const clientEmail = formation.client_email;
             if (!clientEmail) {
-                alert('Aucun email client renseigné pour cette formation.');
+                showToast('Email client non renseigné', 'warning');
                 return;
             }
 
@@ -1564,7 +1598,7 @@ Nathalie Joulie-Morand`;
             });
         } catch (error) {
             console.error('Erreur relance questionnaires:', error);
-            alert('Erreur lors de la préparation du mail.');
+            showToast('Erreur préparation du mail', 'error');
         }
     },
 
@@ -1572,13 +1606,13 @@ Nathalie Joulie-Morand`;
         try {
             const result = await SupabaseData.getConvocationLogs(formationId);
             if (!result.success) {
-                alert('Erreur lors de la récupération des détails.');
+                showToast('Erreur récupération détails', 'error');
                 return;
             }
 
             const logs = result.data;
             if (logs.length === 0) {
-                alert('Aucune convocation envoyée pour cette formation.');
+                showToast('Aucune convocation envoyée', 'info');
                 return;
             }
 
@@ -1653,7 +1687,7 @@ Nathalie Joulie-Morand`;
 
         } catch (error) {
             console.error('Erreur:', error);
-            alert('Erreur lors de la récupération des détails.');
+            showToast('Erreur récupération détails', 'error');
         }
     },
 
@@ -1711,9 +1745,9 @@ Nathalie Joulie-Morand`;
 
             if (result.success) {
                 await this.loadVeille();
-                alert('Veille ajoutée avec succès !');
+                showToast('Veille ajoutée !', 'success');
             } else {
-                alert('Erreur : ' + result.message);
+                showToast(result.message, 'error');
             }
         }
     },
@@ -1892,9 +1926,9 @@ Nathalie Joulie-Morand`;
             if (result.success) {
                 modal.remove();
                 await this.loadBPF();
-                alert('BPF mis à jour avec succès !');
+                showToast('BPF mis à jour !', 'success');
             } else {
-                alert('Erreur : ' + result.message);
+                showToast(result.message, 'error');
             }
         };
 
@@ -1910,9 +1944,9 @@ Nathalie Joulie-Morand`;
         const result = await SupabaseData.deleteBPF(id);
         if (result.success) {
             await this.loadBPF();
-            alert('BPF supprimé avec succès !');
+            showToast('BPF supprimé', 'success');
         } else {
-            alert('Erreur : ' + result.message);
+            showToast(result.message, 'error');
         }
     },
 
@@ -1929,7 +1963,7 @@ Nathalie Joulie-Morand`;
             : this.bpfData;
 
         if (!dataToExport.length) {
-            alert('Aucune donnée à exporter');
+            showToast('Aucune donnée à exporter', 'warning');
             return;
         }
 
@@ -2109,7 +2143,7 @@ Nathalie Joulie-Morand`;
         const file_url = document.getElementById('support-url').value.trim();
 
         if (!title) {
-            alert('Veuillez saisir un nom pour le support.');
+            showToast('Veuillez saisir un nom', 'warning');
             return;
         }
 
@@ -2123,9 +2157,9 @@ Nathalie Joulie-Morand`;
 
         if (result.success) {
             await this.loadSupports();
-            alert('Support ajouté avec succès !');
+            showToast('Support ajouté !', 'success');
         } else {
-            alert('Erreur : ' + result.message);
+            showToast(result.message, 'error');
         }
     },
 
@@ -2136,7 +2170,7 @@ Nathalie Joulie-Morand`;
         if (result.success) {
             await this.loadSupports();
         } else {
-            alert('Erreur : ' + result.message);
+            showToast(result.message, 'error');
         }
     },
 
@@ -2169,9 +2203,9 @@ Nathalie Joulie-Morand`;
             if (result.success) {
                 await this.loadTemplates();
                 await this.checkExpiringDocuments();
-                alert('Template ajouté avec succès !');
+                showToast('Document ajouté !', 'success');
             } else {
-                alert('Erreur : ' + result.message);
+                showToast(result.message, 'error');
             }
         }
     },
@@ -2239,7 +2273,7 @@ Nathalie Joulie-Morand`;
             if (error) throw error;
 
             const clientEmail = formation.client_email;
-            if (!clientEmail) { alert('Aucun email client renseigne.'); return; }
+            if (!clientEmail) { showToast('Email client non renseigné', 'warning'); return; }
 
             const directorName = formation.company_director_name || '';
             const subject = `Questionnaire a froid - Formation "${formation.formation_name || ''}"`;
@@ -2279,7 +2313,7 @@ Nathalie Joulie-Morand`;
 
         } catch (error) {
             console.error('Erreur envoi questionnaire a froid:', error);
-            alert('Erreur lors de la preparation du mail.');
+            showToast('Erreur préparation du mail', 'error');
         }
     },
 
@@ -2341,7 +2375,7 @@ Nathalie Joulie-Morand`;
         if (name && email && role && password) {
             const currentUser = await SupabaseAuth.checkSession();
             if (!currentUser) {
-                alert('Vous devez être connecté');
+                showToast('Vous devez être connecté', 'error');
                 return;
             }
 
@@ -2354,9 +2388,9 @@ Nathalie Joulie-Morand`;
 
             if (result.success) {
                 await this.loadUsers();
-                alert('Utilisateur créé avec succès !');
+                showToast('Utilisateur créé !', 'success');
             } else {
-                alert('Erreur : ' + result.message);
+                showToast(result.message, 'error');
             }
         }
     }
@@ -2811,7 +2845,7 @@ const UserManagement = {
 
         const user = result.users.find(u => u.id === userId);
         if (!user) {
-            alert('Utilisateur non trouvé.');
+            showToast('Utilisateur non trouvé', 'error');
             return;
         }
 
@@ -3575,12 +3609,12 @@ Nathalie JOULIÉ MORAND`;
 
         try {
             await navigator.clipboard.writeText(bodyTextarea.value);
-            alert('Le contenu du mail a été copié dans le presse-papiers !');
+            showToast('Copié dans le presse-papiers', 'success');
         } catch (err) {
             // Fallback pour les navigateurs plus anciens
             bodyTextarea.select();
             document.execCommand('copy');
-            alert('Le contenu du mail a été copié dans le presse-papiers !');
+            showToast('Copié dans le presse-papiers', 'success');
         }
     },
 
@@ -3779,13 +3813,13 @@ const GenericEmail = {
     copyToClipboard() {
         const body = document.getElementById('generic-email-body').value;
         navigator.clipboard.writeText(body).then(() => {
-            alert('Contenu copié dans le presse-papiers !');
+            showToast('Copié !', 'success');
         }).catch(() => {
             // Fallback
             const textarea = document.getElementById('generic-email-body');
             textarea.select();
             document.execCommand('copy');
-            alert('Contenu copié !');
+            showToast('Copié !', 'success');
         });
     },
 
@@ -3813,7 +3847,7 @@ const GenericEmail = {
             const result = await EmailService.sendEmail(to, subject, body);
 
             if (result.success) {
-                alert('Email envoyé avec succès !');
+                showToast('Email envoyé !', 'success');
                 this.closeModal();
             } else {
                 const mailtoUrl = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;

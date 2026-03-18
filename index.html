@@ -711,12 +711,189 @@
         .hidden {
             display: none !important;
         }
+
+        /* ==================== TOAST NOTIFICATIONS ==================== */
+        #toast-container {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            z-index: 99999;
+            display: flex;
+            flex-direction: column-reverse;
+            gap: 0.5rem;
+        }
+        .toast {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.875rem 1.25rem;
+            border-radius: 10px;
+            color: white;
+            font-size: 0.9rem;
+            font-weight: 500;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            animation: toastIn 0.35s cubic-bezier(0.21, 1.02, 0.73, 1) forwards;
+            max-width: 400px;
+            cursor: pointer;
+        }
+        .toast.removing {
+            animation: toastOut 0.3s ease-in forwards;
+        }
+        .toast-success { background: linear-gradient(135deg, #059669, #10b981); }
+        .toast-error { background: linear-gradient(135deg, #dc2626, #ef4444); }
+        .toast-info { background: linear-gradient(135deg, #2563eb, #3b82f6); }
+        .toast-warning { background: linear-gradient(135deg, #d97706, #f59e0b); }
+        .toast-icon { font-size: 1.1rem; flex-shrink: 0; }
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(100px) scale(0.9); }
+            to { opacity: 1; transform: translateX(0) scale(1); }
+        }
+        @keyframes toastOut {
+            from { opacity: 1; transform: translateX(0) scale(1); }
+            to { opacity: 0; transform: translateX(100px) scale(0.9); }
+        }
+
+        /* ==================== CONFIRM MODAL ==================== */
+        .confirm-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(4px);
+            z-index: 99998;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.2s ease;
+        }
+        .confirm-dialog {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            max-width: 420px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            animation: scaleIn 0.25s cubic-bezier(0.21, 1.02, 0.73, 1);
+        }
+        .confirm-dialog h3 {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+        .confirm-dialog p {
+            color: #6b7280;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 1.5rem;
+        }
+        .confirm-dialog .confirm-actions {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: flex-end;
+        }
+        .confirm-dialog .btn-cancel {
+            padding: 0.6rem 1.25rem;
+            border: 1px solid #d1d5db;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            color: #374151;
+        }
+        .confirm-dialog .btn-confirm {
+            padding: 0.6rem 1.25rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            color: white;
+            background: var(--primary-purple);
+        }
+        .confirm-dialog .btn-confirm.danger {
+            background: #dc2626;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes scaleIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+
+        /* ==================== SEARCH BAR ==================== */
+        .search-filters {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .search-filters input[type="search"] {
+            flex: 1;
+            min-width: 200px;
+            padding: 0.6rem 1rem 0.6rem 2.5rem;
+            border: 1px solid var(--gray-300);
+            border-radius: var(--radius-md);
+            font-size: 0.9rem;
+            background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.3-4.3'/%3E%3C/svg%3E") no-repeat 0.75rem center;
+        }
+        .search-filters select {
+            padding: 0.6rem 1rem;
+            border: 1px solid var(--gray-300);
+            border-radius: var(--radius-md);
+            font-size: 0.9rem;
+            background: white;
+            cursor: pointer;
+        }
     </style>
     <!-- jsPDF pour la génération de documents PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 
 <body>
+    <!-- Toast container -->
+    <div id="toast-container"></div>
+
+    <script>
+    // ==================== TOAST NOTIFICATIONS ====================
+    function showToast(message, type = 'info', duration = 3500) {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+
+        const icons = { success: '✓', error: '✕', info: 'ℹ', warning: '⚠' };
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.innerHTML = `<span class="toast-icon">${icons[type] || ''}</span><span>${message}</span>`;
+        toast.onclick = () => { toast.classList.add('removing'); setTimeout(() => toast.remove(), 300); };
+
+        container.appendChild(toast);
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.classList.add('removing');
+                setTimeout(() => toast.remove(), 300);
+            }
+        }, duration);
+    }
+
+    // ==================== CONFIRM MODAL ====================
+    function showConfirmDialog({ title, message, confirmText = 'Confirmer', cancelText = 'Annuler', isDangerous = false }) {
+        return new Promise((resolve) => {
+            const overlay = document.createElement('div');
+            overlay.className = 'confirm-overlay';
+            overlay.innerHTML = `
+                <div class="confirm-dialog">
+                    <h3>${title}</h3>
+                    <p>${message}</p>
+                    <div class="confirm-actions">
+                        <button class="btn-cancel">${cancelText}</button>
+                        <button class="btn-confirm ${isDangerous ? 'danger' : ''}">${confirmText}</button>
+                    </div>
+                </div>
+            `;
+
+            overlay.querySelector('.btn-cancel').onclick = () => { overlay.remove(); resolve(false); };
+            overlay.querySelector('.btn-confirm').onclick = () => { overlay.remove(); resolve(true); };
+            overlay.onclick = (e) => { if (e.target === overlay) { overlay.remove(); resolve(false); } };
+
+            document.body.appendChild(overlay);
+        });
+    }
+    </script>
     <!-- ==================== AUTH PAGE ==================== -->
     <div id="authPage">
         <div class="bg-shapes">
@@ -1081,6 +1258,17 @@
                     <button onclick="CRMApp.addFormation()"
                         style="padding: 0.75rem 1.5rem; background: var(--primary-pink); color: white; border: none; border-radius: var(--radius-md); font-weight: 600; cursor: pointer;">+
                         Nouvelle Formation</button>
+                </div>
+
+                <!-- Barre de recherche et filtres -->
+                <div class="search-filters">
+                    <input type="search" id="formations-search" placeholder="Rechercher un client ou une formation..." oninput="CRMApp.filterFormations()">
+                    <select id="formations-status-filter" onchange="CRMApp.filterFormations()">
+                        <option value="">Tous les statuts</option>
+                        <option value="planned">Planifiee</option>
+                        <option value="in_progress">En cours</option>
+                        <option value="completed">Terminee</option>
+                    </select>
                 </div>
 
                 <div
