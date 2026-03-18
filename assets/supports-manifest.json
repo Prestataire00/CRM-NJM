@@ -1,1246 +1,1519 @@
 [
   {
     "category": "aec_disc",
-    "title": "Employer.la.méthode.arc.en.ciel.disc.Programme.VD",
-    "file_url": "assets/supports/aec-disc/Employer.la.me%CC%81thode.arc.en.ciel.disc.Programme.VD.docx"
-  },
-  {
-    "category": "aec_disc",
+    "subfolder": "",
     "title": "Fiche pedagogique Campus12 AEC",
     "file_url": "assets/supports/aec-disc/Fiche%20pedagogique%20Campus12%20AEC.doc"
   },
   {
     "category": "aec_disc",
-    "title": "Fiche pedagogique Méthode AEC",
-    "file_url": "assets/supports/aec-disc/Fiche%20pedagogique%20Me%CC%81thode%20AEC.doc"
-  },
-  {
-    "category": "aec_disc",
+    "subfolder": "",
     "title": "Les profils DISC",
     "file_url": "assets/supports/aec-disc/Les%20profils%20DISC.docx"
   },
   {
     "category": "aec_disc",
-    "title": "PPTX Campus Gedimat NJM",
-    "file_url": "assets/supports/aec-disc/PPTX_Campus_Gedimat%20NJM.pptx"
+    "subfolder": "Méthode AEC",
+    "title": "Employer.la.méthode.arc.en.ciel.disc.Programme.VD",
+    "file_url": "assets/supports/aec-disc/Employer.la.me%CC%81thode.arc.en.ciel.disc.Programme.VD.docx"
   },
   {
     "category": "aec_disc",
+    "subfolder": "Méthode AEC",
+    "title": "Fiche pedagogique Méthode AEC",
+    "file_url": "assets/supports/aec-disc/Fiche%20pedagogique%20Me%CC%81thode%20AEC.doc"
+  },
+  {
+    "category": "aec_disc",
+    "subfolder": "Méthode AEC",
     "title": "PROGRAMME Méthode AEC DISC-",
     "file_url": "assets/supports/aec-disc/_PROGRAMME%20Me%CC%81thode%20AEC%20DISC-.docx"
   },
   {
+    "category": "aec_disc",
+    "subfolder": "",
+    "title": "PPTX Campus Gedimat NJM",
+    "file_url": "assets/supports/aec-disc/PPTX_Campus_Gedimat%20NJM.pptx"
+  },
+  {
     "category": "commercial",
+    "subfolder": "",
     "title": "Formation prescripteurs paysage",
     "file_url": "assets/supports/commercial/Formation_prescripteurs_paysage(1).docx"
   },
   {
     "category": "commercial",
+    "subfolder": "",
     "title": "Formation prescripteurs paysage",
     "file_url": "assets/supports/commercial/Formation_prescripteurs_paysage.docx"
   },
   {
     "category": "commercial",
+    "subfolder": "",
     "title": "Guide coaching commercial",
     "file_url": "assets/supports/commercial/Guide%20coaching%20commercial.pdf"
   },
   {
     "category": "commercial",
+    "subfolder": "",
     "title": "HubSpot Modèle - Plan Action Commercial (PAC)",
     "file_url": "assets/supports/commercial/HubSpot%20Mode%CC%80le%20-%20Plan%20Action%20Commercial%20(PAC).xlsx"
   },
   {
     "category": "commercial",
+    "subfolder": "",
     "title": "Quizz Profil commercial stratège-chasseur-négociateur",
     "file_url": "assets/supports/commercial/Quizz_Profil_commercial_strate%CC%80ge-chasseur-ne%CC%81gociateur(1).docx"
   },
   {
     "category": "commercial",
+    "subfolder": "",
     "title": "Quizz Profil commercial stratège-chasseur-négociateur",
     "file_url": "assets/supports/commercial/Quizz_Profil_commercial_strate%CC%80ge-chasseur-ne%CC%81gociateur.docx"
   },
   {
     "category": "communication",
+    "subfolder": "",
     "title": "Creer des supports de communication 2018",
     "file_url": "assets/supports/communication/Creer%20des%20supports%20de%20communication%202018.pptx"
   },
   {
     "category": "communication",
+    "subfolder": "",
     "title": "Exemple MEDIA PLANNING",
     "file_url": "assets/supports/communication/Exemple%20MEDIA%20PLANNING.docx"
   },
   {
     "category": "communication",
+    "subfolder": "",
     "title": "Planning editorial-RS TYPE",
     "file_url": "assets/supports/communication/Planning%20editorial-RS%20TYPE.docx"
   },
   {
     "category": "communication",
+    "subfolder": "",
     "title": "Plans communication-media-RS TYPES",
     "file_url": "assets/supports/communication/Plans%20communication-media-RS%20TYPES.docx"
   },
   {
     "category": "internet_et_rs",
+    "subfolder": "",
     "title": "11 Personae",
     "file_url": "assets/supports/internet-et-rs/11%20Personae.docx"
   },
   {
     "category": "internet_et_rs",
-    "title": "Cahier des charges site internet",
-    "file_url": "assets/supports/internet-et-rs/Cahier%20des%20charges%20site%20internet.docx"
-  },
-  {
-    "category": "internet_et_rs",
-    "title": "Calendrier publications RS 2026",
-    "file_url": "assets/supports/internet-et-rs/Calendrier%20publications%20RS%202026.pdf"
-  },
-  {
-    "category": "internet_et_rs",
-    "title": "Fiche pédagogique Animer les RS Paysage",
-    "file_url": "assets/supports/internet-et-rs/Fiche%20pe%CC%81dagogique%20Animer%20les%20RS%20Paysage.docx"
-  },
-  {
-    "category": "internet_et_rs",
+    "subfolder": "Articles blog IA",
     "title": "Fiche pedagogique Creer articles blog IA",
     "file_url": "assets/supports/internet-et-rs/Fiche_pedagogique_Creer_articles_blog_IA.docx"
   },
   {
     "category": "internet_et_rs",
-    "title": "Les reseaux sociaux CCI",
-    "file_url": "assets/supports/internet-et-rs/Les%20reseaux%20sociaux%20CCI.pptx"
-  },
-  {
-    "category": "internet_et_rs",
-    "title": "LesBonnesPratiques-SuiteAMiseEnLigne Février2023",
-    "file_url": "assets/supports/internet-et-rs/LesBonnesPratiques-SuiteAMiseEnLigne_Fe%CC%81vrier2023.pdf"
-  },
-  {
-    "category": "internet_et_rs",
+    "subfolder": "Articles blog IA",
     "title": "Livret pedagogique Creer articles blog IA",
     "file_url": "assets/supports/internet-et-rs/Livret_pedagogique_Creer_articles_blog_IA.docx"
   },
   {
     "category": "internet_et_rs",
-    "title": "Mini guide - Être visible sur les LLMs",
-    "file_url": "assets/supports/internet-et-rs/Mini%20guide%20-%20E%CC%82tre%20visible%20sur%20les%20LLMs.pdf"
-  },
-  {
-    "category": "internet_et_rs",
+    "subfolder": "Articles blog IA",
     "title": "Prompts Modeles Blog IA",
     "file_url": "assets/supports/internet-et-rs/Prompts_Modeles_Blog_IA%20(1).docx"
   },
   {
     "category": "internet_et_rs",
+    "subfolder": "",
+    "title": "Cahier des charges site internet",
+    "file_url": "assets/supports/internet-et-rs/Cahier%20des%20charges%20site%20internet.docx"
+  },
+  {
+    "category": "internet_et_rs",
+    "subfolder": "",
+    "title": "Calendrier publications RS 2026",
+    "file_url": "assets/supports/internet-et-rs/Calendrier%20publications%20RS%202026.pdf"
+  },
+  {
+    "category": "internet_et_rs",
+    "subfolder": "",
+    "title": "Les reseaux sociaux CCI",
+    "file_url": "assets/supports/internet-et-rs/Les%20reseaux%20sociaux%20CCI.pptx"
+  },
+  {
+    "category": "internet_et_rs",
+    "subfolder": "",
+    "title": "LesBonnesPratiques-SuiteAMiseEnLigne Février2023",
+    "file_url": "assets/supports/internet-et-rs/LesBonnesPratiques-SuiteAMiseEnLigne_Fe%CC%81vrier2023.pdf"
+  },
+  {
+    "category": "internet_et_rs",
+    "subfolder": "",
+    "title": "Mini guide - Être visible sur les LLMs",
+    "file_url": "assets/supports/internet-et-rs/Mini%20guide%20-%20E%CC%82tre%20visible%20sur%20les%20LLMs.pdf"
+  },
+  {
+    "category": "internet_et_rs",
+    "subfolder": "RS Paysage",
+    "title": "Fiche pédagogique Animer les RS Paysage",
+    "file_url": "assets/supports/internet-et-rs/Fiche%20pe%CC%81dagogique%20Animer%20les%20RS%20Paysage.docx"
+  },
+  {
+    "category": "internet_et_rs",
+    "subfolder": "",
     "title": "Site internet 2018 CCI",
     "file_url": "assets/supports/internet-et-rs/Site%20internet%202018%20CCI.pptx"
   },
   {
     "category": "internet_et_rs",
+    "subfolder": "",
     "title": "Strategie commerciale RS",
     "file_url": "assets/supports/internet-et-rs/Strategie%20commerciale%20RS.pptx"
   },
   {
     "category": "internet_et_rs",
+    "subfolder": "",
     "title": "Tests positionnement 2011",
     "file_url": "assets/supports/internet-et-rs/Tests%20positionnement%202011.doc"
   },
   {
     "category": "internet_et_rs",
+    "subfolder": "",
     "title": "Trame Personae",
     "file_url": "assets/supports/internet-et-rs/Trame%20Personae.docx"
   },
   {
     "category": "management",
-    "title": "2022-AssessFirstGuideGEPP",
-    "file_url": "assets/supports/management/2022-AssessFirstGuideGEPP.pdf"
-  },
-  {
-    "category": "management",
-    "title": "AKTO Etablir-son-PDC",
-    "file_url": "assets/supports/management/AKTO_Etablir-son-PDC.xlsx"
-  },
-  {
-    "category": "management",
-    "title": "Apprendre à déléguer",
-    "file_url": "assets/supports/management/Apprendre%20a%CC%80%20de%CC%81le%CC%81guer.docx"
-  },
-  {
-    "category": "management",
-    "title": "Apprenez à gere les conflits NJM Conseil",
-    "file_url": "assets/supports/management/Apprenez%20a%CC%80%20gere%20les%20conflits%20NJM%20Conseil.docx"
-  },
-  {
-    "category": "management",
-    "title": "Apprenez à gerer les conflits Openclassroom",
-    "file_url": "assets/supports/management/Apprenez%20a%CC%80%20gerer%20les%20conflits%20Openclassroom.docx"
-  },
-  {
-    "category": "management",
-    "title": "Assertivite 10 astuces",
-    "file_url": "assets/supports/management/Assertivite%2010%20astuces.pdf"
-  },
-  {
-    "category": "management",
+    "subfolder": "",
     "title": "Auto évaluation construction management",
     "file_url": "assets/supports/management/Auto%20e%CC%81valuation%20construction%20management.pdf"
   },
   {
     "category": "management",
+    "subfolder": "",
     "title": "BLOC 5 support TECHNIQUES ET POSTURES MANAGERIALES MCCP2  JOUR 3",
     "file_url": "assets/supports/management/BLOC%205%20support%20TECHNIQUES%20ET%20POSTURES%20MANAGERIALES%20MCCP2%20%20JOUR%203.pdf"
   },
   {
     "category": "management",
-    "title": "Cartographie GPEC",
-    "file_url": "assets/supports/management/Cartographie%20GPEC.docx"
-  },
-  {
-    "category": "management",
-    "title": "Ce PC - Raccourci",
-    "file_url": "assets/supports/management/Ce%20PC%20-%20Raccourci.lnk"
-  },
-  {
-    "category": "management",
+    "subfolder": "",
     "title": "Charte- -Base-Nego-accord-teletravail-1",
     "file_url": "assets/supports/management/Charte-_-Base-Nego-accord-teletravail-1.docx"
   },
   {
     "category": "management",
+    "subfolder": "",
     "title": "Comment travailler en équipe",
     "file_url": "assets/supports/management/Comment%20travailler%20en%20e%CC%81quipe.docx"
   },
   {
     "category": "management",
-    "title": "Communication.non.violente.et.gestion.du.stress. Programme.VD",
-    "file_url": "assets/supports/management/Communication.non.violente.et.gestion.du.stress.%20Programme.VD.pdf"
+    "subfolder": "Définir besoins en compétences",
+    "title": "2022-AssessFirstGuideGEPP",
+    "file_url": "assets/supports/management/2022-AssessFirstGuideGEPP.pdf"
   },
   {
     "category": "management",
-    "title": "Communiquer positivement",
-    "file_url": "assets/supports/management/Communiquer%20positivement.docx"
+    "subfolder": "Définir besoins en compétences",
+    "title": "Cartographie GPEC",
+    "file_url": "assets/supports/management/Cartographie%20GPEC.docx"
   },
   {
     "category": "management",
-    "title": "Contenu animation Responsabiliser collaborateurs",
-    "file_url": "assets/supports/management/Contenu%20animation%20Responsabiliser%20collaborateurs.docx"
-  },
-  {
-    "category": "management",
-    "title": "Corrigé  Réunion- P1C4 -",
-    "file_url": "assets/supports/management/Corrige%CC%81%20%20Re%CC%81union-%20P1C4%20-%20.docx"
-  },
-  {
-    "category": "management",
-    "title": "Corrigé 2 Manager au quotidien",
-    "file_url": "assets/supports/management/Corrige%CC%81%202%20Manager%20au%20quotidien.pdf"
-  },
-  {
-    "category": "management",
-    "title": "Créez un environnement propice bien être",
-    "file_url": "assets/supports/management/Cre%CC%81ez%20un%20environnement%20propice%20bien%20e%CC%82tre.docx"
-  },
-  {
-    "category": "management",
+    "subfolder": "Définir besoins en compétences",
     "title": "Définir besoins en compétences",
     "file_url": "assets/supports/management/De%CC%81finir%20besoins%20en%20compe%CC%81tences.docx"
   },
   {
     "category": "management",
-    "title": "Développer.son.assertivité VD PROGRAMME Annie GORCE",
-    "file_url": "assets/supports/management/De%CC%81velopper.son.assertivite%CC%81_VD_PROGRAMME%20Annie%20GORCE.docx"
-  },
-  {
-    "category": "management",
-    "title": "Diag et plan actions management",
-    "file_url": "assets/supports/management/Diag%20et%20plan%20actions%20management.docx"
-  },
-  {
-    "category": "management",
-    "title": "Diaporama Fidélisation collaborateurs",
-    "file_url": "assets/supports/management/Diaporama%20Fide%CC%81lisation%20collaborateurs.pptx"
-  },
-  {
-    "category": "management",
-    "title": "Engagement et 20 méthodes management",
-    "file_url": "assets/supports/management/Engagement%20et%2020%20me%CC%81thodes%20management.docx"
-  },
-  {
-    "category": "management",
+    "subfolder": "Définir besoins en compétences",
     "title": "Entretien Professionnel livre-blanc-bilan-6-ans v2",
     "file_url": "assets/supports/management/Entretien%20Professionnel%20livre-blanc-bilan-6-ans_v2.pdf"
   },
   {
     "category": "management",
-    "title": "Eurécia - Modèle tableau de bord RH simple",
-    "file_url": "assets/supports/management/Eure%CC%81cia%20-%20Mode%CC%80le%20tableau%20de%20bord%20RH%20simple.xlsx"
-  },
-  {
-    "category": "management",
-    "title": "Exemple Profil de poste.doc",
-    "file_url": "assets/supports/management/Exemple%20Profil%20de%20poste.doc%20(1).docx"
-  },
-  {
-    "category": "management",
-    "title": "Exemple Profil de poste",
-    "file_url": "assets/supports/management/Exemple%20Profil%20de%20poste.docx"
-  },
-  {
-    "category": "management",
-    "title": "Exemple grille entretien Ouvrier paysagiste",
-    "file_url": "assets/supports/management/Exemple%20grille%20entretien%20Ouvrier%20paysagiste.docx"
-  },
-  {
-    "category": "management",
-    "title": "Exemple offre d emploi",
-    "file_url": "assets/supports/management/Exemple%20offre%20d%20emploi.docx"
-  },
-  {
-    "category": "management",
+    "subfolder": "Définir besoins en compétences",
     "title": "Exemple-matrice-de-competences-",
     "file_url": "assets/supports/management/Exemple-matrice-de-competences-.xlsx"
   },
   {
     "category": "management",
-    "title": "Expectra - Les règles d or du recrutement",
-    "file_url": "assets/supports/management/Expectra%20-%20Les%20re%CC%80gles%20d_or%20du%20recrutement.pdf"
-  },
-  {
-    "category": "management",
-    "title": "Extrait modèle de grille entretien recrutement",
-    "file_url": "assets/supports/management/Extrait%20mode%CC%80le%20de%20grille%20entretien%20recrutement.docx"
-  },
-  {
-    "category": "management",
-    "title": "Fiche Biais cognitifs",
-    "file_url": "assets/supports/management/Fiche%20Biais%20cognitifs.docx"
-  },
-  {
-    "category": "management",
-    "title": "Fiche EAE Medef",
-    "file_url": "assets/supports/management/Fiche%20EAE%20Medef.pdf"
-  },
-  {
-    "category": "management",
-    "title": "Fiche de plan d actions personnel TYPE",
-    "file_url": "assets/supports/management/Fiche%20de%20plan%20d_actions%20personnel%20TYPE.docx"
-  },
-  {
-    "category": "management",
-    "title": "Fiche de poste-MODELE",
-    "file_url": "assets/supports/management/Fiche%20de%20poste-MODELE.docx"
-  },
-  {
-    "category": "management",
-    "title": "Fiche mémo Préparer intégration",
-    "file_url": "assets/supports/management/Fiche%20me%CC%81mo%20Pre%CC%81parer%20inte%CC%81gration.docx"
-  },
-  {
-    "category": "management",
-    "title": "Fiche pedagogique GIANT",
-    "file_url": "assets/supports/management/Fiche%20pedagogique%20GIANT.doc"
-  },
-  {
-    "category": "management",
-    "title": "Fiche pedagogique Responsabiliser",
-    "file_url": "assets/supports/management/Fiche%20pedagogique%20Responsabiliser.doc"
-  },
-  {
-    "category": "management",
-    "title": "Fiche pratique entreprise Entretien Pro",
-    "file_url": "assets/supports/management/Fiche%20pratique%20entreprise%20Entretien%20Pro.pdf"
-  },
-  {
-    "category": "management",
-    "title": "Fiche pratique salarié Entretien Pro",
-    "file_url": "assets/supports/management/Fiche%20pratique%20salarie%CC%81%20Entretien%20Pro.pdf"
-  },
-  {
-    "category": "management",
+    "subfolder": "Définir besoins en compétences",
     "title": "Fiche-de-poste",
     "file_url": "assets/supports/management/Fiche-de-poste.docx"
   },
   {
     "category": "management",
-    "title": "Fiches pratiques Autonomie NJM Conseil",
-    "file_url": "assets/supports/management/Fiches_pratiques_Autonomie_NJM_Conseil.docx"
-  },
-  {
-    "category": "management",
-    "title": "Formation Management et fidélisation",
-    "file_url": "assets/supports/management/Formation%20Management%20et%20fide%CC%81lisation.docx"
-  },
-  {
-    "category": "management",
-    "title": "Formation Managez au quotidien NJM CONSEIL",
-    "file_url": "assets/supports/management/Formation%20Managez%20au%20quotidien%20NJM%20CONSEIL.docx"
-  },
-  {
-    "category": "management",
-    "title": "Formation Managez au quotidien Openclassroom",
-    "file_url": "assets/supports/management/Formation%20Managez%20au%20quotidien%20Openclassroom.docx"
-  },
-  {
-    "category": "management",
-    "title": "Formation recrutement efficace",
-    "file_url": "assets/supports/management/Formation%20recrutement%20efficace.pdf"
-  },
-  {
-    "category": "management",
-    "title": "Generations Recrutement Management",
-    "file_url": "assets/supports/management/Generations_Recrutement_Management_.docx"
-  },
-  {
-    "category": "management",
-    "title": "Gestion de conflit Méthode DESC",
-    "file_url": "assets/supports/management/Gestion%20de%20conflit%20Me%CC%81thode%20DESC.docx"
-  },
-  {
-    "category": "management",
-    "title": "Grille+Evaluation+Annuelle",
-    "file_url": "assets/supports/management/Grille%2BEvaluation%2BAnnuelle%20(1).xlsx"
-  },
-  {
-    "category": "management",
-    "title": "Grille-de-salaires-et-modele-de-remuneration",
-    "file_url": "assets/supports/management/Grille-de-salaires-et-modele-de-remuneration.xlsx"
-  },
-  {
-    "category": "management",
-    "title": "Grilles Observation Feedback NJM Conseil",
-    "file_url": "assets/supports/management/Grilles_Observation_Feedback_NJM_Conseil.docx"
-  },
-  {
-    "category": "management",
-    "title": "Guide-Évaluer-développer-compétences-essentielles-Pearson-TalentLens",
-    "file_url": "assets/supports/management/Guide-E%CC%81valuer-de%CC%81velopper-compe%CC%81tences-essentielles-Pearson-TalentLens.pdf"
-  },
-  {
-    "category": "management",
-    "title": "Guide-Les-outils-RH-Gestion-RH-Agile-Entretiens-Feedback-360",
-    "file_url": "assets/supports/management/Guide-Les-outils-RH-Gestion-RH-Agile-Entretiens-Feedback-360.pdf"
-  },
-  {
-    "category": "management",
-    "title": "Guide-Les-outils-de-la-GPEC",
-    "file_url": "assets/supports/management/Guide-Les-outils-de-la-GPEC.pdf"
-  },
-  {
-    "category": "management",
-    "title": "Impulser bonne ambiance au travail",
-    "file_url": "assets/supports/management/Impulser%20bonne%20ambiance%20au%20travail.docx"
-  },
-  {
-    "category": "management",
-    "title": "Interpreter Test Gordon",
-    "file_url": "assets/supports/management/Interpreter%20Test%20Gordon.docx"
-  },
-  {
-    "category": "management",
+    "subfolder": "Définir besoins en compétences",
     "title": "LIVRE-BLANC-GPEC-Besoins en compétences-1",
     "file_url": "assets/supports/management/LIVRE-BLANC-GPEC-Besoins%20en%20compe%CC%81tences-1.pdf"
   },
   {
     "category": "management",
-    "title": "L entretien Professionnel",
-    "file_url": "assets/supports/management/L_entretien%20Professionnel.docx"
-  },
-  {
-    "category": "management",
-    "title": "La femme",
-    "file_url": "assets/supports/management/La%20femme.pdf"
-  },
-  {
-    "category": "management",
-    "title": "Le Compte personnel de formation",
-    "file_url": "assets/supports/management/Le%20Compte%20personnel%20de%20formation.docx"
-  },
-  {
-    "category": "management",
-    "title": "Les 5 principaux facteurs de motivation au travail",
-    "file_url": "assets/supports/management/Les%205%20principaux%20facteurs%20de%20motivation%20au%20travail.pdf"
-  },
-  {
-    "category": "management",
-    "title": "Les KPI du DRH",
-    "file_url": "assets/supports/management/Les%20KPI%20du%20DRH.docx"
-  },
-  {
-    "category": "management",
-    "title": "Leviers de motivation",
-    "file_url": "assets/supports/management/Leviers%20de%20motivation.docx"
-  },
-  {
-    "category": "management",
-    "title": "Livre blanc Cerfrance   Comment recruter et fidéliser ses salariés",
-    "file_url": "assets/supports/management/Livre%20blanc%20Cerfrance%20_%20Comment%20recruter%20et%20fide%CC%81liser%20ses%20salarie%CC%81s%20_.pdf"
-  },
-  {
-    "category": "management",
-    "title": "Management Travail en autonomie",
-    "file_url": "assets/supports/management/Management%20Travail%20en%20autonomie.docx"
-  },
-  {
-    "category": "management",
-    "title": "Management d equipe Form Action",
-    "file_url": "assets/supports/management/Management%20d%20equipe%20Form_Action.pptx"
-  },
-  {
-    "category": "management",
-    "title": "Management d equipe",
-    "file_url": "assets/supports/management/Management%20d%20equipe.pptx"
-  },
-  {
-    "category": "management",
-    "title": "Manager idéal",
-    "file_url": "assets/supports/management/Manager%20ide%CC%81al.docx"
-  },
-  {
-    "category": "management",
-    "title": "Mauvaise ambiance au travail",
-    "file_url": "assets/supports/management/Mauvaise%20ambiance%20au%20travail.docx"
-  },
-  {
-    "category": "management",
-    "title": "Memo questions en recrutement",
-    "file_url": "assets/supports/management/Memo%20questions%20en%20recrutement.docx"
-  },
-  {
-    "category": "management",
-    "title": "Mener EAE",
-    "file_url": "assets/supports/management/Mener%20EAE.docx"
-  },
-  {
-    "category": "management",
-    "title": "Mener Entretien Pro Akto",
-    "file_url": "assets/supports/management/Mener%20Entretien%20Pro%20Akto.docx"
-  },
-  {
-    "category": "management",
-    "title": "Méthodes dvlp assertivité",
-    "file_url": "assets/supports/management/Me%CC%81thodes%20dvlp%20assertivite%CC%81.docx"
-  },
-  {
-    "category": "management",
-    "title": "Modele-entretien-pro-sans-trame",
-    "file_url": "assets/supports/management/Modele-entretien-pro-sans-trame.docx"
-  },
-  {
-    "category": "management",
-    "title": "Modele-livret-accueil-1",
-    "file_url": "assets/supports/management/Modele-livret-accueil-1.docx"
-  },
-  {
-    "category": "management",
-    "title": "Modèle EntretienRemotivation",
-    "file_url": "assets/supports/management/Mode%CC%80le_EntretienRemotivation.pdf"
-  },
-  {
-    "category": "management",
-    "title": "Module 2-Intelligence emotionnelle et mngt",
-    "file_url": "assets/supports/management/Module%202-Intelligence%20emotionnelle%20et%20mngt.pdf"
-  },
-  {
-    "category": "management",
-    "title": "Module-1-Profils de personnes",
-    "file_url": "assets/supports/management/Module-1-Profils%20de%20personnes.pdf"
-  },
-  {
-    "category": "management",
-    "title": "Offres d’emploi Dos and Donts",
-    "file_url": "assets/supports/management/Offres%20d%E2%80%99emploi%20Dos%20and%20Donts.pdf"
-  },
-  {
-    "category": "management",
-    "title": "P3C3+-+Guide+Entretien+de+recrutement",
-    "file_url": "assets/supports/management/P3C3%2B-%2BGuide%2BEntretien%2Bde%2Brecrutement.docx"
-  },
-  {
-    "category": "management",
-    "title": "P3C4+-+Parcours+Integration",
-    "file_url": "assets/supports/management/P3C4%2B-%2BParcours%2BIntegration.xlsx"
-  },
-  {
-    "category": "management",
+    "subfolder": "Définir besoins en compétences",
     "title": "PDC Outil Plan Travailleurs en ESAT 2024",
     "file_url": "assets/supports/management/PDC%20Outil_Plan_Travailleurs_en_ESAT_2024.xlsx"
   },
   {
     "category": "management",
+    "subfolder": "Définir besoins en compétences",
     "title": "Passer de la GPEC à la GEPP en 2024",
     "file_url": "assets/supports/management/Passer%20de%20la%20GPEC%20a%CC%80%20la%20GEPP%20en%202024.docx"
   },
   {
     "category": "management",
-    "title": "Preparer et animer les réunions",
-    "file_url": "assets/supports/management/Preparer%20et%20animer%20les%20re%CC%81unions.docx"
+    "subfolder": "Développer assertivité",
+    "title": "Assertivite 10 astuces",
+    "file_url": "assets/supports/management/Assertivite%2010%20astuces.pdf"
   },
   {
     "category": "management",
-    "title": "Prépa amont EAE collaborateur",
-    "file_url": "assets/supports/management/Pre%CC%81pa%20amont%20EAE%20collaborateur.docx"
+    "subfolder": "Développer assertivité",
+    "title": "Communication.non.violente.et.gestion.du.stress. Programme.VD",
+    "file_url": "assets/supports/management/Communication.non.violente.et.gestion.du.stress.%20Programme.VD.pdf"
   },
   {
     "category": "management",
+    "subfolder": "Développer assertivité",
+    "title": "Développer.son.assertivité VD PROGRAMME Annie GORCE",
+    "file_url": "assets/supports/management/De%CC%81velopper.son.assertivite%CC%81_VD_PROGRAMME%20Annie%20GORCE.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Développer assertivité",
+    "title": "Fiche de plan d actions personnel TYPE",
+    "file_url": "assets/supports/management/Fiche%20de%20plan%20d_actions%20personnel%20TYPE.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Développer assertivité",
+    "title": "Interpreter Test Gordon",
+    "file_url": "assets/supports/management/Interpreter%20Test%20Gordon.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Développer assertivité",
+    "title": "La femme",
+    "file_url": "assets/supports/management/La%20femme.pdf"
+  },
+  {
+    "category": "management",
+    "subfolder": "Développer assertivité",
+    "title": "Méthodes dvlp assertivité",
+    "file_url": "assets/supports/management/Me%CC%81thodes%20dvlp%20assertivite%CC%81.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Développer assertivité",
     "title": "Préparer prise de parole",
     "file_url": "assets/supports/management/Pre%CC%81parer%20prise%20de%20parole.docx"
   },
   {
     "category": "management",
-    "title": "Quels sont les entretiens obligatoires en entreprise",
-    "file_url": "assets/supports/management/Quels%20sont%20les%20entretiens%20obligatoires%20en%20entreprise.docx"
-  },
-  {
-    "category": "management",
-    "title": "Quels sont les leviers de motivation au travail",
-    "file_url": "assets/supports/management/Quels%20sont%20les%20leviers%20de%20motivation%20au%20travail.docx"
-  },
-  {
-    "category": "management",
-    "title": "Quiz auto positionnement Recrutement",
-    "file_url": "assets/supports/management/Quiz%20auto%20positionnement%20Recrutement.docx"
-  },
-  {
-    "category": "management",
-    "title": "Quiz Autonomie Collaborateurs NJM Conseil",
-    "file_url": "assets/supports/management/Quiz_Autonomie_Collaborateurs_NJM_Conseil.docx"
-  },
-  {
-    "category": "management",
-    "title": "Quizz 1 Prise de fonction, deleguer, réunion, communication",
-    "file_url": "assets/supports/management/Quizz%201%20Prise%20de%20fonction%2C%20deleguer%2C%20re%CC%81union%2C%20communication.docx"
-  },
-  {
-    "category": "management",
-    "title": "Quizz 2",
-    "file_url": "assets/supports/management/Quizz%202.docx"
-  },
-  {
-    "category": "management",
-    "title": "Quizz 3 Contribuez à la réussite de votre entreprise",
-    "file_url": "assets/supports/management/Quizz%203%20Contribuez%20a%CC%80%20la%20re%CC%81ussite%20de%20votre%20entreprise.docx"
-  },
-  {
-    "category": "management",
-    "title": "Quizz Identifiez votre capacité à déléguer",
-    "file_url": "assets/supports/management/Quizz%20Identifiez%20votre%20capacite%CC%81%20a%CC%80%20de%CC%81le%CC%81guer.docx"
-  },
-  {
-    "category": "management",
+    "subfolder": "Développer assertivité",
     "title": "Recherches assertivité",
     "file_url": "assets/supports/management/Recherches%20assertivite%CC%81.docx"
   },
   {
     "category": "management",
-    "title": "Recruter en 10 points clés",
-    "file_url": "assets/supports/management/Recruter%20en%2010%20points%20cle%CC%81s.docx"
-  },
-  {
-    "category": "management",
-    "title": "Recruter et integrer",
-    "file_url": "assets/supports/management/Recruter%20et%20integrer.docx"
-  },
-  {
-    "category": "management",
-    "title": "Rédiger une offre d emploi",
-    "file_url": "assets/supports/management/Re%CC%81diger%20une%20offre%20d_emploi.docx"
-  },
-  {
-    "category": "management",
-    "title": "Régulez vos émotions",
-    "file_url": "assets/supports/management/Re%CC%81gulez%20vos%20e%CC%81motions.docx"
-  },
-  {
-    "category": "management",
-    "title": "Réponses visage femme",
-    "file_url": "assets/supports/management/Re%CC%81ponses%20visage%20femme.pdf"
-  },
-  {
-    "category": "management",
-    "title": "Résumé Entretien Pro",
-    "file_url": "assets/supports/management/Re%CC%81sume%CC%81%20Entretien%20Pro.pdf"
-  },
-  {
-    "category": "management",
+    "subfolder": "Développer assertivité",
     "title": "Séquençage assertivité",
     "file_url": "assets/supports/management/Se%CC%81quenc%CC%A7age%20assertivite%CC%81.docx"
   },
   {
     "category": "management",
-    "title": "Signes du conflit",
-    "file_url": "assets/supports/management/Signes%20du%20conflit.docx"
-  },
-  {
-    "category": "management",
-    "title": "Styles de Management Blake Mouton",
-    "file_url": "assets/supports/management/Styles_de_Management_Blake_Mouton.docx"
-  },
-  {
-    "category": "management",
+    "subfolder": "Développer assertivité",
     "title": "Support pédagogique Dvlper assertivité",
     "file_url": "assets/supports/management/Support%20pe%CC%81dagogique%20Dvlper%20assertivite%CC%81.docx"
   },
   {
     "category": "management",
-    "title": "Support pédagogique Recrutement",
-    "file_url": "assets/supports/management/Support%20pe%CC%81dagogique%20Recrutement.docx"
-  },
-  {
-    "category": "management",
-    "title": "Support pédagogique Responsabiliser NJM Conseil",
-    "file_url": "assets/supports/management/Support_pe%CC%81dagogique_Responsabiliser_NJM_Conseil.docx"
-  },
-  {
-    "category": "management",
-    "title": "Template de plan de communication",
-    "file_url": "assets/supports/management/Template%20de%20plan%20de%20communication.xlsx"
-  },
-  {
-    "category": "management",
-    "title": "Template plan de formation",
-    "file_url": "assets/supports/management/Template%20plan%20de%20formation.xlsm"
-  },
-  {
-    "category": "management",
-    "title": "Test Posture de manager",
-    "file_url": "assets/supports/management/Test%20Posture%20de%20manager.pdf"
-  },
-  {
-    "category": "management",
-    "title": "Test autonomie collaborateur",
-    "file_url": "assets/supports/management/Test%20autonomie%20collaborateur.pdf"
-  },
-  {
-    "category": "management",
-    "title": "Test manager bonsai",
-    "file_url": "assets/supports/management/Test%20manager%20bonsai.pdf"
-  },
-  {
-    "category": "management",
+    "subfolder": "Développer assertivité",
     "title": "Test-de-Gordon-êtes-vous-assertifve",
     "file_url": "assets/supports/management/Test-de-Gordon-e%CC%82tes-vous-assertifve.pdf"
   },
   {
     "category": "management",
-    "title": "Trame Entretien+Annuel",
-    "file_url": "assets/supports/management/Trame%20Entretien%2BAnnuel.docx"
+    "subfolder": "EAE",
+    "title": "Prépa amont EAE collaborateur",
+    "file_url": "assets/supports/management/Pre%CC%81pa%20amont%20EAE%20collaborateur.docx"
   },
   {
     "category": "management",
-    "title": "Trame-d-entretien-professionnel-et-bilan-a-6-ansdocx",
-    "file_url": "assets/supports/management/Trame-d-entretien-professionnel-et-bilan-a-6-ansdocx.docx"
+    "subfolder": "",
+    "title": "Engagement et 20 méthodes management",
+    "file_url": "assets/supports/management/Engagement%20et%2020%20me%CC%81thodes%20management.docx"
   },
   {
     "category": "management",
-    "title": "Trame-dentretien-de-recrutementdocx",
-    "file_url": "assets/supports/management/Trame-dentretien-de-recrutementdocx.docx"
+    "subfolder": "Entretien Pro",
+    "title": "Quels sont les entretiens obligatoires en entreprise",
+    "file_url": "assets/supports/management/Quels%20sont%20les%20entretiens%20obligatoires%20en%20entreprise.docx"
   },
   {
     "category": "management",
-    "title": "Trame-entretien-de-fin-de-periode-dessai",
-    "file_url": "assets/supports/management/Trame-entretien-de-fin-de-periode-dessai%20.docx"
-  },
-  {
-    "category": "management",
+    "subfolder": "Entretien Pro",
     "title": "Trame-entretien-professionnel-zest",
     "file_url": "assets/supports/management/Trame-entretien-professionnel-zest.pdf"
   },
   {
     "category": "management",
-    "title": "Trame entretien evaluation annuel",
-    "file_url": "assets/supports/management/Trame_entretien_evaluation_annuel.docx"
-  },
-  {
-    "category": "management",
-    "title": "Uniformation Plan développement des compétences 0",
-    "file_url": "assets/supports/management/Uniformation%20Plan%20de%CC%81veloppement%20des%20compe%CC%81tences_0.xlsx"
-  },
-  {
-    "category": "management",
-    "title": "Uniformation-Grille-entretien professionnel",
-    "file_url": "assets/supports/management/Uniformation-Grille-entretien_professionnel.doc"
-  },
-  {
-    "category": "management",
-    "title": "Uniformation recueil besoins individuels formation 0",
-    "file_url": "assets/supports/management/Uniformation_recueil_besoins_individuels_formation_0.doc"
-  },
-  {
-    "category": "management",
-    "title": "Uniformation recueil problématiques service 0",
-    "file_url": "assets/supports/management/Uniformation_recueil_proble%CC%81matiques_service_0.doc"
-  },
-  {
-    "category": "management",
-    "title": "Visage femme",
-    "file_url": "assets/supports/management/Visage%20femme.pdf"
-  },
-  {
-    "category": "management",
-    "title": "barometre-que-veulent-vraiment-les-collaborateurs-au-travail-myrhline",
-    "file_url": "assets/supports/management/barometre-que-veulent-vraiment-les-collaborateurs-au-travail-myrhline.pdf"
-  },
-  {
-    "category": "management",
-    "title": "equipes-motivees",
-    "file_url": "assets/supports/management/equipes-motivees.pdf"
-  },
-  {
-    "category": "management",
-    "title": "hwr-guide-indispensables-reussir-recrutements",
-    "file_url": "assets/supports/management/hwr-guide-indispensables-reussir-recrutements.pdf"
-  },
-  {
-    "category": "management",
-    "title": "infographie remu 2022",
-    "file_url": "assets/supports/management/infographie_remu_2022.pdf"
-  },
-  {
-    "category": "management",
+    "subfolder": "Entretien Pro",
     "title": "livre-blanc- Entretien Prof bilan-6-ans v2",
     "file_url": "assets/supports/management/livre-blanc-%20Entretien%20Prof%20bilan-6-ans_v2.pdf"
   },
   {
     "category": "management",
-    "title": "livre-blanc-tendance-rh-2024",
-    "file_url": "assets/supports/management/livre-blanc-tendance-rh-2024.pdf"
-  },
-  {
-    "category": "management",
+    "subfolder": "Entretien Pro",
     "title": "suivi-entretiens-professionnels-la-boite-a-outils-des-rh",
     "file_url": "assets/supports/management/suivi-entretiens-professionnels-la-boite-a-outils-des-rh.xlsx"
   },
   {
     "category": "management",
+    "subfolder": "Entretiens professionnels",
+    "title": "Ce PC - Raccourci",
+    "file_url": "assets/supports/management/Ce%20PC%20-%20Raccourci.lnk"
+  },
+  {
+    "category": "management",
+    "subfolder": "Entretiens professionnels",
+    "title": "Fiche EAE Medef",
+    "file_url": "assets/supports/management/Fiche%20EAE%20Medef.pdf"
+  },
+  {
+    "category": "management",
+    "subfolder": "Entretiens professionnels",
+    "title": "Fiche pratique entreprise Entretien Pro",
+    "file_url": "assets/supports/management/Fiche%20pratique%20entreprise%20Entretien%20Pro.pdf"
+  },
+  {
+    "category": "management",
+    "subfolder": "Entretiens professionnels",
+    "title": "Fiche pratique salarié Entretien Pro",
+    "file_url": "assets/supports/management/Fiche%20pratique%20salarie%CC%81%20Entretien%20Pro.pdf"
+  },
+  {
+    "category": "management",
+    "subfolder": "Entretiens professionnels",
+    "title": "L entretien Professionnel",
+    "file_url": "assets/supports/management/L_entretien%20Professionnel.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Entretiens professionnels",
+    "title": "Mener Entretien Pro Akto",
+    "file_url": "assets/supports/management/Mener%20Entretien%20Pro%20Akto.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Entretiens professionnels",
+    "title": "Modele-entretien-pro-sans-trame",
+    "file_url": "assets/supports/management/Modele-entretien-pro-sans-trame.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Entretiens professionnels",
+    "title": "Résumé Entretien Pro",
+    "file_url": "assets/supports/management/Re%CC%81sume%CC%81%20Entretien%20Pro.pdf"
+  },
+  {
+    "category": "management",
+    "subfolder": "Entretiens professionnels",
+    "title": "Trame-d-entretien-professionnel-et-bilan-a-6-ansdocx",
+    "file_url": "assets/supports/management/Trame-d-entretien-professionnel-et-bilan-a-6-ansdocx.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Entretiens professionnels",
+    "title": "Uniformation-Grille-entretien professionnel",
+    "file_url": "assets/supports/management/Uniformation-Grille-entretien_professionnel.doc"
+  },
+  {
+    "category": "management",
+    "subfolder": "Entretiens professionnels",
+    "title": "suivi-entretiens-professionnels-la-boite-a-outils-des-rh",
+    "file_url": "assets/supports/management/suivi-entretiens-professionnels-la-boite-a-outils-des-rh.xlsx"
+  },
+  {
+    "category": "management",
+    "subfolder": "",
+    "title": "Eurécia - Modèle tableau de bord RH simple",
+    "file_url": "assets/supports/management/Eure%CC%81cia%20-%20Mode%CC%80le%20tableau%20de%20bord%20RH%20simple.xlsx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Fidéliser collaborateurs",
+    "title": "Diaporama Fidélisation collaborateurs",
+    "file_url": "assets/supports/management/Diaporama%20Fide%CC%81lisation%20collaborateurs.pptx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Fidéliser collaborateurs",
+    "title": "Fiche pedagogique GIANT",
+    "file_url": "assets/supports/management/Fiche%20pedagogique%20GIANT.doc"
+  },
+  {
+    "category": "management",
+    "subfolder": "Fidéliser collaborateurs",
+    "title": "Leviers de motivation",
+    "file_url": "assets/supports/management/Leviers%20de%20motivation.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Fidéliser collaborateurs",
+    "title": "Livre blanc Cerfrance   Comment recruter et fidéliser ses salariés",
+    "file_url": "assets/supports/management/Livre%20blanc%20Cerfrance%20_%20Comment%20recruter%20et%20fide%CC%81liser%20ses%20salarie%CC%81s%20_.pdf"
+  },
+  {
+    "category": "management",
+    "subfolder": "Fidéliser collaborateurs",
+    "title": "Manager idéal",
+    "file_url": "assets/supports/management/Manager%20ide%CC%81al.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "GPEC",
+    "title": "Guide-Les-outils-de-la-GPEC",
+    "file_url": "assets/supports/management/Guide-Les-outils-de-la-GPEC.pdf"
+  },
+  {
+    "category": "management",
+    "subfolder": "Gestion des conflits",
+    "title": "Apprenez à gere les conflits NJM Conseil",
+    "file_url": "assets/supports/management/Apprenez%20a%CC%80%20gere%20les%20conflits%20NJM%20Conseil.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Gestion des conflits",
+    "title": "Apprenez à gerer les conflits Openclassroom",
+    "file_url": "assets/supports/management/Apprenez%20a%CC%80%20gerer%20les%20conflits%20Openclassroom.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Gestion des conflits",
+    "title": "Communiquer positivement",
+    "file_url": "assets/supports/management/Communiquer%20positivement.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Gestion des conflits",
+    "title": "Créez un environnement propice bien être",
+    "file_url": "assets/supports/management/Cre%CC%81ez%20un%20environnement%20propice%20bien%20e%CC%82tre.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Gestion des conflits",
+    "title": "Gestion de conflit Méthode DESC",
+    "file_url": "assets/supports/management/Gestion%20de%20conflit%20Me%CC%81thode%20DESC.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Gestion des conflits",
+    "title": "Régulez vos émotions",
+    "file_url": "assets/supports/management/Re%CC%81gulez%20vos%20e%CC%81motions.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Gestion des conflits",
+    "title": "Signes du conflit",
+    "file_url": "assets/supports/management/Signes%20du%20conflit.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "",
+    "title": "Grille-de-salaires-et-modele-de-remuneration",
+    "file_url": "assets/supports/management/Grille-de-salaires-et-modele-de-remuneration.xlsx"
+  },
+  {
+    "category": "management",
+    "subfolder": "",
+    "title": "Guide-Les-outils-RH-Gestion-RH-Agile-Entretiens-Feedback-360",
+    "file_url": "assets/supports/management/Guide-Les-outils-RH-Gestion-RH-Agile-Entretiens-Feedback-360.pdf"
+  },
+  {
+    "category": "management",
+    "subfolder": "",
+    "title": "Impulser bonne ambiance au travail",
+    "file_url": "assets/supports/management/Impulser%20bonne%20ambiance%20au%20travail.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "",
+    "title": "L entretien Professionnel",
+    "file_url": "assets/supports/management/L_entretien%20Professionnel.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "",
+    "title": "Le Compte personnel de formation",
+    "file_url": "assets/supports/management/Le%20Compte%20personnel%20de%20formation.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "",
+    "title": "Les 5 principaux facteurs de motivation au travail",
+    "file_url": "assets/supports/management/Les%205%20principaux%20facteurs%20de%20motivation%20au%20travail.pdf"
+  },
+  {
+    "category": "management",
+    "subfolder": "",
+    "title": "Les KPI du DRH",
+    "file_url": "assets/supports/management/Les%20KPI%20du%20DRH.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Mieux se connaitre",
+    "title": "Module 2-Intelligence emotionnelle et mngt",
+    "file_url": "assets/supports/management/Module%202-Intelligence%20emotionnelle%20et%20mngt.pdf"
+  },
+  {
+    "category": "management",
+    "subfolder": "Mieux se connaitre",
+    "title": "Module-1-Profils de personnes",
+    "file_url": "assets/supports/management/Module-1-Profils%20de%20personnes.pdf"
+  },
+  {
+    "category": "management",
+    "subfolder": "",
+    "title": "Management d equipe Form Action",
+    "file_url": "assets/supports/management/Management%20d%20equipe%20Form_Action.pptx"
+  },
+  {
+    "category": "management",
+    "subfolder": "",
+    "title": "Management d equipe",
+    "file_url": "assets/supports/management/Management%20d%20equipe.pptx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Manager au quotidien",
+    "title": "Apprendre à déléguer",
+    "file_url": "assets/supports/management/Apprendre%20a%CC%80%20de%CC%81le%CC%81guer.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Manager au quotidien",
+    "title": "Corrigé  Réunion- P1C4 -",
+    "file_url": "assets/supports/management/Corrige%CC%81%20%20Re%CC%81union-%20P1C4%20-%20.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Manager au quotidien",
+    "title": "Corrigé 2 Manager au quotidien",
+    "file_url": "assets/supports/management/Corrige%CC%81%202%20Manager%20au%20quotidien.pdf"
+  },
+  {
+    "category": "management",
+    "subfolder": "Manager au quotidien",
+    "title": "Diag et plan actions management",
+    "file_url": "assets/supports/management/Diag%20et%20plan%20actions%20management.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Manager au quotidien",
+    "title": "Exemple Profil de poste.doc",
+    "file_url": "assets/supports/management/Exemple%20Profil%20de%20poste.doc%20(1).docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Manager au quotidien",
+    "title": "Exemple Profil de poste",
+    "file_url": "assets/supports/management/Exemple%20Profil%20de%20poste.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Manager au quotidien",
+    "title": "Formation Management et fidélisation",
+    "file_url": "assets/supports/management/Formation%20Management%20et%20fide%CC%81lisation.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Manager au quotidien",
+    "title": "Formation Managez au quotidien NJM CONSEIL",
+    "file_url": "assets/supports/management/Formation%20Managez%20au%20quotidien%20NJM%20CONSEIL.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Manager au quotidien",
+    "title": "Formation Managez au quotidien Openclassroom",
+    "file_url": "assets/supports/management/Formation%20Managez%20au%20quotidien%20Openclassroom.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Manager au quotidien",
+    "title": "Grille+Evaluation+Annuelle",
+    "file_url": "assets/supports/management/Grille%2BEvaluation%2BAnnuelle%20(1).xlsx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Manager au quotidien",
+    "title": "Mener EAE",
+    "file_url": "assets/supports/management/Mener%20EAE.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Manager au quotidien",
+    "title": "P3C3+-+Guide+Entretien+de+recrutement",
+    "file_url": "assets/supports/management/P3C3%2B-%2BGuide%2BEntretien%2Bde%2Brecrutement.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Manager au quotidien",
+    "title": "P3C4+-+Parcours+Integration",
+    "file_url": "assets/supports/management/P3C4%2B-%2BParcours%2BIntegration.xlsx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Manager au quotidien",
+    "title": "Preparer et animer les réunions",
+    "file_url": "assets/supports/management/Preparer%20et%20animer%20les%20re%CC%81unions.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Manager au quotidien",
+    "title": "Quizz 1 Prise de fonction, deleguer, réunion, communication",
+    "file_url": "assets/supports/management/Quizz%201%20Prise%20de%20fonction%2C%20deleguer%2C%20re%CC%81union%2C%20communication.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Manager au quotidien",
+    "title": "Quizz 2",
+    "file_url": "assets/supports/management/Quizz%202.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Manager au quotidien",
+    "title": "Quizz 3 Contribuez à la réussite de votre entreprise",
+    "file_url": "assets/supports/management/Quizz%203%20Contribuez%20a%CC%80%20la%20re%CC%81ussite%20de%20votre%20entreprise.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Manager au quotidien",
+    "title": "Quizz Identifiez votre capacité à déléguer",
+    "file_url": "assets/supports/management/Quizz%20Identifiez%20votre%20capacite%CC%81%20a%CC%80%20de%CC%81le%CC%81guer.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Manager au quotidien",
+    "title": "Recruter et integrer",
+    "file_url": "assets/supports/management/Recruter%20et%20integrer.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Manager au quotidien",
+    "title": "Styles de Management Blake Mouton",
+    "file_url": "assets/supports/management/Styles_de_Management_Blake_Mouton.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Manager au quotidien",
+    "title": "Trame Entretien+Annuel",
+    "file_url": "assets/supports/management/Trame%20Entretien%2BAnnuel.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Manager bonsai",
+    "title": "Test Posture de manager",
+    "file_url": "assets/supports/management/Test%20Posture%20de%20manager.pdf"
+  },
+  {
+    "category": "management",
+    "subfolder": "Manager bonsai",
+    "title": "Test autonomie collaborateur",
+    "file_url": "assets/supports/management/Test%20autonomie%20collaborateur.pdf"
+  },
+  {
+    "category": "management",
+    "subfolder": "Manager bonsai",
+    "title": "Test manager bonsai",
+    "file_url": "assets/supports/management/Test%20manager%20bonsai.pdf"
+  },
+  {
+    "category": "management",
+    "subfolder": "",
+    "title": "Mauvaise ambiance au travail",
+    "file_url": "assets/supports/management/Mauvaise%20ambiance%20au%20travail.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "",
+    "title": "Modele-livret-accueil-1",
+    "file_url": "assets/supports/management/Modele-livret-accueil-1.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "",
+    "title": "Modèle EntretienRemotivation",
+    "file_url": "assets/supports/management/Mode%CC%80le_EntretienRemotivation.pdf"
+  },
+  {
+    "category": "management",
+    "subfolder": "Motivation",
+    "title": "Quels sont les leviers de motivation au travail",
+    "file_url": "assets/supports/management/Quels%20sont%20les%20leviers%20de%20motivation%20au%20travail.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Plan développement des compétences",
+    "title": "AKTO Etablir-son-PDC",
+    "file_url": "assets/supports/management/AKTO_Etablir-son-PDC.xlsx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Plan développement des compétences",
+    "title": "Uniformation Plan développement des compétences 0",
+    "file_url": "assets/supports/management/Uniformation%20Plan%20de%CC%81veloppement%20des%20compe%CC%81tences_0.xlsx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Plan développement des compétences",
+    "title": "Uniformation recueil besoins individuels formation 0",
+    "file_url": "assets/supports/management/Uniformation_recueil_besoins_individuels_formation_0.doc"
+  },
+  {
+    "category": "management",
+    "subfolder": "Plan développement des compétences",
+    "title": "Uniformation recueil problématiques service 0",
+    "file_url": "assets/supports/management/Uniformation_recueil_proble%CC%81matiques_service_0.doc"
+  },
+  {
+    "category": "management",
+    "subfolder": "Plan développement des compétences",
+    "title": "uniformation plandedéveloppementdescompétences entreprises+11",
+    "file_url": "assets/supports/management/uniformation_plandede%CC%81veloppementdescompe%CC%81tences_entreprises%2B11.pdf"
+  },
+  {
+    "category": "management",
+    "subfolder": "Politique salariale",
+    "title": "Grille-de-salaires-et-modele-de-remuneration",
+    "file_url": "assets/supports/management/Grille-de-salaires-et-modele-de-remuneration.xlsx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Recrutement",
+    "title": "Exemple grille entretien Ouvrier paysagiste",
+    "file_url": "assets/supports/management/Exemple%20grille%20entretien%20Ouvrier%20paysagiste.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Recrutement",
+    "title": "Exemple offre d emploi",
+    "file_url": "assets/supports/management/Exemple%20offre%20d%20emploi.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Recrutement",
+    "title": "Expectra - Les règles d or du recrutement",
+    "file_url": "assets/supports/management/Expectra%20-%20Les%20re%CC%80gles%20d_or%20du%20recrutement.pdf"
+  },
+  {
+    "category": "management",
+    "subfolder": "Recrutement",
+    "title": "Extrait modèle de grille entretien recrutement",
+    "file_url": "assets/supports/management/Extrait%20mode%CC%80le%20de%20grille%20entretien%20recrutement.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Recrutement",
+    "title": "Fiche Biais cognitifs",
+    "file_url": "assets/supports/management/Fiche%20Biais%20cognitifs.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Recrutement",
+    "title": "Fiche de poste-MODELE",
+    "file_url": "assets/supports/management/Fiche%20de%20poste-MODELE.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Recrutement",
+    "title": "Fiche mémo Préparer intégration",
+    "file_url": "assets/supports/management/Fiche%20me%CC%81mo%20Pre%CC%81parer%20inte%CC%81gration.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Recrutement",
+    "title": "Formation recrutement efficace",
+    "file_url": "assets/supports/management/Formation%20recrutement%20efficace.pdf"
+  },
+  {
+    "category": "management",
+    "subfolder": "Recrutement",
+    "title": "Generations Recrutement Management",
+    "file_url": "assets/supports/management/Generations_Recrutement_Management_.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Recrutement",
+    "title": "Grilles Observation Feedback NJM Conseil",
+    "file_url": "assets/supports/management/Grilles_Observation_Feedback_NJM_Conseil.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Recrutement",
+    "title": "Guide-Évaluer-développer-compétences-essentielles-Pearson-TalentLens",
+    "file_url": "assets/supports/management/Guide-E%CC%81valuer-de%CC%81velopper-compe%CC%81tences-essentielles-Pearson-TalentLens.pdf"
+  },
+  {
+    "category": "management",
+    "subfolder": "Recrutement",
+    "title": "Memo questions en recrutement",
+    "file_url": "assets/supports/management/Memo%20questions%20en%20recrutement.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Recrutement",
+    "title": "Offres d’emploi Dos and Donts",
+    "file_url": "assets/supports/management/Offres%20d%E2%80%99emploi%20Dos%20and%20Donts.pdf"
+  },
+  {
+    "category": "management",
+    "subfolder": "Recrutement",
+    "title": "Quiz auto positionnement Recrutement",
+    "file_url": "assets/supports/management/Quiz%20auto%20positionnement%20Recrutement.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Recrutement",
+    "title": "Recruter en 10 points clés",
+    "file_url": "assets/supports/management/Recruter%20en%2010%20points%20cle%CC%81s.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Recrutement",
+    "title": "Rédiger une offre d emploi",
+    "file_url": "assets/supports/management/Re%CC%81diger%20une%20offre%20d_emploi.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Recrutement",
+    "title": "Support pédagogique Recrutement",
+    "file_url": "assets/supports/management/Support%20pe%CC%81dagogique%20Recrutement.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Recrutement",
+    "title": "Trame-dentretien-de-recrutementdocx",
+    "file_url": "assets/supports/management/Trame-dentretien-de-recrutementdocx.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Recrutement",
+    "title": "hwr-guide-indispensables-reussir-recrutements",
+    "file_url": "assets/supports/management/hwr-guide-indispensables-reussir-recrutements.pdf"
+  },
+  {
+    "category": "management",
+    "subfolder": "Recrutement",
     "title": "tableau-comparatif-des-profils",
     "file_url": "assets/supports/management/tableau-comparatif-des-profils.xlsx"
   },
   {
     "category": "management",
-    "title": "uniformation plandedéveloppementdescompétences entreprises+11",
-    "file_url": "assets/supports/management/uniformation_plandede%CC%81veloppementdescompe%CC%81tences_entreprises%2B11.pdf"
+    "subfolder": "Responsabiliser",
+    "title": "Contenu animation Responsabiliser collaborateurs",
+    "file_url": "assets/supports/management/Contenu%20animation%20Responsabiliser%20collaborateurs.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Responsabiliser",
+    "title": "Fiche pedagogique Responsabiliser",
+    "file_url": "assets/supports/management/Fiche%20pedagogique%20Responsabiliser.doc"
+  },
+  {
+    "category": "management",
+    "subfolder": "Responsabiliser",
+    "title": "Fiches pratiques Autonomie NJM Conseil",
+    "file_url": "assets/supports/management/Fiches_pratiques_Autonomie_NJM_Conseil.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Responsabiliser",
+    "title": "Management Travail en autonomie",
+    "file_url": "assets/supports/management/Management%20Travail%20en%20autonomie.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Responsabiliser",
+    "title": "Quiz Autonomie Collaborateurs NJM Conseil",
+    "file_url": "assets/supports/management/Quiz_Autonomie_Collaborateurs_NJM_Conseil.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "Responsabiliser",
+    "title": "Support pédagogique Responsabiliser NJM Conseil",
+    "file_url": "assets/supports/management/Support_pe%CC%81dagogique_Responsabiliser_NJM_Conseil.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "",
+    "title": "Réponses visage femme",
+    "file_url": "assets/supports/management/Re%CC%81ponses%20visage%20femme.pdf"
+  },
+  {
+    "category": "management",
+    "subfolder": "",
+    "title": "Template de plan de communication",
+    "file_url": "assets/supports/management/Template%20de%20plan%20de%20communication.xlsx"
+  },
+  {
+    "category": "management",
+    "subfolder": "",
+    "title": "Template plan de formation",
+    "file_url": "assets/supports/management/Template%20plan%20de%20formation.xlsm"
+  },
+  {
+    "category": "management",
+    "subfolder": "",
+    "title": "Trame-entretien-de-fin-de-periode-dessai",
+    "file_url": "assets/supports/management/Trame-entretien-de-fin-de-periode-dessai%20.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "",
+    "title": "Trame entretien evaluation annuel",
+    "file_url": "assets/supports/management/Trame_entretien_evaluation_annuel.docx"
+  },
+  {
+    "category": "management",
+    "subfolder": "",
+    "title": "Visage femme",
+    "file_url": "assets/supports/management/Visage%20femme.pdf"
+  },
+  {
+    "category": "management",
+    "subfolder": "",
+    "title": "barometre-que-veulent-vraiment-les-collaborateurs-au-travail-myrhline",
+    "file_url": "assets/supports/management/barometre-que-veulent-vraiment-les-collaborateurs-au-travail-myrhline.pdf"
+  },
+  {
+    "category": "management",
+    "subfolder": "",
+    "title": "equipes-motivees",
+    "file_url": "assets/supports/management/equipes-motivees.pdf"
+  },
+  {
+    "category": "management",
+    "subfolder": "",
+    "title": "infographie remu 2022",
+    "file_url": "assets/supports/management/infographie_remu_2022.pdf"
+  },
+  {
+    "category": "management",
+    "subfolder": "",
+    "title": "livre-blanc-tendance-rh-2024",
+    "file_url": "assets/supports/management/livre-blanc-tendance-rh-2024.pdf"
   },
   {
     "category": "manager_commercial",
+    "subfolder": "",
     "title": "Déroulé Manager commercial",
     "file_url": "assets/supports/manager-commercial/De%CC%81roule%CC%81%20Manager%20commercial.docx"
   },
   {
     "category": "manager_commercial",
+    "subfolder": "",
     "title": "Mind map programme Manager coimmercial",
     "file_url": "assets/supports/manager-commercial/Mind%20map%20programme%20Manager%20coimmercial.docx"
   },
   {
     "category": "manager_commercial",
+    "subfolder": "",
     "title": "OUTIL Auto évaluation compétences manager commercial",
     "file_url": "assets/supports/manager-commercial/OUTIL%20Auto%20e%CC%81valuation%20compe%CC%81tences%20manager%20commercial.docx"
   },
   {
     "category": "manager_commercial",
+    "subfolder": "",
     "title": "OUTIL Diagnostic profil de chaque commercial",
     "file_url": "assets/supports/manager-commercial/OUTIL%20Diagnostic%20profil%20de%20chaque%20commercial.docx"
   },
   {
     "category": "manager_commercial",
+    "subfolder": "",
     "title": "OUTIL Fiche action",
     "file_url": "assets/supports/manager-commercial/OUTIL%20Fiche%20action.docx"
   },
   {
     "category": "manager_commercial",
+    "subfolder": "",
     "title": "OUTIL Matrice Competence Motivation",
     "file_url": "assets/supports/manager-commercial/OUTIL%20Matrice_Competence_Motivation.docx"
   },
   {
     "category": "manager_commercial",
+    "subfolder": "",
     "title": "OUTIL Méthode DESC",
     "file_url": "assets/supports/manager-commercial/OUTIL%20Me%CC%81thode%20DESC.docx"
   },
   {
     "category": "manager_commercial",
+    "subfolder": "",
     "title": "OUTIL Modèle PAC",
     "file_url": "assets/supports/manager-commercial/OUTIL%20Mode%CC%80le%20PAC.docx"
   },
   {
     "category": "manager_commercial",
+    "subfolder": "",
     "title": "OUTIL Plan d actions commerciales TYPE",
     "file_url": "assets/supports/manager-commercial/OUTIL%20Plan%20d%20actions%20commerciales%20TYPE.docx"
   },
   {
     "category": "manager_commercial",
+    "subfolder": "",
     "title": "Support pédagogique Manager commercial",
     "file_url": "assets/supports/manager-commercial/Support%20pe%CC%81dagogique%20Manager%20commercial.docx"
   },
   {
     "category": "marketing",
+    "subfolder": "",
     "title": "Concevoir votre newsletter - Massol - 1 jour - 2016",
     "file_url": "assets/supports/marketing/Concevoir%20votre%20newsletter%20-%20Massol%20-%201%20jour%20-%202016.docx"
   },
   {
     "category": "marketing",
+    "subfolder": "",
     "title": "Creer une newsletter",
     "file_url": "assets/supports/marketing/Creer%20une%20newsletter.docx"
   },
   {
     "category": "marketing",
+    "subfolder": "",
     "title": "Fondamentaux et base du marketing - Joulié - 2016",
     "file_url": "assets/supports/marketing/Fondamentaux%20et%20base%20du%20marketing%20-%20Joulie%CC%81%20-%202016.docx"
   },
   {
     "category": "marketing",
+    "subfolder": "",
     "title": "Grille Formation différenciation mkg REPERES",
     "file_url": "assets/supports/marketing/Grille_Formation%20diffe%CC%81renciation%20mkg_REPERES.docx"
   },
   {
     "category": "marketing",
+    "subfolder": "",
     "title": "Les etapes de la communication",
     "file_url": "assets/supports/marketing/Les%20etapes%20de%20la%20communication.pptx"
   },
   {
     "category": "marketing",
+    "subfolder": "",
     "title": "MALETTE DIRIGEANT Marketing",
     "file_url": "assets/supports/marketing/MALETTE%20DIRIGEANT%20Marketing.pptx"
   },
   {
     "category": "marketing",
+    "subfolder": "",
     "title": "MALETTE DIRIGEANT Newsletter",
     "file_url": "assets/supports/marketing/MALETTE%20DIRIGEANT%20Newsletter.pptx"
   },
   {
     "category": "marketing",
+    "subfolder": "",
     "title": "MALETTE DIRIGEANT Relation client",
     "file_url": "assets/supports/marketing/MALETTE%20DIRIGEANT%20Relation%20client.pptx"
   },
   {
     "category": "marketing",
+    "subfolder": "",
     "title": "MALETTE DIRIGEANT Supports de communication",
     "file_url": "assets/supports/marketing/MALETTE%20DIRIGEANT%20Supports%20de%20communication.pptx"
   },
   {
     "category": "marketing",
+    "subfolder": "",
     "title": "Methode REPERES Différenciation",
     "file_url": "assets/supports/marketing/Methode_REPERES_Diffe%CC%81renciation%20.docx"
   },
   {
     "category": "marketing",
+    "subfolder": "",
     "title": "Publipostage",
     "file_url": "assets/supports/marketing/Publipostage.docx"
   },
   {
     "category": "marketing",
+    "subfolder": "",
     "title": "Symbolique formes et couleurs",
     "file_url": "assets/supports/marketing/Symbolique%20formes%20et%20couleurs.docx"
   },
   {
     "category": "marketing",
+    "subfolder": "",
     "title": "reussir-son-plan-marketing",
     "file_url": "assets/supports/marketing/reussir-son-plan-marketing.pdf"
   },
   {
     "category": "methode_aec",
+    "subfolder": "",
     "title": "Employer.la.méthode.arc.en.ciel.disc.Programme.VD",
     "file_url": "assets/supports/méthode-aec/Employer.la.me%CC%81thode.arc.en.ciel.disc.Programme.VD.docx"
   },
   {
     "category": "methode_aec",
+    "subfolder": "",
     "title": "Fiche pedagogique Méthode AEC",
     "file_url": "assets/supports/méthode-aec/Fiche%20pedagogique%20Me%CC%81thode%20AEC.doc"
   },
   {
     "category": "methode_aec",
+    "subfolder": "",
     "title": "PROGRAMME Méthode AEC DISC-",
     "file_url": "assets/supports/méthode-aec/_PROGRAMME%20Me%CC%81thode%20AEC%20DISC-.docx"
   },
   {
     "category": "strategie",
+    "subfolder": "",
     "title": "Hortéo-Autodiagnostic-v2",
     "file_url": "assets/supports/stratégie/Horte%CC%81o-Autodiagnostic-v2.doc"
   },
   {
     "category": "strategie",
+    "subfolder": "",
     "title": "Maitriser-les-fondamentaux-de-la-negociation-strategique",
     "file_url": "assets/supports/stratégie/Maitriser-les-fondamentaux-de-la-negociation-strategique.docx"
   },
   {
     "category": "strategie",
+    "subfolder": "",
     "title": "Maitriser-les-fondamentaux-de-la-negociation-strategique",
     "file_url": "assets/supports/stratégie/Maitriser-les-fondamentaux-de-la-negociation-strategique.pdf"
   },
   {
     "category": "strategie",
+    "subfolder": "",
     "title": "Matrice CANVAS",
     "file_url": "assets/supports/stratégie/Matrice%20CANVAS.docx"
   },
   {
     "category": "strategie",
+    "subfolder": "",
     "title": "Utiliser  business canvas",
     "file_url": "assets/supports/stratégie/Utiliser%20%20business%20canvas.docx"
   },
   {
     "category": "strategie",
+    "subfolder": "",
     "title": "personna Appoline",
     "file_url": "assets/supports/stratégie/personna%20Appoline%20.png"
   },
   {
     "category": "strategie",
+    "subfolder": "",
     "title": "personna Ines",
     "file_url": "assets/supports/stratégie/personna%20Ines.png"
   },
   {
     "category": "strategie",
+    "subfolder": "",
     "title": "personna Patricia",
     "file_url": "assets/supports/stratégie/personna%20Patricia.png"
   },
   {
     "category": "vente",
+    "subfolder": "",
     "title": "07-02 Réunion Formation en vente et financement OPCO-",
     "file_url": "assets/supports/vente/07-02_Re%CC%81union_Formation_en_vente_et_financement_OPCO-.docx"
   },
   {
     "category": "vente",
+    "subfolder": "",
     "title": "12 Techniques de vente",
     "file_url": "assets/supports/vente/12%20Techniques%20de%20vente.docx"
   },
   {
     "category": "vente",
+    "subfolder": "",
     "title": "12 techq de conclusion",
     "file_url": "assets/supports/vente/12%20techq%20de%20conclusion.docx"
   },
   {
     "category": "vente",
+    "subfolder": "",
     "title": "5 clés persusasion",
     "file_url": "assets/supports/vente/5%20cle%CC%81s%20persusasion.pdf"
   },
   {
     "category": "vente",
+    "subfolder": "",
     "title": "Argumenter SIMAC",
     "file_url": "assets/supports/vente/Argumenter%20SIMAC.docx"
   },
   {
     "category": "vente",
+    "subfolder": "",
     "title": "Conclure la vente avec AEC DISC",
     "file_url": "assets/supports/vente/Conclure%20la%20vente%20avec%20AEC%20DISC.pdf"
   },
   {
     "category": "vente",
-    "title": "Ecoute active",
-    "file_url": "assets/supports/vente/Ecoute%20active.docx"
-  },
-  {
-    "category": "vente",
+    "subfolder": "",
     "title": "Ecoute active",
     "file_url": "assets/supports/vente/Ecoute%20active.pdf"
   },
   {
     "category": "vente",
+    "subfolder": "FICHES MEMOS NJM",
+    "title": "Ecoute active",
+    "file_url": "assets/supports/vente/Ecoute%20active.docx"
+  },
+  {
+    "category": "vente",
+    "subfolder": "FICHES MEMOS NJM",
     "title": "Entête et pied de page - Copie  - Copie",
     "file_url": "assets/supports/vente/Ente%CC%82te%20et%20pied%20de%20page%20-%20Copie%20(2)%20-%20Copie.docx"
   },
   {
     "category": "vente",
+    "subfolder": "FICHES MEMOS NJM",
     "title": "Entête et pied de page - Copie  - Copie - Copie",
     "file_url": "assets/supports/vente/Ente%CC%82te%20et%20pied%20de%20page%20-%20Copie%20(3)%20-%20Copie%20-%20Copie.docx"
   },
   {
     "category": "vente",
+    "subfolder": "FICHES MEMOS NJM",
     "title": "Entête et pied de page - Copie  - Copie - Copie",
     "file_url": "assets/supports/vente/Ente%CC%82te%20et%20pied%20de%20page%20-%20Copie%20(5)%20-%20Copie%20-%20Copie.docx"
   },
   {
     "category": "vente",
-    "title": "Evaluation acquis Vente1",
-    "file_url": "assets/supports/vente/Evaluation%20acquis%20Vente1.docx"
-  },
-  {
-    "category": "vente",
-    "title": "Evaluation acquis Vente2",
-    "file_url": "assets/supports/vente/Evaluation%20acquis%20Vente2.docx"
-  },
-  {
-    "category": "vente",
-    "title": "Fiche auto évaluation vente",
-    "file_url": "assets/supports/vente/Fiche%20auto%20e%CC%81valuation%20vente.pdf"
-  },
-  {
-    "category": "vente",
-    "title": "Fiche pedagogique Tech Vente 1",
-    "file_url": "assets/supports/vente/Fiche%20pedagogique%20Tech%20Vente%201.doc"
-  },
-  {
-    "category": "vente",
-    "title": "Fiche pedagogique Vente 2",
-    "file_url": "assets/supports/vente/Fiche%20pedagogique%20Vente%202.doc"
-  },
-  {
-    "category": "vente",
-    "title": "Formation techq de vente",
-    "file_url": "assets/supports/vente/Formation%20techq%20de%20vente.pptx"
-  },
-  {
-    "category": "vente",
-    "title": "Formation prescripteurs paysage",
-    "file_url": "assets/supports/vente/Formation_prescripteurs_paysage.docx"
-  },
-  {
-    "category": "vente",
-    "title": "LES QUESTIONS DE LA DECOUVERTE",
-    "file_url": "assets/supports/vente/LES%20QUESTIONS%20DE%20LA%20DECOUVERTE.docx"
-  },
-  {
-    "category": "vente",
+    "subfolder": "FICHES MEMOS NJM",
     "title": "L argumentation",
     "file_url": "assets/supports/vente/L_argumentation.docx"
   },
   {
     "category": "vente",
-    "title": "La Méthode Sandwich",
-    "file_url": "assets/supports/vente/La%20Me%CC%81thode%20Sandwich.docx"
-  },
-  {
-    "category": "vente",
+    "subfolder": "FICHES MEMOS NJM",
     "title": "La découverte",
     "file_url": "assets/supports/vente/La%20de%CC%81couverte.docx"
   },
   {
     "category": "vente",
+    "subfolder": "FICHES MEMOS NJM",
     "title": "La négociation",
     "file_url": "assets/supports/vente/La%20ne%CC%81gociation.docx"
   },
   {
     "category": "vente",
+    "subfolder": "FICHES MEMOS NJM",
     "title": "La prise de congès",
     "file_url": "assets/supports/vente/La%20prise%20de%20conge%CC%80s.docx"
   },
   {
     "category": "vente",
+    "subfolder": "FICHES MEMOS NJM",
     "title": "La prise de contact",
     "file_url": "assets/supports/vente/La%20prise%20de%20contact.docx"
   },
   {
     "category": "vente",
+    "subfolder": "FICHES MEMOS NJM",
     "title": "La reformulation",
     "file_url": "assets/supports/vente/La%20reformulation.docx"
   },
   {
     "category": "vente",
+    "subfolder": "FICHES MEMOS NJM",
     "title": "Le closing",
     "file_url": "assets/supports/vente/Le%20closing.docx"
   },
   {
     "category": "vente",
+    "subfolder": "FICHES MEMOS NJM",
     "title": "Le traitement des objections",
     "file_url": "assets/supports/vente/Le%20traitement%20des%20objections.docx"
   },
   {
     "category": "vente",
-    "title": "Les 11 leviers qui influencent la décision",
-    "file_url": "assets/supports/vente/Les%2011%20leviers%20qui%20influencent%20la%20de%CC%81cision.pdf"
-  },
-  {
-    "category": "vente",
+    "subfolder": "FICHES MEMOS NJM",
     "title": "Les 5 étapes de la vente",
     "file_url": "assets/supports/vente/Les%205%20e%CC%81tapes%20de%20la%20vente.docx"
   },
   {
     "category": "vente",
-    "title": "Les étapes du R2 par couleur AEC",
-    "file_url": "assets/supports/vente/Les%20e%CC%81tapes%20du%20R2%20par%20couleur%20AEC.docx"
-  },
-  {
-    "category": "vente",
-    "title": "Les étapes du R2",
-    "file_url": "assets/supports/vente/Les%20e%CC%81tapes%20du%20R2.docx"
-  },
-  {
-    "category": "vente",
+    "subfolder": "FICHES MEMOS NJM",
     "title": "Les motivations et les besoins",
     "file_url": "assets/supports/vente/Les%20motivations%20et%20les%20besoins.docx"
   },
   {
     "category": "vente",
+    "subfolder": "FICHES MEMOS NJM",
     "title": "Les questions ouvertes",
     "file_url": "assets/supports/vente/Les%20questions%20ouvertes.docx"
   },
   {
     "category": "vente",
-    "title": "Liste questions ouvertes Découverte",
-    "file_url": "assets/supports/vente/Liste%20questions%20ouvertes%20De%CC%81couverte.docx"
-  },
-  {
-    "category": "vente",
-    "title": "Liste questions ouvertes Découverte",
-    "file_url": "assets/supports/vente/Liste%20questions%20ouvertes%20De%CC%81couverte.pdf"
-  },
-  {
-    "category": "vente",
-    "title": "Livret pédagogique CLOSING",
-    "file_url": "assets/supports/vente/Livret%20pe%CC%81dagogique%20CLOSING.docx"
-  },
-  {
-    "category": "vente",
-    "title": "NUF 1 Game storming",
-    "file_url": "assets/supports/vente/NUF%201%20Game%20storming.jpg"
-  },
-  {
-    "category": "vente",
-    "title": "NUF 2 Game storming",
-    "file_url": "assets/supports/vente/NUF%202%20Game%20storming.jpg"
-  },
-  {
-    "category": "vente",
-    "title": "Plan d actions commerciales TYPE",
-    "file_url": "assets/supports/vente/Plan%20d%20actions%20commerciales%20TYPE.docx"
-  },
-  {
-    "category": "vente",
+    "subfolder": "FICHES MEMOS NJM",
     "title": "Préparation de la vente",
     "file_url": "assets/supports/vente/Pre%CC%81paration%20de%20la%20vente.docx"
   },
   {
     "category": "vente",
-    "title": "Prospection méthode SAFI",
-    "file_url": "assets/supports/vente/Prospection%20me%CC%81thode%20SAFI.docx"
-  },
-  {
-    "category": "vente",
-    "title": "Techniques de vente Méthode SIMAC",
-    "file_url": "assets/supports/vente/Techniques%20de%20vente%20Me%CC%81thode%20SIMAC.docx"
-  },
-  {
-    "category": "vente",
-    "title": "Traitement objections",
-    "file_url": "assets/supports/vente/Traitement%20objections.pdf"
-  },
-  {
-    "category": "vente",
+    "subfolder": "FICHES MEMOS NJM",
     "title": "Vendre avec AEC Disc",
     "file_url": "assets/supports/vente/Vendre%20avec%20AEC%20Disc.docx"
   },
   {
     "category": "vente",
-    "title": "Vente en image",
-    "file_url": "assets/supports/vente/Vente%20en%20image.docx"
+    "subfolder": "",
+    "title": "Fiche auto évaluation vente",
+    "file_url": "assets/supports/vente/Fiche%20auto%20e%CC%81valuation%20vente.pdf"
   },
   {
     "category": "vente",
+    "subfolder": "",
+    "title": "Formation techq de vente",
+    "file_url": "assets/supports/vente/Formation%20techq%20de%20vente.pptx"
+  },
+  {
+    "category": "vente",
+    "subfolder": "",
+    "title": "Formation prescripteurs paysage",
+    "file_url": "assets/supports/vente/Formation_prescripteurs_paysage.docx"
+  },
+  {
+    "category": "vente",
+    "subfolder": "",
+    "title": "LES QUESTIONS DE LA DECOUVERTE",
+    "file_url": "assets/supports/vente/LES%20QUESTIONS%20DE%20LA%20DECOUVERTE.docx"
+  },
+  {
+    "category": "vente",
+    "subfolder": "",
+    "title": "La Méthode Sandwich",
+    "file_url": "assets/supports/vente/La%20Me%CC%81thode%20Sandwich.docx"
+  },
+  {
+    "category": "vente",
+    "subfolder": "",
+    "title": "Les 11 leviers qui influencent la décision",
+    "file_url": "assets/supports/vente/Les%2011%20leviers%20qui%20influencent%20la%20de%CC%81cision.pdf"
+  },
+  {
+    "category": "vente",
+    "subfolder": "",
+    "title": "Les étapes du R2 par couleur AEC",
+    "file_url": "assets/supports/vente/Les%20e%CC%81tapes%20du%20R2%20par%20couleur%20AEC.docx"
+  },
+  {
+    "category": "vente",
+    "subfolder": "",
+    "title": "Les étapes du R2",
+    "file_url": "assets/supports/vente/Les%20e%CC%81tapes%20du%20R2.docx"
+  },
+  {
+    "category": "vente",
+    "subfolder": "",
+    "title": "Liste questions ouvertes Découverte",
+    "file_url": "assets/supports/vente/Liste%20questions%20ouvertes%20De%CC%81couverte.docx"
+  },
+  {
+    "category": "vente",
+    "subfolder": "",
+    "title": "Liste questions ouvertes Découverte",
+    "file_url": "assets/supports/vente/Liste%20questions%20ouvertes%20De%CC%81couverte.pdf"
+  },
+  {
+    "category": "vente",
+    "subfolder": "",
+    "title": "Livret pédagogique CLOSING",
+    "file_url": "assets/supports/vente/Livret%20pe%CC%81dagogique%20CLOSING.docx"
+  },
+  {
+    "category": "vente",
+    "subfolder": "",
+    "title": "NUF 1 Game storming",
+    "file_url": "assets/supports/vente/NUF%201%20Game%20storming.jpg"
+  },
+  {
+    "category": "vente",
+    "subfolder": "",
+    "title": "NUF 2 Game storming",
+    "file_url": "assets/supports/vente/NUF%202%20Game%20storming.jpg"
+  },
+  {
+    "category": "vente",
+    "subfolder": "",
+    "title": "Plan d actions commerciales TYPE",
+    "file_url": "assets/supports/vente/Plan%20d%20actions%20commerciales%20TYPE.docx"
+  },
+  {
+    "category": "vente",
+    "subfolder": "",
+    "title": "Prospection méthode SAFI",
+    "file_url": "assets/supports/vente/Prospection%20me%CC%81thode%20SAFI.docx"
+  },
+  {
+    "category": "vente",
+    "subfolder": "",
+    "title": "Techniques de vente Méthode SIMAC",
+    "file_url": "assets/supports/vente/Techniques%20de%20vente%20Me%CC%81thode%20SIMAC.docx"
+  },
+  {
+    "category": "vente",
+    "subfolder": "",
+    "title": "Traitement objections",
+    "file_url": "assets/supports/vente/Traitement%20objections.pdf"
+  },
+  {
+    "category": "vente",
+    "subfolder": "VENTE 1",
+    "title": "Evaluation acquis Vente1",
+    "file_url": "assets/supports/vente/Evaluation%20acquis%20Vente1.docx"
+  },
+  {
+    "category": "vente",
+    "subfolder": "VENTE 1",
+    "title": "Fiche pedagogique Tech Vente 1",
+    "file_url": "assets/supports/vente/Fiche%20pedagogique%20Tech%20Vente%201.doc"
+  },
+  {
+    "category": "vente",
+    "subfolder": "VENTE 1",
     "title": "Vente et techniques de vente 1",
     "file_url": "assets/supports/vente/Vente%20et%20techniques%20de%20vente%201.pptx"
   },
   {
     "category": "vente",
+    "subfolder": "VENTE 2",
+    "title": "Evaluation acquis Vente2",
+    "file_url": "assets/supports/vente/Evaluation%20acquis%20Vente2.docx"
+  },
+  {
+    "category": "vente",
+    "subfolder": "VENTE 2",
+    "title": "Fiche pedagogique Vente 2",
+    "file_url": "assets/supports/vente/Fiche%20pedagogique%20Vente%202.doc"
+  },
+  {
+    "category": "vente",
+    "subfolder": "",
+    "title": "Vente en image",
+    "file_url": "assets/supports/vente/Vente%20en%20image.docx"
+  },
+  {
+    "category": "vente",
+    "subfolder": "",
+    "title": "Vente et techniques de vente 1",
+    "file_url": "assets/supports/vente/Vente%20et%20techniques%20de%20vente%201.pptx"
+  },
+  {
+    "category": "vente",
+    "subfolder": "",
     "title": "Vente et techniques de vente 2",
     "file_url": "assets/supports/vente/Vente%20et%20techniques%20de%20vente%202.pptx"
   },
   {
     "category": "vente",
+    "subfolder": "",
     "title": "Vente et techniques de vente Sésame",
     "file_url": "assets/supports/vente/Vente%20et%20techniques%20de%20vente%20Se%CC%81same.pptx"
   },
   {
     "category": "vente",
+    "subfolder": "",
     "title": "Vente et techniques de vente Unicor",
     "file_url": "assets/supports/vente/Vente%20et%20techniques%20de%20vente%20Unicor.pptx"
   },
   {
     "category": "vente",
+    "subfolder": "",
     "title": "Vente et techniques de vente",
     "file_url": "assets/supports/vente/Vente%20et%20techniques%20de%20vente.pptx"
   }

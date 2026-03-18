@@ -2314,22 +2314,60 @@ Nathalie Joulie-Morand`;
             return;
         }
 
+        // Grouper par sous-dossier (champ description)
+        const groups = {};
+        supports.forEach(s => {
+            const sub = s.description || '';
+            if (!groups[sub]) groups[sub] = [];
+            groups[sub].push(s);
+        });
+
+        // Trier : dossiers nommés d'abord (alphabétique), puis racine
+        const sortedKeys = Object.keys(groups).sort((a, b) => {
+            if (!a) return 1;
+            if (!b) return -1;
+            return a.localeCompare(b);
+        });
+
+        const renderFile = (s) => `
+            <div class="support-item" style="display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 0.75rem; border-radius: var(--radius-md); transition: background 0.1s;" onmouseover="this.style.background='var(--gray-50)'" onmouseout="this.style.background='transparent'">
+                <span style="font-size: 0.85rem; color: var(--gray-800); display: flex; align-items: center; gap: 0.5rem;">
+                    ${fileIcon(s.title || s.file_url || '')} ${s.title}
+                </span>
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    ${s.file_url ? `<a href="${s.file_url}" target="_blank" rel="noopener noreferrer" style="color: var(--primary-purple); font-weight: 600; text-decoration: none; font-size: 0.8rem; padding: 0.2rem 0.5rem; background: #f3f0ff; border-radius: var(--radius-sm);">Ouvrir</a>` : ''}
+                    <button onclick="CRMApp.deleteSupport('${s.id}')" style="background:none;border:none;color:var(--gray-400);cursor:pointer;font-size:0.8rem;padding:0.2rem;" title="Supprimer">✕</button>
+                </div>
+            </div>`;
+
+        const hasFolders = sortedKeys.some(k => k !== '');
+
         container.innerHTML = `
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--gray-200);">
                 <h3 style="font-size: 1rem; font-weight: 600; color: var(--gray-900);">${label} (${supports.length} fichier${supports.length > 1 ? 's' : ''})</h3>
             </div>
-            <div id="supports-list" style="display: grid; gap: 0.25rem;">
-                ${supports.map(s => `
-                    <div class="support-item" style="display: flex; align-items: center; justify-content: space-between; padding: 0.6rem 0.75rem; border-radius: var(--radius-md); transition: background 0.1s; cursor: default;" onmouseover="this.style.background='var(--gray-50)'" onmouseout="this.style.background='transparent'">
-                        <span style="font-size: 0.875rem; color: var(--gray-800); display: flex; align-items: center; gap: 0.5rem;">
-                            ${fileIcon(s.title || s.file_url || '')} ${s.title}
-                        </span>
-                        <div style="display: flex; align-items: center; gap: 0.75rem;">
-                            ${s.file_url ? `<a href="${s.file_url}" target="_blank" rel="noopener noreferrer" style="color: var(--primary-purple); font-weight: 600; text-decoration: none; font-size: 0.8rem; padding: 0.25rem 0.6rem; background: #f3f0ff; border-radius: var(--radius-sm);">Ouvrir</a>` : ''}
-                            <button onclick="CRMApp.deleteSupport('${s.id}')" style="background:none;border:none;color:var(--gray-400);cursor:pointer;font-size:0.85rem;padding:0.25rem;" title="Supprimer">✕</button>
-                        </div>
-                    </div>
-                `).join('')}
+            <div id="supports-list">
+                ${sortedKeys.map(sub => {
+                    const files = groups[sub];
+                    const folderName = sub || (hasFolders ? 'Fichiers généraux' : '');
+
+                    if (folderName) {
+                        return `
+                            <div style="margin-bottom: 1rem;">
+                                <div onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? 'block' : 'none'; this.querySelector('.chevron').textContent = this.nextElementSibling.style.display === 'none' ? '▶' : '▼'"
+                                     style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0; cursor: pointer; user-select: none;">
+                                    <span class="chevron" style="font-size: 0.7rem; color: var(--gray-500);">▼</span>
+                                    <span style="font-size: 0.9rem; font-weight: 600; color: var(--gray-700);">📁 ${folderName}</span>
+                                    <span style="font-size: 0.7rem; color: var(--gray-400); background: var(--gray-100); padding: 0.1rem 0.4rem; border-radius: 8px;">${files.length}</span>
+                                </div>
+                                <div style="padding-left: 1.25rem; display: grid; gap: 0.1rem;">
+                                    ${files.map(renderFile).join('')}
+                                </div>
+                            </div>`;
+                    } else {
+                        return `<div style="display: grid; gap: 0.1rem;">${files.map(renderFile).join('')}</div>`;
+                    }
+                }).join('')}
             </div>
         `;
     },
@@ -2475,7 +2513,7 @@ Nathalie Joulie-Morand`;
             for (const item of manifest) {
                 const result = await SupabaseData.addToPedagogicalLibrary(item.category, {
                     title: item.title,
-                    description: '',
+                    description: item.subfolder || '',
                     file_url: item.file_url
                 });
                 if (result.success) {
