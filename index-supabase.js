@@ -645,9 +645,9 @@ const CRMApp = {
             // Documents statiques toujours visibles pour le client
             // TODO: Mettre à jour les URLs avec celles de Supabase Storage après upload des documents
             const staticDocsList = [
-                { name: 'Document préalable à la formation', type: 'doc_prealable', document_url: '' },
-                { name: 'Livret d\'accueil NJM Conseil', type: 'livret_accueil', document_url: '' },
-                { name: 'Fiche de réclamation', type: 'fiche_reclamation', document_url: '' }
+                { name: 'Document préalable à la formation', type: 'doc_prealable', document_url: 'assets/static/document-prealable.docx' },
+                { name: 'Livret d\'accueil NJM Conseil', type: 'livret_accueil', document_url: 'assets/static/livret-accueil.pdf' },
+                { name: 'Fiche de réclamation', type: 'fiche_reclamation', document_url: 'assets/static/fiche-reclamation.pdf' }
             ];
 
             const allDocs = [...docs, ...staticDocsList];
@@ -3018,7 +3018,7 @@ const UserManagement = {
 
         const password = user.initial_password || '[mot de passe modifié - veuillez le réinitialiser]';
         const siteUrl = window.location.origin;
-        const docPrealableUrl = ''; // TODO: Mettre à jour avec l'URL Supabase Storage
+        const docPrealableUrl = window.location.origin + '/assets/static/document-prealable.docx';
 
         const subject = 'Vos accès à votre espace formation';
         const body = `Bonjour,
@@ -3551,11 +3551,11 @@ const ConvocationEmail = {
     STATIC_DOCUMENTS: {
         livret_accueil: {
             name: 'Livret d\'accueil NJM Conseil',
-            pdfUrl: '' // TODO: Uploader dans Supabase Storage et renseigner l'URL publique
+            pdfUrl: 'assets/static/livret-accueil.pdf'
         },
         fiche_reclamation: {
             name: 'Fiche de réclamation',
-            pdfUrl: '' // TODO: Uploader dans Supabase Storage et renseigner l'URL publique
+            pdfUrl: 'assets/static/fiche-reclamation.pdf'
         }
     },
 
