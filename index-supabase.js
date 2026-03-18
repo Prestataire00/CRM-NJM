@@ -937,9 +937,12 @@ const CRMApp = {
                         color = '#0284c7'; // Bleu
                     }
 
+                    const rTypes = ['fiche_pedagogique', 'google_doc', 'convention', 'contrat_sous_traitance', 'attendance_sheet', 'certificate'];
+                    const canRegen = rTypes.includes(doc.type);
+
                     return `
                             <div style="margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
-                                <a href="${doc.document_url || '#'}" target="_blank" style="color: ${color}; text-decoration: none; font-size: 0.875rem; display: flex; align-items: center; gap: 4px; flex: 1;">
+                                <a href="#" onclick="event.preventDefault(); ${canRegen ? `CRMApp.openDocument(${f.id}, '${doc.type}')` : (doc.document_url ? `window.open('${doc.document_url}', '_blank')` : `alert('Document non disponible')`)}" style="color: ${color}; text-decoration: none; font-size: 0.875rem; display: flex; align-items: center; gap: 4px; flex: 1; cursor: pointer;">
                                     ${icon}
                                     <span style="flex: 1;">${doc.name || 'Document'}</span>
                                 </a>
