@@ -2290,8 +2290,10 @@ Nathalie Joulie-Morand`;
                         <input type="text" id="support-title" placeholder="Ex: Formation_prescripteurs_paysage" style="width:100%;padding:0.75rem;border:1px solid var(--gray-300);border-radius:var(--radius-md);font-size:0.95rem;box-sizing:border-box;">
                     </div>
                     <div>
-                        <label style="display:block;font-weight:600;margin-bottom:0.5rem;color:var(--gray-700);">Lien Google Drive</label>
-                        <input type="url" id="support-url" placeholder="https://..." style="width:100%;padding:0.75rem;border:1px solid var(--gray-300);border-radius:var(--radius-md);font-size:0.95rem;box-sizing:border-box;">
+                        <label style="display:block;font-weight:600;margin-bottom:0.5rem;color:var(--gray-700);">Fichier (PDF, Word, PowerPoint...)</label>
+                        <input type="file" id="support-file" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx" style="width:100%;padding:0.75rem;border:1px solid var(--gray-300);border-radius:var(--radius-md);font-size:0.95rem;box-sizing:border-box;">
+                        <p style="font-size:0.75rem;color:var(--gray-500);margin-top:0.25rem;">Ou collez un lien externe :</p>
+                        <input type="url" id="support-url" placeholder="https://..." style="width:100%;padding:0.5rem;border:1px solid var(--gray-300);border-radius:var(--radius-md);font-size:0.85rem;box-sizing:border-box;margin-top:0.25rem;">
                     </div>
                 </div>
                 <div style="display:flex;gap:1rem;margin-top:1.5rem;justify-content:flex-end;">
@@ -2306,17 +2308,52 @@ Nathalie Joulie-Morand`;
     async submitSupport() {
         const category = document.getElementById('support-category').value;
         const title = document.getElementById('support-title').value.trim();
-        const file_url = document.getElementById('support-url').value.trim();
+        const externalUrl = document.getElementById('support-url').value.trim();
+        const fileInput = document.getElementById('support-file');
+        const file = fileInput && fileInput.files[0];
 
         if (!title) {
             showToast('Veuillez saisir un nom', 'warning');
             return;
         }
 
+        let file_url = externalUrl || null;
+
+        // Si un fichier est sélectionné, l'uploader dans Supabase Storage
+        if (file) {
+            try {
+                const fileName = `supports/${category}/${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
+                const { data: uploadData, error: uploadError } = await supabaseClient.storage
+                    .from('documents')
+                    .upload(fileName, file, { contentType: file.type, upsert: true });
+
+                if (uploadError) {
+                    console.warn('Upload Storage échoué:', uploadError.message);
+                    showToast('Erreur upload: ' + uploadError.message, 'error');
+                    return;
+                }
+
+                // Obtenir l'URL publique
+                const { data: urlData } = supabaseClient.storage
+                    .from('documents')
+                    .getPublicUrl(fileName);
+
+                if (urlData) {
+                    file_url = urlData.publicUrl;
+                }
+
+                showToast('Fichier uploadé !', 'info');
+            } catch (e) {
+                console.error('Erreur upload:', e);
+                showToast('Erreur upload fichier', 'error');
+                return;
+            }
+        }
+
         const result = await SupabaseData.addToPedagogicalLibrary(category, {
             title,
             description: '',
-            file_url: file_url || null
+            file_url
         });
 
         document.getElementById('upload-support-modal').remove();
