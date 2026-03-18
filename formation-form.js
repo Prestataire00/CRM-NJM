@@ -77,6 +77,72 @@ const FormationForm = {
     /**
      * Réinitialise le formulaire
      */
+    // Templates pré-remplis pour les formations courantes (données des fiches pédagogiques originales)
+    FORMATION_TEMPLATES: {
+        'Techniques de vente': {
+            target_audience: 'commercial, technico-commercial, conseiller commercial',
+            prerequisites: 'avoir une bonne connaissance de l\'offre (produits, services) et des tarifs',
+            objectives: '-être capable de mettre en oeuvre les techniques d\'écoute active tout en menant la direction de la vente\n-être capable de valoriser les prix et services\n-être capable de verrouiller la vente',
+            module_1: '-1-Les bases\n-les bases de ce qu\'est un vendeur : l\'écoute, l\'observation, la réactivité, le souci d\'amener des solutions\n-les bases de ce qu\'est un consommateur : l\'exigence, les motivations (primaire et secondaire), les freins, les besoins, les typologies\n-les étapes de la vente\n\n2-La découverte et l\'argumentation\n-focus sur la phase de découverte\n-identifier les motivations primaires et secondaires\n-écouter vraiment et identifier le vrai besoin du client\n-être attentif au non-verbal\n-être attentif aux termes employés par le client\n-le questionnement ouvert ; les questions creusées\n-les vertus de reformulation ; les moments de la reformulation',
+            methods_tools: 'mises en situation, accompagnement terrain, techniques de vente (SONCAS, CAP...), accompagnement en rendez-vous et debrief, les 5 pourquoi, exercices CAP, PNL, méthode AEC, outils de coaching pour personnaliser les plans d\'actions individuels, base de données commerciale, exercices inter séances et debrief, méthodes de recommandations, atelier-retour',
+            evaluation_methodology: 'par un questionnaire individuel en ligne, en fin de formation.',
+            added_value: 'les outils personnalisés et la mise en pratique avec des outils de coaching.',
+            access_delays: 'les dates disponibles le sont à partir du 6 mois'
+        },
+        'Management': {
+            target_audience: 'managers, responsables d\'équipe, dirigeants',
+            prerequisites: 'aucun prérequis spécifique',
+            objectives: 'RAS',
+            module_1: 'RAS',
+            methods_tools: 'simulations, méthode Arc En Ciel, outils de coaching, plan d\'actions progressif, outils de CNV',
+            evaluation_methodology: 'par un questionnaire individuel en ligne, en fin de formation.',
+            added_value: 'RAS',
+            access_delays: 'les dates disponibles le sont à partir du 6 mois'
+        },
+        'Manager commercial': {
+            target_audience: 'managers commerciaux, directeurs commerciaux, responsables de vente',
+            prerequisites: 'aucun prérequis spécifique',
+            objectives: 'Apprendre les techniques de ventes',
+            module_1: 'les outils, méthodes, le savoir-être pour vendre',
+            methods_tools: 'simulations, méthode Arc En Ciel, outils de coaching, plan d\'actions progressif, outils de CNV',
+            evaluation_methodology: 'par un questionnaire individuel en ligne, en fin de formation.',
+            added_value: 'Apprendre les techniques de ventes',
+            access_delays: 'les dates disponibles le sont à partir du 6 mois'
+        }
+    },
+
+    onFormationNameChange(formationName) {
+        const template = this.FORMATION_TEMPLATES[formationName];
+        if (!template) return;
+
+        // Ne pré-remplir que si les champs sont vides (ne pas écraser les données existantes)
+        const fields = [
+            { id: 'target_audience', key: 'target_audience' },
+            { id: 'prerequisites', key: 'prerequisites' },
+            { id: 'objectives', key: 'objectives' },
+            { id: 'module_1', key: 'module_1' },
+            { id: 'methods_tools', key: 'methods_tools' },
+            { id: 'evaluation_methodology', key: 'evaluation_methodology' },
+            { id: 'added_value', key: 'added_value' },
+            { id: 'access_delays', key: 'access_delays' }
+        ];
+
+        let filled = 0;
+        fields.forEach(field => {
+            const el = document.getElementById(field.id);
+            if (el && !el.value.trim()) {
+                el.value = template[field.key] || '';
+                filled++;
+            }
+        });
+
+        if (filled > 0) {
+            if (typeof showToast !== 'undefined') {
+                showToast(`${filled} champ(s) pré-rempli(s) pour "${formationName}"`, 'info');
+            }
+        }
+    },
+
     reset() {
         this.currentFormation = null;
         this.currentTab = 'general';
@@ -186,7 +252,7 @@ const FormationForm = {
             <div class="form-grid">
                 <div class="form-group">
                     <label>Nom de la formation *</label>
-                    <select id="formation_name" required>
+                    <select id="formation_name" required onchange="FormationForm.onFormationNameChange(this.value)">
                         <option value="">Sélectionnez...</option>
                         <option value="Techniques de vente" ${f.formation_name === 'Techniques de vente' ? 'selected' : ''}>Techniques de vente</option>
                         <option value="Management" ${f.formation_name === 'Management' ? 'selected' : ''}>Management</option>

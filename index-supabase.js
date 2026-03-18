@@ -3831,7 +3831,8 @@ Nathalie JOULIÉ MORAND`;
                     questionnaire_url: questionnaireSelect.value || null,
                     attachments: attachments.map(a => ({ name: a.name, mimeType: a.mimeType })),
                     email_message_id: result.messageId,
-                    sent_by: 'resend'
+                    sent_by: 'resend',
+                    company_name: this.currentFormation.company_name || this.currentFormation.client_name || ''
                 };
 
                 await SupabaseData.logConvocationSent(this.currentFormation.id, logData);
