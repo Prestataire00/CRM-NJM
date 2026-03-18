@@ -1,0 +1,123 @@
+{
+  "avant": [
+    {
+      "title": "Attestation Certificat fin de formation NJM Conseil TYPE",
+      "file_url": "assets/qualiopi/avant/Attestation%20Certificat%20fin%20de%20formation%20NJM%20Conseil%20TYPE.docx",
+      "ext": ".docx"
+    },
+    {
+      "title": "CV NJM 2026",
+      "file_url": "assets/qualiopi/avant/CV%20NJM%202026.pdf",
+      "ext": ".pdf"
+    },
+    {
+      "title": "Contrat Quentin Durand TYPE",
+      "file_url": "assets/qualiopi/avant/Contrat%20Quentin%20Durand%20TYPE.doc",
+      "ext": ".doc"
+    },
+    {
+      "title": "Convention de formation Q.Durand TYPE",
+      "file_url": "assets/qualiopi/avant/Convention%20de_formation%20Q.Durand%20TYPE.doc",
+      "ext": ".doc"
+    },
+    {
+      "title": "Convention de formation TYPE - Copie",
+      "file_url": "assets/qualiopi/avant/Convention%20de_formation%20TYPE%20-%20Copie.doc",
+      "ext": ".doc"
+    },
+    {
+      "title": "Document préalable formation NJM Conseil",
+      "file_url": "assets/qualiopi/avant/Document%20pr%C3%A9alable%20formation%20NJM%20Conseil.docx",
+      "ext": ".docx"
+    },
+    {
+      "title": "Feuille Presence Q.Durand TYPE",
+      "file_url": "assets/qualiopi/avant/Feuille%20Presence%20Q.Durand%20TYPE.docx",
+      "ext": ".docx"
+    },
+    {
+      "title": "Feuille Presence TYPE",
+      "file_url": "assets/qualiopi/avant/Feuille%20Presence%20TYPE.docx",
+      "ext": ".docx"
+    },
+    {
+      "title": "Fiche de plan d actions personnel TYPE",
+      "file_url": "assets/qualiopi/avant/Fiche%20de%20plan%20d_actions%20personnel%20TYPE.docx",
+      "ext": ".docx"
+    },
+    {
+      "title": "Fiche de réclamation",
+      "file_url": "assets/qualiopi/avant/Fiche%20de%20r%C3%A9clamation.pdf",
+      "ext": ".pdf"
+    },
+    {
+      "title": "Fiche pedagogique TYPE",
+      "file_url": "assets/qualiopi/avant/Fiche%20pedagogique%20TYPE.doc",
+      "ext": ".doc"
+    },
+    {
+      "title": "Livret d accueil NJM Conseil RI2",
+      "file_url": "assets/qualiopi/avant/Livret%20d_accueil%20NJM%20Conseil%20RI2.pdf",
+      "ext": ".pdf"
+    },
+    {
+      "title": "Reglement interieur NJM Conseil",
+      "file_url": "assets/qualiopi/avant/Reglement%20interieur%20NJM%20Conseil.pdf",
+      "ext": ".pdf"
+    },
+    {
+      "title": "Séquençage de la formation présentiel TYPE V2",
+      "file_url": "assets/qualiopi/avant/S%C3%A9quen%C3%A7age%20de%20la%20formation%20pr%C3%A9sentiel%20TYPE%20V2.docx",
+      "ext": ".docx"
+    }
+  ],
+  "pendant": [
+    {
+      "title": "Evaluation acquis TYPE V2",
+      "file_url": "assets/qualiopi/pendant/Evaluation%20acquis%20TYPE%20V2.docx",
+      "ext": ".docx"
+    },
+    {
+      "title": "Fiche de réclamation TYPE",
+      "file_url": "assets/qualiopi/pendant/Fiche%20de%20r%C3%A9clamation%20TYPE.docx",
+      "ext": ".docx"
+    },
+    {
+      "title": "Grille autoévaluation formateur TYPE",
+      "file_url": "assets/qualiopi/pendant/Grille%20auto%C3%A9valuation%20formateur%20TYPE.docx",
+      "ext": ".docx"
+    },
+    {
+      "title": "Grille évaluation des acquis TYPE",
+      "file_url": "assets/qualiopi/pendant/Grille%20%C3%A9valuation%20des%20acquis%20TYPE.docx",
+      "ext": ".docx"
+    },
+    {
+      "title": "Questionnaire satisfaction à chaud TYPE",
+      "file_url": "assets/qualiopi/pendant/Questionnaire%20satisfaction%20%C3%A0%20chaud%20TYPE.docx",
+      "ext": ".docx"
+    }
+  ],
+  "apres": [
+    {
+      "title": "Bilan de fin de formation NJM Conseil TYPE Aout25",
+      "file_url": "assets/qualiopi/apres/Bilan%20de%20fin%20de%20formation%20NJM%20Conseil%20TYPE%20Aout25.docx",
+      "ext": ".docx"
+    },
+    {
+      "title": "Certificats Attestations de fin de formation TYPE",
+      "file_url": "assets/qualiopi/apres/Certificats%20Attestations%20de%20fin%20de%20formation%20TYPE.docx",
+      "ext": ".docx"
+    },
+    {
+      "title": "Evaluation à froid-Apprenant TYPE",
+      "file_url": "assets/qualiopi/apres/Evaluation%20%C3%A0%20froid-Apprenant%20TYPE.docx",
+      "ext": ".docx"
+    },
+    {
+      "title": "Evaluation à froid-Decideur TYPE",
+      "file_url": "assets/qualiopi/apres/Evaluation%20%C3%A0%20froid-Decideur%20TYPE.docx",
+      "ext": ".docx"
+    }
+  ]
+}

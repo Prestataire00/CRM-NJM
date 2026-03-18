@@ -1534,37 +1534,32 @@
                 <div style="display: grid; gap: 1.5rem;">
                     <!-- Avant la formation -->
                     <div style="background: white; border-radius: var(--radius-xl); padding: 1.5rem; box-shadow: var(--shadow-sm);">
-                        <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--gray-900); margin-bottom: 1rem;">
-                            📋 Avant la formation</h3>
-                        <div id="expiring-docs"
-                            style="margin-bottom: 1rem; padding: 1rem; background: #fef3c7; border-left: 4px solid #f59e0b; border-radius: var(--radius-md); display: none;">
-                            <strong>Documents prochainement expirés:</strong>
-                            <ul id="expiring-list" style="margin-top: 0.5rem; margin-left: 1.5rem;"></ul>
-                        </div>
-                        <button onclick="CRMApp.uploadTemplate('formateurs')"
-                            style="padding: 0.75rem 1.5rem; background: var(--primary-purple); color: white; border: none; border-radius: var(--radius-md); font-weight: 600; cursor: pointer;">+
-                            Ajouter Document</button>
-                        <div id="templates-formateurs" style="margin-top: 1rem;"></div>
+                        <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--gray-900); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <span style="display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; background: #dbeafe; border-radius: 8px;">📋</span>
+                            Avant la formation
+                            <span id="qualiopi-avant-count" style="font-size: 0.75rem; background: var(--gray-100); padding: 0.1rem 0.5rem; border-radius: 10px; color: var(--gray-500); font-weight: 400;"></span>
+                        </h3>
+                        <div id="qualiopi-avant-list" style="display: grid; gap: 0.25rem;"></div>
                     </div>
 
                     <!-- Pendant la formation -->
                     <div style="background: white; border-radius: var(--radius-xl); padding: 1.5rem; box-shadow: var(--shadow-sm);">
-                        <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--gray-900); margin-bottom: 1rem;">
-                            📝 Pendant la formation</h3>
-                        <button onclick="CRMApp.uploadTemplate('pedagogiques')"
-                            style="padding: 0.75rem 1.5rem; background: var(--primary-pink); color: white; border: none; border-radius: var(--radius-md); font-weight: 600; cursor: pointer;">+
-                            Ajouter Document</button>
-                        <div id="templates-pedagogiques" style="margin-top: 1rem;"></div>
+                        <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--gray-900); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <span style="display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; background: #fef3c7; border-radius: 8px;">📝</span>
+                            Pendant la formation
+                            <span id="qualiopi-pendant-count" style="font-size: 0.75rem; background: var(--gray-100); padding: 0.1rem 0.5rem; border-radius: 10px; color: var(--gray-500); font-weight: 400;"></span>
+                        </h3>
+                        <div id="qualiopi-pendant-list" style="display: grid; gap: 0.25rem;"></div>
                     </div>
 
                     <!-- Après la formation -->
                     <div style="background: white; border-radius: var(--radius-xl); padding: 1.5rem; box-shadow: var(--shadow-sm);">
-                        <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--gray-900); margin-bottom: 1rem;">
-                            ✅ Après la formation</h3>
-                        <button onclick="CRMApp.uploadTemplate('apres')"
-                            style="padding: 0.75rem 1.5rem; background: var(--primary-green); color: white; border: none; border-radius: var(--radius-md); font-weight: 600; cursor: pointer;">+
-                            Ajouter Document</button>
-                        <div id="templates-apres" style="margin-top: 1rem;"></div>
+                        <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--gray-900); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <span style="display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; background: #d1fae5; border-radius: 8px;">✅</span>
+                            Après la formation
+                            <span id="qualiopi-apres-count" style="font-size: 0.75rem; background: var(--gray-100); padding: 0.1rem 0.5rem; border-radius: 10px; color: var(--gray-500); font-weight: 400;"></span>
+                        </h3>
+                        <div id="qualiopi-apres-list" style="display: grid; gap: 0.25rem;"></div>
                     </div>
                 </div>
             </div>

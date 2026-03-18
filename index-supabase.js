@@ -2544,18 +2544,41 @@ Nathalie Joulie-Morand`;
     },
 
     async loadTemplates() {
-        const result = await SupabaseData.getTemplatesLibrary('formateurs');
-        if (result.success) {
-            const formateurs = result.data;
-            const container = document.getElementById('templates-formateurs');
-            if (container) {
-                container.innerHTML = formateurs.map(t => `
-                    <div style="padding: 1rem; background: var(--gray-50); border-radius: var(--radius-md); margin-top: 0.5rem;">
-                        <strong>${t.title}</strong><br>
-                        <span style="font-size: 0.875rem; color: var(--gray-600);">Expire: ${t.expiry_date ? new Date(t.expiry_date).toLocaleDateString('fr-FR') : 'N/A'}</span>
-                    </div>
-                `).join('') || '<p>Aucun document</p>';
-            }
+        // Charger les documents Qualiopi depuis le manifeste local
+        try {
+            const response = await fetch('assets/qualiopi-manifest.json');
+            const manifest = await response.json();
+
+            const fileIcon = (title, ext) => {
+                const e = (ext || '').toLowerCase();
+                if (e === '.pdf') return '📕';
+                if (e === '.pptx' || e === '.ppt') return '📊';
+                if (e === '.xlsx' || e === '.xls') return '📗';
+                if (e === '.docx' || e === '.doc') return '📘';
+                return '📄';
+            };
+
+            const renderFile = (f) => `
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 0.75rem; border-radius: var(--radius-md); transition: background 0.1s;" onmouseover="this.style.background='var(--gray-50)'" onmouseout="this.style.background='transparent'">
+                    <span style="font-size: 0.85rem; color: var(--gray-800); display: flex; align-items: center; gap: 0.5rem;">
+                        ${fileIcon(f.title, f.ext)} ${f.title}
+                    </span>
+                    <a href="${f.file_url}" target="_blank" rel="noopener noreferrer" style="color: var(--primary-purple); font-weight: 600; text-decoration: none; font-size: 0.8rem; padding: 0.2rem 0.5rem; background: #f3f0ff; border-radius: var(--radius-sm);">Ouvrir</a>
+                </div>`;
+
+            ['avant', 'pendant', 'apres'].forEach(phase => {
+                const files = manifest[phase] || [];
+                const container = document.getElementById(`qualiopi-${phase}-list`);
+                const countEl = document.getElementById(`qualiopi-${phase}-count`);
+                if (countEl) countEl.textContent = files.length + ' fichier' + (files.length > 1 ? 's' : '');
+                if (container) {
+                    container.innerHTML = files.length
+                        ? files.map(renderFile).join('')
+                        : '<p style="color: var(--gray-400); font-size: 0.875rem;">Aucun document</p>';
+                }
+            });
+        } catch (error) {
+            console.error('Erreur chargement Qualiopi:', error);
         }
     },
 
