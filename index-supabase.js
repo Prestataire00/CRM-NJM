@@ -1777,7 +1777,15 @@ const CRMApp = {
             let clientPassword = '[mot de passe non disponible]';
             const profileResult = await SupabaseData.getProfileByEmail(clientEmail);
             if (profileResult.success && profileResult.data) {
-                clientPassword = profileResult.data.initial_password || '[voir avec l\'administrateur]';
+                if (profileResult.data.initial_password) {
+                    clientPassword = profileResult.data.initial_password;
+                } else {
+                    clientPassword = '⚠️ Réinitialisez le mot de passe dans Gestion des Accès';
+                    showToast('Mot de passe initial non disponible. Réinitialisez-le dans Gestion des Accès.', 'warning', 5000);
+                }
+            } else {
+                showToast('Aucun compte client trouvé pour ' + clientEmail + '. Créez-le dans Gestion des Accès.', 'warning', 6000);
+                clientPassword = '⚠️ Compte non créé - créez-le dans Gestion des Accès';
             }
 
             const siteUrl = window.location.origin;
@@ -4419,7 +4427,15 @@ Nathalie JOULIÉ MORAND`;
             const profileResult = await SupabaseData.getProfileByEmail(formation.client_email);
             if (profileResult.success && profileResult.data) {
                 clientLogin = profileResult.data.email;
-                clientPassword = profileResult.data.initial_password || '[voir avec l\'administrateur]';
+                if (profileResult.data.initial_password) {
+                    clientPassword = profileResult.data.initial_password;
+                } else {
+                    clientPassword = '⚠️ Mot de passe non disponible - réinitialisez-le dans Gestion des Accès';
+                }
+            } else {
+                clientLogin = '⚠️ Compte non créé - créez-le d\'abord dans Gestion des Accès';
+                clientPassword = '⚠️ Compte non créé';
+                showToast('Attention : aucun compte client trouvé pour ' + formation.client_email + '. Créez-le dans Gestion des Accès.', 'warning', 6000);
             }
         }
 
