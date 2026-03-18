@@ -1,6 +1,32 @@
 // ==================== CRM App with Supabase Integration ====================
 // Ce fichier remplace toute la logique localStorage par Supabase
 
+// Fallback showToast si non défini (défini dans index.html)
+if (typeof showToast === 'undefined') {
+    window.showToast = function(message, type, duration) {
+        console.log(`[TOAST ${type}] ${message}`);
+        // Créer un toast basique si le conteneur existe
+        const container = document.getElementById('toast-container');
+        if (container) {
+            const icons = { success: '✓', error: '✕', info: 'ℹ', warning: '⚠' };
+            const colors = { success: '#059669', error: '#dc2626', info: '#2563eb', warning: '#d97706' };
+            const toast = document.createElement('div');
+            toast.style.cssText = `position:fixed;bottom:1.5rem;right:1.5rem;background:${colors[type]||'#333'};color:white;padding:0.875rem 1.25rem;border-radius:10px;font-size:0.9rem;z-index:99999;cursor:pointer;box-shadow:0 8px 30px rgba(0,0,0,0.15);`;
+            toast.textContent = `${icons[type]||''} ${message}`;
+            toast.onclick = () => toast.remove();
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), duration || 3500);
+        }
+    };
+}
+
+// Fallback showConfirmDialog si non défini
+if (typeof showConfirmDialog === 'undefined') {
+    window.showConfirmDialog = function({ title, message, confirmText, isDangerous }) {
+        return Promise.resolve(confirm(`${title}\n\n${message}`));
+    };
+}
+
 // Diagnostic au chargement
 console.log('=== DIAGNOSTIC ===');
 console.log('SupabaseData disponible ?', typeof SupabaseData !== 'undefined');
@@ -1731,8 +1757,6 @@ const CRMApp = {
     },
 
     async inviterClient(formationId) {
-        console.log('>>> inviterClient called', formationId);
-        showToast('Préparation de l\'invitation...', 'info', 2000);
         try {
             const { data: formation, error } = await supabaseClient
                 .from('formations')
@@ -1792,8 +1816,6 @@ Nathalie Joulie-Morand`;
     },
 
     async sendConvocation(formationId) {
-        console.log('>>> sendConvocation called', formationId);
-        showToast('Préparation de la convocation...', 'info', 2000);
         try {
             // Récupérer les données de la formation
             const { data: formation, error } = await supabaseClient
@@ -1813,7 +1835,6 @@ Nathalie Joulie-Morand`;
     },
 
     async relanceConvention(formationId) {
-        console.log('relanceConvention called with', formationId);
         try {
             const { data: formation, error } = await supabaseClient
                 .from('formations')
