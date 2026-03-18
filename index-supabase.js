@@ -1302,12 +1302,18 @@ const CRMApp = {
                     const docData = await this._uploadAndSaveDoc(id, result, 'attendance_sheet');
 
                     if (docData) {
-                        showToast('Feuille de présence créée !', 'success');
+                        // Transition automatique : Planifiée → En cours après feuille de présence
+                        if (data.status === 'planned') {
+                            await supabaseClient.from('formations').update({ status: 'in_progress' }).eq('id', id);
+                            showToast('Feuille créée ! Statut passé à "En cours"', 'success');
+                        } else {
+                            showToast('Feuille de présence créée !', 'success');
+                        }
                         this.loadFormations();
                     }
                 }
             } else {
-                alert('Le service de génération PDF n\'est pas disponible.');
+                showToast('Service PDF non disponible', 'error');
             }
         } catch (error) {
             console.error('Erreur lors de la récupération de la formation:', error);
@@ -1332,12 +1338,18 @@ const CRMApp = {
                     const docData = await this._uploadAndSaveDoc(id, result, 'certificate');
 
                     if (docData) {
-                        showToast('Certificat créé !', 'success');
+                        // Transition automatique : En cours → Terminée après certificat
+                        if (data.status === 'in_progress' || data.status === 'planned') {
+                            await supabaseClient.from('formations').update({ status: 'completed' }).eq('id', id);
+                            showToast('Certificat créé ! Statut passé à "Terminée"', 'success');
+                        } else {
+                            showToast('Certificat créé !', 'success');
+                        }
                         this.loadFormations();
                     }
                 }
             } else {
-                alert('Le service de génération PDF n\'est pas disponible.');
+                showToast('Service PDF non disponible', 'error');
             }
         } catch (error) {
             console.error('Erreur lors de la récupération de la formation:', error);
@@ -3824,7 +3836,13 @@ Nathalie JOULIÉ MORAND`;
 
                 await SupabaseData.logConvocationSent(this.currentFormation.id, logData);
 
-                alert('✅ Email envoyé avec succès !');
+                // Transition automatique : Planifiée → En cours après convocation
+                if (this.currentFormation.status === 'planned') {
+                    await supabaseClient.from('formations').update({ status: 'in_progress' }).eq('id', this.currentFormation.id);
+                    showToast('Statut passé à "En cours"', 'info');
+                }
+
+                showToast('Email envoyé avec succès !', 'success');
                 this.closeModal();
 
                 // Recharger les formations pour mettre à jour l'icône
