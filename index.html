@@ -1502,100 +1502,27 @@
 
             <!-- BIBLIOTHÈQUE SUPPORTS PAGE -->
             <div id="page-biblio-supports" class="page-content" style="display:none;">
-                <div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
-                    <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-900);">Bibliothèque Supports
-                        Pédagogiques
-                    </h2>
+                <div style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+                    <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-900);">Bibliothèque Supports</h2>
                     <div style="display: flex; gap: 0.75rem;">
                         <button onclick="CRMApp.uploadSupport()"
-                            style="padding: 0.75rem 1.5rem; background: var(--primary-orange); color: white; border: none; border-radius: var(--radius-md); font-weight: 600; cursor: pointer;">+
-                            Upload Support</button>
+                            style="padding: 0.6rem 1.25rem; background: var(--primary-orange); color: white; border: none; border-radius: var(--radius-md); font-weight: 600; cursor: pointer; font-size: 0.85rem;">+ Ajouter</button>
                         <button onclick="CRMApp.migrateLocalSupports()"
-                            style="padding: 0.75rem 1.5rem; background: var(--gray-700); color: white; border: none; border-radius: var(--radius-md); font-weight: 600; cursor: pointer;">
-                            Importer fichiers locaux</button>
+                            style="padding: 0.6rem 1.25rem; background: var(--gray-600); color: white; border: none; border-radius: var(--radius-md); font-weight: 500; cursor: pointer; font-size: 0.85rem;">Importer fichiers locaux</button>
                     </div>
                 </div>
 
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;" id="supports-grid">
-                    <div style="background: white; border-radius: var(--radius-xl); padding: 1.5rem; box-shadow: var(--shadow-sm);">
-                        <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--gray-900); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-                            <span style="display: inline-block; width: 8px; height: 8px; background: var(--primary-pink); border-radius: 50%;"></span>
-                            AEC Disc
-                        </h3>
-                        <div id="supports-aec_disc" style="display: grid; gap: 0.75rem;"></div>
-                    </div>
+                <!-- Onglets catégories -->
+                <div id="supports-tabs" style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem;"></div>
 
-                    <div style="background: white; border-radius: var(--radius-xl); padding: 1.5rem; box-shadow: var(--shadow-sm);">
-                        <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--gray-900); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-                            <span style="display: inline-block; width: 8px; height: 8px; background: var(--primary-orange); border-radius: 50%;"></span>
-                            Commercial
-                        </h3>
-                        <div id="supports-commercial" style="display: grid; gap: 0.75rem;"></div>
-                    </div>
+                <!-- Recherche -->
+                <div style="margin-bottom: 1rem;">
+                    <input type="search" id="supports-search" placeholder="Rechercher un fichier..." oninput="CRMApp.filterSupportsSearch()" style="width: 100%; max-width: 400px; padding: 0.6rem 1rem 0.6rem 2.5rem; border: 1px solid var(--gray-300); border-radius: var(--radius-md); font-size: 0.9rem; background: white url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2716%27 height=%2716%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%239ca3af%27 stroke-width=%272%27%3E%3Ccircle cx=%2711%27 cy=%2711%27 r=%278%27/%3E%3Cpath d=%27m21 21-4.3-4.3%27/%3E%3C/svg%3E') no-repeat 0.75rem center;">
+                </div>
 
-                    <div style="background: white; border-radius: var(--radius-xl); padding: 1.5rem; box-shadow: var(--shadow-sm);">
-                        <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--gray-900); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-                            <span style="display: inline-block; width: 8px; height: 8px; background: var(--primary-green); border-radius: 50%;"></span>
-                            Communication
-                        </h3>
-                        <div id="supports-communication" style="display: grid; gap: 0.75rem;"></div>
-                    </div>
-
-                    <div style="background: white; border-radius: var(--radius-xl); padding: 1.5rem; box-shadow: var(--shadow-sm);">
-                        <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--gray-900); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-                            <span style="display: inline-block; width: 8px; height: 8px; background: var(--primary-purple); border-radius: 50%;"></span>
-                            Internet et RS
-                        </h3>
-                        <div id="supports-internet_et_rs" style="display: grid; gap: 0.75rem;"></div>
-                    </div>
-
-                    <div style="background: white; border-radius: var(--radius-xl); padding: 1.5rem; box-shadow: var(--shadow-sm);">
-                        <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--gray-900); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-                            <span style="display: inline-block; width: 8px; height: 8px; background: #3b82f6; border-radius: 50%;"></span>
-                            Management
-                        </h3>
-                        <div id="supports-management" style="display: grid; gap: 0.75rem;"></div>
-                    </div>
-
-                    <div style="background: white; border-radius: var(--radius-xl); padding: 1.5rem; box-shadow: var(--shadow-sm);">
-                        <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--gray-900); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-                            <span style="display: inline-block; width: 8px; height: 8px; background: #8b5cf6; border-radius: 50%;"></span>
-                            Manager commercial
-                        </h3>
-                        <div id="supports-manager_commercial" style="display: grid; gap: 0.75rem;"></div>
-                    </div>
-
-                    <div style="background: white; border-radius: var(--radius-xl); padding: 1.5rem; box-shadow: var(--shadow-sm);">
-                        <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--gray-900); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-                            <span style="display: inline-block; width: 8px; height: 8px; background: var(--primary-orange); border-radius: 50%;"></span>
-                            Marketing
-                        </h3>
-                        <div id="supports-marketing" style="display: grid; gap: 0.75rem;"></div>
-                    </div>
-
-                    <div style="background: white; border-radius: var(--radius-xl); padding: 1.5rem; box-shadow: var(--shadow-sm);">
-                        <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--gray-900); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-                            <span style="display: inline-block; width: 8px; height: 8px; background: #ef4444; border-radius: 50%;"></span>
-                            Méthode AEC
-                        </h3>
-                        <div id="supports-methode_aec" style="display: grid; gap: 0.75rem;"></div>
-                    </div>
-
-                    <div style="background: white; border-radius: var(--radius-xl); padding: 1.5rem; box-shadow: var(--shadow-sm);">
-                        <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--gray-900); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-                            <span style="display: inline-block; width: 8px; height: 8px; background: #14b8a6; border-radius: 50%;"></span>
-                            Stratégie
-                        </h3>
-                        <div id="supports-strategie" style="display: grid; gap: 0.75rem;"></div>
-                    </div>
-
-                    <div style="background: white; border-radius: var(--radius-xl); padding: 1.5rem; box-shadow: var(--shadow-sm);">
-                        <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--gray-900); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-                            <span style="display: inline-block; width: 8px; height: 8px; background: var(--primary-pink); border-radius: 50%;"></span>
-                            Vente
-                        </h3>
-                        <div id="supports-vente" style="display: grid; gap: 0.75rem;"></div>
-                    </div>
+                <!-- Contenu des fichiers -->
+                <div id="supports-content" style="background: white; border-radius: var(--radius-xl); padding: 1.5rem; box-shadow: var(--shadow-sm);">
+                    <p style="color: var(--gray-500);">Sélectionnez une catégorie</p>
                 </div>
             </div>
 

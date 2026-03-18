@@ -2246,25 +2246,101 @@ Nathalie Joulie-Morand`;
         'vente': 'Vente'
     },
 
+    currentSupportCategory: null,
+    allSupportsCache: {},
+
     async loadSupports() {
-        for (const category of this.supportCategories) {
-            const result = await SupabaseData.getPedagogicalLibrary(category);
-            if (result.success) {
-                const supports = result.data;
-                const container = document.getElementById(`supports-${category}`);
-                if (container) {
-                    container.innerHTML = supports.length ? supports.map(s => `
-                        <div style="padding: 0.75rem; background: var(--gray-50); border-radius: var(--radius-md); font-size: 0.875rem; display: flex; align-items: center; justify-content: space-between;">
-                            <span>${s.file_url ? '🔗' : '📄'} ${s.title}</span>
-                            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                ${s.file_url ? `<a href="${s.file_url}" target="_blank" rel="noopener noreferrer" style="color: var(--primary-purple); font-weight: 600; text-decoration: none; font-size: 0.8rem;">Ouvrir ↗</a>` : ''}
-                                <button onclick="CRMApp.deleteSupport('${s.id}')" style="background:none;border:none;color:var(--gray-400);cursor:pointer;font-size:1rem;padding:0.25rem;" title="Supprimer">✕</button>
-                            </div>
-                        </div>
-                    `).join('') : '<p style="color: var(--gray-400); font-size: 0.875rem;">Aucun support</p>';
-                }
-            }
+        // Charger toutes les catégories en parallèle
+        const promises = this.supportCategories.map(async (cat) => {
+            const result = await SupabaseData.getPedagogicalLibrary(cat);
+            return { category: cat, data: result.success ? result.data : [] };
+        });
+
+        const results = await Promise.all(promises);
+        this.allSupportsCache = {};
+        results.forEach(r => { this.allSupportsCache[r.category] = r.data; });
+
+        // Générer les onglets
+        const tabsContainer = document.getElementById('supports-tabs');
+        if (tabsContainer) {
+            tabsContainer.innerHTML = this.supportCategories.map(cat => {
+                const count = (this.allSupportsCache[cat] || []).length;
+                const label = this.supportCategoryLabels[cat] || cat;
+                const isActive = this.currentSupportCategory === cat;
+                return `<button onclick="CRMApp.showSupportCategory('${cat}')"
+                    style="padding: 0.5rem 1rem; border: 1px solid ${isActive ? 'var(--primary-purple)' : 'var(--gray-300)'}; background: ${isActive ? 'var(--primary-purple)' : 'white'}; color: ${isActive ? 'white' : 'var(--gray-700)'}; border-radius: 20px; cursor: pointer; font-size: 0.8rem; font-weight: 500; transition: all 0.15s;">
+                    ${label} <span style="background: ${isActive ? 'rgba(255,255,255,0.3)' : 'var(--gray-100)'}; padding: 0.1rem 0.4rem; border-radius: 10px; font-size: 0.7rem; margin-left: 0.25rem;">${count}</span>
+                </button>`;
+            }).join('');
         }
+
+        // Afficher la première catégorie par défaut
+        if (!this.currentSupportCategory) {
+            this.currentSupportCategory = this.supportCategories[0];
+        }
+        this.showSupportCategory(this.currentSupportCategory);
+    },
+
+    showSupportCategory(category) {
+        this.currentSupportCategory = category;
+        const supports = this.allSupportsCache[category] || [];
+        const container = document.getElementById('supports-content');
+        const label = this.supportCategoryLabels[category] || category;
+
+        // Mettre à jour les onglets (active state)
+        const tabsContainer = document.getElementById('supports-tabs');
+        if (tabsContainer) {
+            tabsContainer.querySelectorAll('button').forEach(btn => {
+                const isActive = btn.textContent.trim().startsWith(label);
+                btn.style.background = isActive ? 'var(--primary-purple)' : 'white';
+                btn.style.color = isActive ? 'white' : 'var(--gray-700)';
+                btn.style.borderColor = isActive ? 'var(--primary-purple)' : 'var(--gray-300)';
+            });
+        }
+
+        if (!container) return;
+
+        const fileIcon = (title) => {
+            const t = title.toLowerCase();
+            if (t.endsWith('.pdf') || t.includes('pdf')) return '📕';
+            if (t.endsWith('.pptx') || t.endsWith('.ppt') || t.includes('pptx')) return '📊';
+            if (t.endsWith('.xlsx') || t.endsWith('.xls') || t.includes('xlsx')) return '📗';
+            if (t.endsWith('.docx') || t.endsWith('.doc') || t.includes('doc')) return '📘';
+            return '📄';
+        };
+
+        if (supports.length === 0) {
+            container.innerHTML = `<p style="color: var(--gray-500); text-align: center; padding: 2rem;">Aucun fichier dans "${label}"</p>`;
+            return;
+        }
+
+        container.innerHTML = `
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--gray-200);">
+                <h3 style="font-size: 1rem; font-weight: 600; color: var(--gray-900);">${label} (${supports.length} fichier${supports.length > 1 ? 's' : ''})</h3>
+            </div>
+            <div id="supports-list" style="display: grid; gap: 0.25rem;">
+                ${supports.map(s => `
+                    <div class="support-item" style="display: flex; align-items: center; justify-content: space-between; padding: 0.6rem 0.75rem; border-radius: var(--radius-md); transition: background 0.1s; cursor: default;" onmouseover="this.style.background='var(--gray-50)'" onmouseout="this.style.background='transparent'">
+                        <span style="font-size: 0.875rem; color: var(--gray-800); display: flex; align-items: center; gap: 0.5rem;">
+                            ${fileIcon(s.title || s.file_url || '')} ${s.title}
+                        </span>
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            ${s.file_url ? `<a href="${s.file_url}" target="_blank" rel="noopener noreferrer" style="color: var(--primary-purple); font-weight: 600; text-decoration: none; font-size: 0.8rem; padding: 0.25rem 0.6rem; background: #f3f0ff; border-radius: var(--radius-sm);">Ouvrir</a>` : ''}
+                            <button onclick="CRMApp.deleteSupport('${s.id}')" style="background:none;border:none;color:var(--gray-400);cursor:pointer;font-size:0.85rem;padding:0.25rem;" title="Supprimer">✕</button>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    },
+
+    filterSupportsSearch() {
+        const search = (document.getElementById('supports-search')?.value || '').toLowerCase();
+        const items = document.querySelectorAll('#supports-list .support-item');
+        items.forEach(item => {
+            const text = item.textContent.toLowerCase();
+            item.style.display = text.includes(search) ? '' : 'none';
+        });
     },
 
     uploadSupport() {
