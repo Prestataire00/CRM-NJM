@@ -1001,7 +1001,7 @@ const CRMApp = {
                 </td>
                 <td style="padding: 1rem; text-align: center;">
                     <div class="dropdown">
-                        <button style="padding: 0.5rem 1rem; background: var(--gray-100); border: none; border-radius: var(--radius-md); cursor: pointer; color: var(--gray-700); font-weight: 500;">Actions ▼</button>
+                        <button onclick="this.parentElement.classList.toggle('open')" style="padding: 0.5rem 1rem; background: var(--gray-100); border: none; border-radius: var(--radius-md); cursor: pointer; color: var(--gray-700); font-weight: 500;">Actions ▼</button>
                         <div class="dropdown-content" style="min-width: 220px;">
                             <button onclick="CRMApp.viewFormation(${f.id})" style="font-weight: 500;">📋 Voir / Modifier</button>
 
@@ -4272,6 +4272,19 @@ function togglePasswordVisibility() {
         }
     }
 }
+
+// Fermer les dropdowns quand on clique ailleurs
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.dropdown')) {
+        document.querySelectorAll('.dropdown.open').forEach(d => d.classList.remove('open'));
+    }
+    // Fermer le dropdown quand on clique sur un bouton à l'intérieur
+    const dropdownBtn = e.target.closest('.dropdown-content button');
+    if (dropdownBtn) {
+        const dropdown = dropdownBtn.closest('.dropdown');
+        if (dropdown) setTimeout(() => dropdown.classList.remove('open'), 100);
+    }
+});
 
 // Navigation handler
 document.addEventListener('click', (e) => {
