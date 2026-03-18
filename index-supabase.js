@@ -1289,17 +1289,22 @@ const CRMApp = {
                 <h3 style="font-size:1.125rem;font-weight:700;margin-bottom:1rem;">Assigner des supports à cette formation</h3>
                 <input type="search" id="assign-support-search" placeholder="Rechercher un support..." oninput="document.querySelectorAll('#assign-support-list .support-assign-item').forEach(el => el.style.display = el.textContent.toLowerCase().includes(this.value.toLowerCase()) ? '' : 'none')" style="width:100%;padding:0.6rem 1rem;border:1px solid var(--gray-300);border-radius:var(--radius-md);margin-bottom:1rem;box-sizing:border-box;">
                 <div id="assign-support-list" style="max-height: 50vh; overflow-y: auto;">
-                    ${Object.entries(byCategory).map(([cat, supports]) => `
+                    ${Object.entries(byCategory).map(([cat, supports]) => {
+                        const ids = supports.map(s => s.id).join(',');
+                        return `
                         <div style="margin-bottom: 1rem;">
-                            <div style="font-weight: 600; font-size: 0.85rem; color: var(--gray-700); margin-bottom: 0.5rem; padding: 0.25rem 0; border-bottom: 1px solid var(--gray-200);">${cat} (${supports.length})</div>
+                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.35rem 0; border-bottom: 1px solid var(--gray-200); margin-bottom: 0.5rem;">
+                                <span style="font-weight: 600; font-size: 0.85rem; color: var(--gray-700);">${cat} (${supports.length})</span>
+                                <button onclick="CRMApp.assignAllSupports(${formationId}, [${ids}], this)" style="padding: 0.2rem 0.7rem; background: #059669; color: white; border: none; border-radius: var(--radius-sm); cursor: pointer; font-size: 0.75rem; font-weight: 600;">Tout ajouter</button>
+                            </div>
                             ${supports.map(s => `
                                 <div class="support-assign-item" style="display: flex; align-items: center; justify-content: space-between; padding: 0.4rem 0.5rem; border-radius: var(--radius-sm);" onmouseover="this.style.background='var(--gray-50)'" onmouseout="this.style.background='transparent'">
                                     <span style="font-size: 0.85rem;">${s.title}</span>
                                     <button onclick="CRMApp.assignSupport(${formationId}, ${s.id}, this)" style="padding: 0.2rem 0.6rem; background: var(--primary-purple); color: white; border: none; border-radius: var(--radius-sm); cursor: pointer; font-size: 0.75rem;">Ajouter</button>
                                 </div>
                             `).join('')}
-                        </div>
-                    `).join('')}
+                        </div>`;
+                    }).join('')}
                 </div>
                 <div style="margin-top:1rem;text-align:right;">
                     <button onclick="document.getElementById('assign-support-modal').remove()" style="padding:0.6rem 1.25rem;background:var(--gray-200);color:var(--gray-700);border:none;border-radius:var(--radius-md);cursor:pointer;font-weight:500;">Fermer</button>
@@ -1307,6 +1312,32 @@ const CRMApp = {
             </div>
         `;
         document.body.appendChild(modal);
+    },
+
+    async assignAllSupports(formationId, supportIds, btn) {
+        btn.disabled = true;
+        btn.textContent = 'Ajout en cours...';
+
+        let added = 0;
+        for (const id of supportIds) {
+            const result = await SupabaseData.assignSupportToFormation(formationId, id);
+            if (result.success) added++;
+        }
+
+        btn.textContent = `✓ ${added} ajoutés`;
+        btn.style.background = '#059669';
+        showToast(`${added} supports assignés !`, 'success');
+        this.loadFormationSupports(formationId);
+
+        // Désactiver les boutons individuels "Ajouter" de ce groupe
+        const parent = btn.closest('div[style*="margin-bottom"]');
+        if (parent) {
+            parent.querySelectorAll('.support-assign-item button').forEach(b => {
+                b.textContent = '✓';
+                b.disabled = true;
+                b.style.background = '#059669';
+            });
+        }
     },
 
     async assignSupport(formationId, supportId, btn) {
