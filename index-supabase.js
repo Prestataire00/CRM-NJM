@@ -2366,6 +2366,58 @@ Nathalie Joulie-Morand`;
         }
     },
 
+    async migrateLocalSupports() {
+        const confirmed = await showConfirmDialog({
+            title: 'Importer les fichiers locaux',
+            message: 'Cette action va supprimer tous les anciens supports (liens Google Drive) et les remplacer par les fichiers locaux du dossier assets/supports/. Continuer ?',
+            confirmText: 'Importer',
+            isDangerous: false
+        });
+
+        if (!confirmed) return;
+
+        showToast('Migration en cours...', 'info', 10000);
+
+        try {
+            // 1. Charger le manifeste des fichiers locaux
+            const response = await fetch('assets/supports-manifest.json');
+            const manifest = await response.json();
+
+            // 2. Supprimer tous les anciens supports
+            for (const category of this.supportCategories) {
+                const result = await SupabaseData.getPedagogicalLibrary(category);
+                if (result.success && result.data) {
+                    for (const support of result.data) {
+                        await SupabaseData.deleteFromPedagogicalLibrary(support.id);
+                    }
+                }
+            }
+
+            // 3. Insérer les nouveaux depuis le manifeste
+            let imported = 0;
+            let errors = 0;
+            for (const item of manifest) {
+                const result = await SupabaseData.addToPedagogicalLibrary(item.category, {
+                    title: item.title,
+                    description: '',
+                    file_url: item.file_url
+                });
+                if (result.success) {
+                    imported++;
+                } else {
+                    errors++;
+                    console.warn('Erreur import:', item.title, result.message);
+                }
+            }
+
+            await this.loadSupports();
+            showToast(`Migration terminée : ${imported} fichiers importés${errors > 0 ? ', ' + errors + ' erreurs' : ''}`, 'success', 5000);
+        } catch (error) {
+            console.error('Erreur migration:', error);
+            showToast('Erreur migration: ' + error.message, 'error');
+        }
+    },
+
     async deleteSupport(id) {
         if (!confirm('Voulez-vous vraiment supprimer ce support ?')) return;
 
