@@ -1731,6 +1731,8 @@ const CRMApp = {
     },
 
     async inviterClient(formationId) {
+        console.log('>>> inviterClient called', formationId);
+        showToast('Préparation de l\'invitation...', 'info', 2000);
         try {
             const { data: formation, error } = await supabaseClient
                 .from('formations')
@@ -1790,6 +1792,8 @@ Nathalie Joulie-Morand`;
     },
 
     async sendConvocation(formationId) {
+        console.log('>>> sendConvocation called', formationId);
+        showToast('Préparation de la convocation...', 'info', 2000);
         try {
             // Récupérer les données de la formation
             const { data: formation, error } = await supabaseClient
