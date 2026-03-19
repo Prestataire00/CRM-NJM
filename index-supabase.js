@@ -869,8 +869,8 @@ const CRMApp = {
         if (targetPage) {
             targetPage.style.display = 'block';
             this.currentPage = pageName;
-            // Scroll en haut de la page
-            window.scrollTo(0, 0);
+            // Scroll vers la page active
+            setTimeout(() => targetPage.scrollIntoView({ behavior: 'instant', block: 'start' }), 0);
         }
 
         // Reload users when navigating to access management page
