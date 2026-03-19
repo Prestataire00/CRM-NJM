@@ -1210,6 +1210,100 @@
                 </div>
             </header>
 
+            <!-- PARAMÈTRES PAGE (placé en haut du DOM pour éviter les problèmes de layout) -->
+            <div id="page-parametres" class="page-content">
+                <div style="max-width: 900px; margin: 0 auto;">
+                <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-900); margin-bottom: 0.5rem;">Paramètres</h2>
+                <p style="color: var(--gray-600); margin-bottom: 2rem;">Configuration de l'organisme de formation</p>
+                <div style="display: grid; gap: 1.5rem;">
+                    <div style="background: white; border-radius: var(--radius-xl); padding: 2rem; box-shadow: var(--shadow-sm);">
+                        <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--gray-900); margin-bottom: 1.5rem;">Informations légales de l'organisme</h3>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem;">
+                            <div>
+                                <label style="display:block; font-weight:600; font-size:0.85rem; color:var(--gray-700); margin-bottom:0.4rem;">Raison sociale</label>
+                                <input type="text" id="param-raison-sociale" value="SAS NJM Conseil" style="width:100%; padding:0.75rem; border:1px solid var(--gray-300); border-radius:var(--radius-md); font-family:inherit;">
+                            </div>
+                            <div>
+                                <label style="display:block; font-weight:600; font-size:0.85rem; color:var(--gray-700); margin-bottom:0.4rem;">SIRET</label>
+                                <input type="text" id="param-siret" value="534 935 473 000 15" style="width:100%; padding:0.75rem; border:1px solid var(--gray-300); border-radius:var(--radius-md); font-family:inherit;">
+                            </div>
+                            <div>
+                                <label style="display:block; font-weight:600; font-size:0.85rem; color:var(--gray-700); margin-bottom:0.4rem;">N° Activité</label>
+                                <input type="text" id="param-num-activite" value="73120063512" style="width:100%; padding:0.75rem; border:1px solid var(--gray-300); border-radius:var(--radius-md); font-family:inherit;">
+                            </div>
+                            <div>
+                                <label style="display:block; font-weight:600; font-size:0.85rem; color:var(--gray-700); margin-bottom:0.4rem;">NAF</label>
+                                <input type="text" id="param-naf" value="7022Z" style="width:100%; padding:0.75rem; border:1px solid var(--gray-300); border-radius:var(--radius-md); font-family:inherit;">
+                            </div>
+                            <div>
+                                <label style="display:block; font-weight:600; font-size:0.85rem; color:var(--gray-700); margin-bottom:0.4rem;">RCS</label>
+                                <input type="text" id="param-rcs" value="Rodez 534 935 473" style="width:100%; padding:0.75rem; border:1px solid var(--gray-300); border-radius:var(--radius-md); font-family:inherit;">
+                            </div>
+                            <div>
+                                <label style="display:block; font-weight:600; font-size:0.85rem; color:var(--gray-700); margin-bottom:0.4rem;">Capital social</label>
+                                <input type="text" id="param-capital" value="3 000€" style="width:100%; padding:0.75rem; border:1px solid var(--gray-300); border-radius:var(--radius-md); font-family:inherit;">
+                            </div>
+                            <div style="grid-column: span 2;">
+                                <label style="display:block; font-weight:600; font-size:0.85rem; color:var(--gray-700); margin-bottom:0.4rem;">Adresse</label>
+                                <input type="text" id="param-adresse" value="Le Cassan, 12330 Clairvaux d'Aveyron" style="width:100%; padding:0.75rem; border:1px solid var(--gray-300); border-radius:var(--radius-md); font-family:inherit;">
+                            </div>
+                            <div>
+                                <label style="display:block; font-weight:600; font-size:0.85rem; color:var(--gray-700); margin-bottom:0.4rem;">Qualiopi</label>
+                                <input type="text" id="param-qualiopi" value="C2-5 V2 16-11-2020" style="width:100%; padding:0.75rem; border:1px solid var(--gray-300); border-radius:var(--radius-md); font-family:inherit;">
+                            </div>
+                            <div>
+                                <label style="display:block; font-weight:600; font-size:0.85rem; color:var(--gray-700); margin-bottom:0.4rem;">Site web</label>
+                                <input type="text" id="param-website" value="www.njm-conseil.fr" style="width:100%; padding:0.75rem; border:1px solid var(--gray-300); border-radius:var(--radius-md); font-family:inherit;">
+                            </div>
+                        </div>
+                    </div>
+                    <div style="background: white; border-radius: var(--radius-xl); padding: 2rem; box-shadow: var(--shadow-sm);">
+                        <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--gray-900); margin-bottom: 1.5rem;">Dirigeante / Formatrice</h3>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem;">
+                            <div>
+                                <label style="display:block; font-weight:600; font-size:0.85rem; color:var(--gray-700); margin-bottom:0.4rem;">Nom complet</label>
+                                <input type="text" id="param-dirigeante-nom" value="Nathalie JOULIE-MORAND" style="width:100%; padding:0.75rem; border:1px solid var(--gray-300); border-radius:var(--radius-md); font-family:inherit;">
+                            </div>
+                            <div>
+                                <label style="display:block; font-weight:600; font-size:0.85rem; color:var(--gray-700); margin-bottom:0.4rem;">Qualité</label>
+                                <input type="text" id="param-dirigeante-qualite" value="Gérante" style="width:100%; padding:0.75rem; border:1px solid var(--gray-300); border-radius:var(--radius-md); font-family:inherit;">
+                            </div>
+                            <div>
+                                <label style="display:block; font-weight:600; font-size:0.85rem; color:var(--gray-700); margin-bottom:0.4rem;">Téléphone</label>
+                                <input type="text" id="param-dirigeante-tel" value="06 88 10 40 67" style="width:100%; padding:0.75rem; border:1px solid var(--gray-300); border-radius:var(--radius-md); font-family:inherit;">
+                            </div>
+                            <div>
+                                <label style="display:block; font-weight:600; font-size:0.85rem; color:var(--gray-700); margin-bottom:0.4rem;">Email</label>
+                                <input type="text" id="param-dirigeante-email" value="njm.conseil@orange.fr" style="width:100%; padding:0.75rem; border:1px solid var(--gray-300); border-radius:var(--radius-md); font-family:inherit;">
+                            </div>
+                            <div style="grid-column: span 2;">
+                                <label style="display:block; font-weight:600; font-size:0.85rem; color:var(--gray-700); margin-bottom:0.4rem;">Diplôme / Titre</label>
+                                <input type="text" id="param-dirigeante-diplome" value="Titulaire d'un Master en marketing et communication" style="width:100%; padding:0.75rem; border:1px solid var(--gray-300); border-radius:var(--radius-md); font-family:inherit;">
+                            </div>
+                        </div>
+                    </div>
+                    <div style="background: white; border-radius: var(--radius-xl); padding: 2rem; box-shadow: var(--shadow-sm);">
+                        <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--gray-900); margin-bottom: 1.5rem;">Logo</h3>
+                        <div style="display: flex; align-items: center; gap: 2rem;">
+                            <img src="logo-njm.png" alt="Logo NJM" id="param-logo-preview" style="max-width: 150px; height: auto; border: 2px solid var(--gray-200); border-radius: var(--radius-md); padding: 0.75rem; background: white;">
+                            <div>
+                                <p style="color:var(--gray-600); font-size:0.85rem; margin-bottom:0.75rem;">Le logo apparaît sur tous les documents PDF.</p>
+                                <label style="padding:0.75rem 1.5rem; background:var(--primary-orange); color:white; border:none; border-radius:var(--radius-md); font-weight:600; cursor:pointer; display:inline-block;">
+                                    Changer le logo
+                                    <input type="file" accept="image/png,image/jpeg" onchange="CRMApp.changeLogo(event)" style="display:none;">
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display:flex; justify-content:flex-end; gap:1rem; padding-bottom: 2rem;">
+                        <button onclick="CRMApp.saveParametres()" style="padding:0.875rem 2.5rem; background:var(--primary-green); color:white; border:none; border-radius:var(--radius-md); font-weight:600; cursor:pointer; font-size:1rem;">
+                            Enregistrer les paramètres
+                        </button>
+                    </div>
+                </div>
+                </div>
+            </div>
+
             <!-- DASHBOARD PAGE -->
             <div id="page-dashboard" class="page-content active">
                 <!-- Alertes questionnaires à froid -->
@@ -2119,112 +2213,7 @@
             </div>
 
             <!-- PARAMÈTRES PAGE -->
-            <div id="page-parametres" class="page-content">
-                <div style="max-width: 900px; margin: 0 auto;">
-                <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-900); margin-bottom: 0.5rem;">Paramètres</h2>
-                <p style="color: var(--gray-600); margin-bottom: 2rem;">Configuration de l'organisme de formation</p>
-
-                <div style="display: grid; gap: 1.5rem;">
-                    <!-- Informations légales -->
-                    <div style="background: white; border-radius: var(--radius-xl); padding: 2rem; box-shadow: var(--shadow-sm);">
-                        <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--gray-900); margin-bottom: 1.5rem; display:flex; align-items:center; gap:0.5rem;">
-                            <span style="font-size:1.2rem;">&#9881;</span> Informations légales de l'organisme
-                        </h3>
-                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem;">
-                            <div>
-                                <label style="display:block; font-weight:600; font-size:0.85rem; color:var(--gray-700); margin-bottom:0.4rem;">Raison sociale</label>
-                                <input type="text" id="param-raison-sociale" value="SAS NJM Conseil" style="width:100%; padding:0.75rem; border:1px solid var(--gray-300); border-radius:var(--radius-md); font-family:inherit;">
-                            </div>
-                            <div>
-                                <label style="display:block; font-weight:600; font-size:0.85rem; color:var(--gray-700); margin-bottom:0.4rem;">SIRET</label>
-                                <input type="text" id="param-siret" value="534 935 473 000 15" style="width:100%; padding:0.75rem; border:1px solid var(--gray-300); border-radius:var(--radius-md); font-family:inherit;">
-                            </div>
-                            <div>
-                                <label style="display:block; font-weight:600; font-size:0.85rem; color:var(--gray-700); margin-bottom:0.4rem;">N° Activité (Formateur)</label>
-                                <input type="text" id="param-num-activite" value="73120063512" style="width:100%; padding:0.75rem; border:1px solid var(--gray-300); border-radius:var(--radius-md); font-family:inherit;">
-                            </div>
-                            <div>
-                                <label style="display:block; font-weight:600; font-size:0.85rem; color:var(--gray-700); margin-bottom:0.4rem;">NAF</label>
-                                <input type="text" id="param-naf" value="7022Z" style="width:100%; padding:0.75rem; border:1px solid var(--gray-300); border-radius:var(--radius-md); font-family:inherit;">
-                            </div>
-                            <div>
-                                <label style="display:block; font-weight:600; font-size:0.85rem; color:var(--gray-700); margin-bottom:0.4rem;">RCS</label>
-                                <input type="text" id="param-rcs" value="Rodez 534 935 473" style="width:100%; padding:0.75rem; border:1px solid var(--gray-300); border-radius:var(--radius-md); font-family:inherit;">
-                            </div>
-                            <div>
-                                <label style="display:block; font-weight:600; font-size:0.85rem; color:var(--gray-700); margin-bottom:0.4rem;">Capital social</label>
-                                <input type="text" id="param-capital" value="3 000€" style="width:100%; padding:0.75rem; border:1px solid var(--gray-300); border-radius:var(--radius-md); font-family:inherit;">
-                            </div>
-                            <div style="grid-column: span 2;">
-                                <label style="display:block; font-weight:600; font-size:0.85rem; color:var(--gray-700); margin-bottom:0.4rem;">Adresse</label>
-                                <input type="text" id="param-adresse" value="Le Cassan, 12330 Clairvaux d'Aveyron" style="width:100%; padding:0.75rem; border:1px solid var(--gray-300); border-radius:var(--radius-md); font-family:inherit;">
-                            </div>
-                            <div>
-                                <label style="display:block; font-weight:600; font-size:0.85rem; color:var(--gray-700); margin-bottom:0.4rem;">Certification Qualiopi</label>
-                                <input type="text" id="param-qualiopi" value="C2-5 V2 16-11-2020" style="width:100%; padding:0.75rem; border:1px solid var(--gray-300); border-radius:var(--radius-md); font-family:inherit;">
-                            </div>
-                            <div>
-                                <label style="display:block; font-weight:600; font-size:0.85rem; color:var(--gray-700); margin-bottom:0.4rem;">Site web</label>
-                                <input type="text" id="param-website" value="www.njm-conseil.fr" style="width:100%; padding:0.75rem; border:1px solid var(--gray-300); border-radius:var(--radius-md); font-family:inherit;">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Dirigeante -->
-                    <div style="background: white; border-radius: var(--radius-xl); padding: 2rem; box-shadow: var(--shadow-sm);">
-                        <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--gray-900); margin-bottom: 1.5rem; display:flex; align-items:center; gap:0.5rem;">
-                            <span style="font-size:1.2rem;">&#128100;</span> Dirigeante / Formatrice
-                        </h3>
-                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem;">
-                            <div>
-                                <label style="display:block; font-weight:600; font-size:0.85rem; color:var(--gray-700); margin-bottom:0.4rem;">Nom complet</label>
-                                <input type="text" id="param-dirigeante-nom" value="Nathalie JOULIE-MORAND" style="width:100%; padding:0.75rem; border:1px solid var(--gray-300); border-radius:var(--radius-md); font-family:inherit;">
-                            </div>
-                            <div>
-                                <label style="display:block; font-weight:600; font-size:0.85rem; color:var(--gray-700); margin-bottom:0.4rem;">Qualité</label>
-                                <input type="text" id="param-dirigeante-qualite" value="Gérante" style="width:100%; padding:0.75rem; border:1px solid var(--gray-300); border-radius:var(--radius-md); font-family:inherit;">
-                            </div>
-                            <div>
-                                <label style="display:block; font-weight:600; font-size:0.85rem; color:var(--gray-700); margin-bottom:0.4rem;">Téléphone</label>
-                                <input type="text" id="param-dirigeante-tel" value="06 88 10 40 67" style="width:100%; padding:0.75rem; border:1px solid var(--gray-300); border-radius:var(--radius-md); font-family:inherit;">
-                            </div>
-                            <div>
-                                <label style="display:block; font-weight:600; font-size:0.85rem; color:var(--gray-700); margin-bottom:0.4rem;">Email</label>
-                                <input type="text" id="param-dirigeante-email" value="njm.conseil@orange.fr" style="width:100%; padding:0.75rem; border:1px solid var(--gray-300); border-radius:var(--radius-md); font-family:inherit;">
-                            </div>
-                            <div style="grid-column: span 2;">
-                                <label style="display:block; font-weight:600; font-size:0.85rem; color:var(--gray-700); margin-bottom:0.4rem;">Diplôme / Titre</label>
-                                <input type="text" id="param-dirigeante-diplome" value="Titulaire d'un Master en marketing et communication" style="width:100%; padding:0.75rem; border:1px solid var(--gray-300); border-radius:var(--radius-md); font-family:inherit;">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Logo -->
-                    <div style="background: white; border-radius: var(--radius-xl); padding: 2rem; box-shadow: var(--shadow-sm);">
-                        <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--gray-900); margin-bottom: 1.5rem; display:flex; align-items:center; gap:0.5rem;">
-                            <span style="font-size:1.2rem;">&#127912;</span> Logo
-                        </h3>
-                        <div style="display: flex; align-items: center; gap: 2rem;">
-                            <img src="logo-njm.png" alt="Logo NJM Conseil" id="param-logo-preview" style="max-width: 150px; height: auto; border: 2px solid var(--gray-200); border-radius: var(--radius-md); padding: 0.75rem; background: white;">
-                            <div>
-                                <p style="color:var(--gray-600); font-size:0.85rem; margin-bottom:0.75rem;">Le logo apparaît sur tous les documents PDF générés.</p>
-                                <label style="padding:0.75rem 1.5rem; background:var(--primary-orange); color:white; border:none; border-radius:var(--radius-md); font-weight:600; cursor:pointer; display:inline-block;">
-                                    Changer le logo
-                                    <input type="file" accept="image/png,image/jpeg" onchange="CRMApp.changeLogo(event)" style="display:none;">
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Bouton Enregistrer -->
-                    <div style="display:flex; justify-content:flex-end; gap:1rem;">
-                        <button onclick="CRMApp.saveParametres()" style="padding:0.875rem 2.5rem; background:var(--primary-green); color:white; border:none; border-radius:var(--radius-md); font-weight:600; cursor:pointer; font-size:1rem;">
-                            Enregistrer les paramètres
-                        </button>
-                    </div>
-                </div>
-                </div>
-            </div>
+            <!-- PARAMETRES déplacé vers le haut du DOM -->
             <!-- END PARAMÈTRES PAGE -->
 
             <!-- ==================== PAGES FORMATEUR ==================== -->
