@@ -70,7 +70,7 @@ const FormationForm = {
             this.learnersData = data.learners_data || [];
         } catch (error) {
             console.error('Erreur chargement formation:', error);
-            alert('Erreur lors du chargement de la formation');
+            showToast('Erreur lors du chargement de la formation', 'error');
         }
     },
 
@@ -768,7 +768,7 @@ const FormationForm = {
                 el.focus();
 
                 // Message explicatif
-                alert(`Le champ "${field.label}" est obligatoire.`);
+                showToast(`Le champ "${field.label}" est obligatoire`, "error");
                 return;
             }
         }
@@ -783,7 +783,7 @@ const FormationForm = {
         // Validation du sous-traitant si en mode sous-traitance
         if (collaborationMode === 'sous-traitant' && !subcontractorId) {
             this.switchTab('general');
-            alert('Veuillez sélectionner un sous-traitant en mode sous-traitance.');
+            showToast('Veuillez sélectionner un sous-traitant en mode sous-traitance', 'error');
             return;
         }
 
@@ -844,7 +844,7 @@ const FormationForm = {
                     .eq('id', this.currentFormation.id);
 
                 if (error) throw error;
-                alert('Formation mise à jour avec succès !');
+                showToast('Formation mise à jour avec succès !', 'success');
             } else {
                 // Mode création
                 const { data: createdFormation, error } = await supabaseClient
@@ -907,7 +907,7 @@ const FormationForm = {
                 }
                 // === FIN AUTO-CRÉATION BPF ===
 
-                alert('Formation créée avec succès !');
+                showToast('Formation créée avec succès !', 'success');
             }
 
             this.close();
@@ -917,7 +917,7 @@ const FormationForm = {
             }
         } catch (error) {
             console.error('Erreur sauvegarde formation:', error);
-            alert('Erreur lors de la sauvegarde de la formation: ' + error.message);
+            showToast('Erreur sauvegarde: ' + error.message, 'error');
         }
     },
 
