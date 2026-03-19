@@ -2116,8 +2116,11 @@ Nathalie Joulie-Morand`;
             return `
             <div style="background: white; padding: 1.5rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); border-left: 4px solid var(--primary-pink);">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                    <h4 style="font-weight: 600; color: var(--gray-900); margin-bottom: 0.5rem;">${item.title}</h4>
-                    <button onclick="if(confirm('Supprimer cette veille ?')) CRMApp.deleteVeille(${item.id})" style="background:none; border:none; color:var(--gray-400); cursor:pointer; font-size:0.8rem; padding:0.2rem;" title="Supprimer">&times;</button>
+                    <h4 style="font-weight: 600; color: var(--gray-900); margin-bottom: 0.5rem; cursor:pointer;" onclick="CRMApp.editVeille(${item.id})" title="Cliquer pour modifier">${item.title}</h4>
+                    <div style="display:flex; gap:0.5rem; align-items:center;">
+                        <button onclick="CRMApp.editVeille(${item.id})" style="background:none; border:none; color:var(--gray-400); cursor:pointer; font-size:0.85rem; padding:0.2rem;" title="Modifier">&#9998;</button>
+                        <button onclick="if(confirm('Supprimer cette veille ?')) CRMApp.deleteVeille(${item.id})" style="background:none; border:none; color:var(--gray-400); cursor:pointer; font-size:0.8rem; padding:0.2rem;" title="Supprimer">&times;</button>
+                    </div>
                 </div>
                 ${contentWithoutUrl ? `<p style="color: var(--gray-600); font-size: 0.875rem; margin-bottom: 0.75rem; white-space: pre-line;">${contentWithoutUrl}</p>` : ''}
                 ${url ? `<a href="${url}" target="_blank" style="display:inline-flex; align-items:center; gap:0.3rem; color:var(--primary-purple); font-size:0.85rem; text-decoration:none; margin-bottom:0.75rem;">Voir le lien &rarr;</a>` : ''}
@@ -2146,14 +2149,39 @@ Nathalie Joulie-Morand`;
         }
     },
 
+    editingVeilleId: null,
+
     addVeille() {
+        this.editingVeilleId = null;
         const modal = document.getElementById('veilleModal');
-        // Reset fields
+        document.querySelector('#veilleModal h3').textContent = 'Nouvelle veille';
         document.getElementById('veille-title').value = '';
         document.getElementById('veille-content').value = '';
         document.getElementById('veille-url').value = '';
-        // Pre-select current category
         this.selectVeilleCategory(this.currentVeilleType || 'formation');
+        modal.style.display = 'flex';
+    },
+
+    async editVeille(id) {
+        const { data: item, error } = await supabaseClient.from('veille').select('*').eq('id', id).single();
+        if (error || !item) {
+            showToast('Veille introuvable', 'error');
+            return;
+        }
+
+        this.editingVeilleId = id;
+        const modal = document.getElementById('veilleModal');
+        document.querySelector('#veilleModal h3').textContent = 'Modifier la veille';
+
+        // Extraire le lien du contenu
+        const urlMatch = (item.content || '').match(/Lien\s*:\s*(https?:\/\/\S+)/);
+        const url = urlMatch ? urlMatch[1] : '';
+        const contentWithoutUrl = (item.content || '').replace(/\n?\n?Lien\s*:\s*https?:\/\/\S+/, '').trim();
+
+        document.getElementById('veille-title').value = item.title || '';
+        document.getElementById('veille-content').value = contentWithoutUrl;
+        document.getElementById('veille-url').value = url;
+        this.selectVeilleCategory(item.type || 'formation');
         modal.style.display = 'flex';
     },
 
@@ -2183,22 +2211,36 @@ Nathalie Joulie-Morand`;
         }
 
         const category = this.newVeilleCategory || this.currentVeilleType || 'formation';
-        const result = await SupabaseData.addVeille(category, {
-            title,
-            content: (content ? content : '') + (url ? '\n\nLien : ' + url : '')
-        });
+        const fullContent = (content ? content : '') + (url ? '\n\nLien : ' + url : '');
 
-        if (result.success) {
-            document.getElementById('veilleModal').style.display = 'none';
-            // Switch to the category we just added to
-            this.currentVeilleType = category;
-            await this.loadVeille();
-            // Update filter buttons
-            this.filterVeille(category);
-            showToast('Veille ajoutée !', 'success');
+        if (this.editingVeilleId) {
+            // Mode édition
+            const { error } = await supabaseClient.from('veille').update({
+                title,
+                content: fullContent,
+                type: category
+            }).eq('id', this.editingVeilleId);
+
+            if (error) {
+                showToast('Erreur modification: ' + error.message, 'error');
+                return;
+            }
+            showToast('Veille modifiée !', 'success');
         } else {
-            showToast(result.message, 'error');
+            // Mode création
+            const result = await SupabaseData.addVeille(category, { title, content: fullContent });
+            if (!result.success) {
+                showToast(result.message, 'error');
+                return;
+            }
+            showToast('Veille ajoutée !', 'success');
         }
+
+        document.getElementById('veilleModal').style.display = 'none';
+        this.editingVeilleId = null;
+        this.currentVeilleType = category;
+        await this.loadVeille();
+        this.filterVeille(category);
     },
 
     // ==================== BPF ====================
