@@ -4681,6 +4681,10 @@ Nathalie JOULIÉ MORAND`;
 
     displayAttachments(formation) {
         const attachmentsContainer = document.getElementById('convocation-attachments');
+        // Les documents sont dans l'espace client, pas en PJ - cacher la section
+        const attachmentsSection = document.getElementById('convocation-attachments-section');
+        if (attachmentsSection) attachmentsSection.style.display = 'none';
+        return;
 
         // Liste des pièces jointes requises
         const requiredAttachments = [
@@ -4826,8 +4830,8 @@ Nathalie JOULIÉ MORAND`;
         sendButton.innerHTML = '⏳ Envoi en cours...';
 
         try {
-            // Préparer les pièces jointes (fiche péda + convention régénérées à la volée)
-            const attachments = await this.prepareAttachments();
+            // Les documents sont dans l'espace client, pas en PJ du mail
+            const attachments = [];
 
             // Envoyer via Resend (Edge Function)
             const result = await EmailService.sendEmail(
