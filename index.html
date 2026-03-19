@@ -466,9 +466,13 @@
             padding: var(--space-xl);
         }
 
-        /* Page Content */
+        /* Page Content - hidden by default, shown via JS */
         .page-content {
+            display: none;
             padding: var(--space-xl);
+        }
+        .page-content.active {
+            display: block;
         }
 
         /* KPI Cards */
@@ -1207,7 +1211,7 @@
             </header>
 
             <!-- DASHBOARD PAGE -->
-            <div id="page-dashboard" class="page-content">
+            <div id="page-dashboard" class="page-content active">
                 <!-- Alertes questionnaires à froid -->
                 <div id="questionnaire-froid-alertes" style="display: none;"></div>
 
@@ -1356,7 +1360,7 @@
             <!-- END DASHBOARD PAGE -->
 
             <!-- FORMATION 2026 PAGE -->
-            <div id="page-formations" class="page-content" style="display:none;">
+            <div id="page-formations" class="page-content">
                 <div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
                     <div>
                         <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-900);">Formation 2026</h2>
@@ -1412,12 +1416,12 @@
             </div>
 
             <!-- FORMATION DETAIL PAGE -->
-            <div id="page-formation-detail" class="page-content" style="display:none;">
+            <div id="page-formation-detail" class="page-content">
                 <div id="formation-detail-content"></div>
             </div>
 
             <!-- VEILLE PAGE -->
-            <div id="page-veille" class="page-content" style="display:none;">
+            <div id="page-veille" class="page-content">
                 <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-900); margin-bottom: 2rem;">Veille
                 </h2>
 
@@ -1479,7 +1483,7 @@
             </div>
 
             <!-- BPF PAGE -->
-            <div id="page-bpf" class="page-content" style="display:none;">
+            <div id="page-bpf" class="page-content">
                 <div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
                     <div>
                         <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-900);">Bilan Pédagogique et Financier</h2>
@@ -1541,7 +1545,7 @@
             </div>
 
             <!-- BIBLIOTHÈQUE SUPPORTS PAGE -->
-            <div id="page-biblio-supports" class="page-content" style="display:none;">
+            <div id="page-biblio-supports" class="page-content">
                 <div style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
                     <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-900);">Bibliothèque Supports</h2>
                     <div style="display: flex; gap: 0.75rem;">
@@ -1565,7 +1569,7 @@
             </div>
 
             <!-- BIBLIOTHÈQUE TEMPLATES PAGE -->
-            <div id="page-biblio-templates" class="page-content" style="display:none;">
+            <div id="page-biblio-templates" class="page-content">
                 <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-900); margin-bottom: 2rem;">
                     Bibliothèque Qualiopi</h2>
 
@@ -1606,7 +1610,7 @@
             </div>
 
             <!-- GESTION DES ACCÈS PAGE -->
-            <div id="page-acces" class="page-content" style="display:none;">
+            <div id="page-acces" class="page-content">
                 <!-- Header -->
                 <div style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
                     <div>
@@ -2115,7 +2119,7 @@
             </div>
 
             <!-- PARAMÈTRES PAGE -->
-            <div id="page-parametres" class="page-content" style="display:none;">
+            <div id="page-parametres" class="page-content">
                 <div style="max-width: 900px; margin: 0 auto;">
                 <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-900); margin-bottom: 0.5rem;">Paramètres</h2>
                 <p style="color: var(--gray-600); margin-bottom: 2rem;">Configuration de l'organisme de formation</p>
@@ -2226,7 +2230,7 @@
             <!-- ==================== PAGES FORMATEUR ==================== -->
 
             <!-- MES MISSIONS PAGE (Formateur) -->
-            <div id="page-missions" class="page-content" style="display:none;">
+            <div id="page-missions" class="page-content">
                 <div style="margin-bottom: 2rem;">
                     <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-900);">Mes missions</h2>
                     <p style="color: var(--gray-600); margin-top: 0.5rem;">Formations auxquelles vous êtes affecté</p>
@@ -2270,7 +2274,7 @@
             <!-- END MES MISSIONS PAGE -->
 
             <!-- MES DOCUMENTS PAGE (Formateur) -->
-            <div id="page-mes-documents" class="page-content" style="display:none;">
+            <div id="page-mes-documents" class="page-content">
                 <div style="margin-bottom: 2rem;">
                     <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-900);">Mes documents</h2>
                     <p style="color: var(--gray-600); margin-top: 0.5rem;">Gérez vos documents contractuels</p>
@@ -2315,7 +2319,7 @@
             <!-- ==================== PAGES CLIENT ==================== -->
 
             <!-- MA FORMATION PAGE (Client) -->
-            <div id="page-ma-formation" class="page-content" style="display:none;">
+            <div id="page-ma-formation" class="page-content">
                 <div style="margin-bottom: 2rem;">
                     <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-900);">Ma formation en cours</h2>
                     <p style="color: var(--gray-600); margin-top: 0.5rem;">Suivez votre formation et accédez à vos documents</p>
@@ -2441,7 +2445,7 @@
             <!-- END MA FORMATION PAGE -->
 
             <!-- CATALOGUE PAGE (Client) -->
-            <div id="page-catalogue" class="page-content" style="display:none;">
+            <div id="page-catalogue" class="page-content">
                 <div style="margin-bottom: 2rem;">
                     <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-900);">Catalogue de formations</h2>
                     <p style="color: var(--gray-600); margin-top: 0.5rem;">Découvrez nos formations disponibles</p>

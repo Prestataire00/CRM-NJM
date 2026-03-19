@@ -862,14 +862,13 @@ const CRMApp = {
 
     showPage(pageName) {
         document.querySelectorAll('.page-content').forEach(page => {
-            page.style.display = 'none';
+            page.classList.remove('active');
         });
 
         const targetPage = document.getElementById(`page-${pageName}`);
         if (targetPage) {
-            targetPage.style.display = 'block';
+            targetPage.classList.add('active');
             this.currentPage = pageName;
-            // Scroll en haut
             window.scrollTo(0, 0);
         }
 
