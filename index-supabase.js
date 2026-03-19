@@ -869,6 +869,9 @@ const CRMApp = {
         if (targetPage) {
             targetPage.style.display = 'block';
             this.currentPage = pageName;
+            // Scroll en haut de la page
+            const mainContent = document.querySelector('.main-content');
+            if (mainContent) mainContent.scrollTop = 0;
         }
 
         // Reload users when navigating to access management page
