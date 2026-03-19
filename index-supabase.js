@@ -2107,18 +2107,28 @@ Nathalie Joulie-Morand`;
         const items = result.data;
         const container = document.getElementById('veille-container');
 
-        container.innerHTML = items.length ? items.map(item => `
+        container.innerHTML = items.length ? items.map(item => {
+            // Extraire le lien si présent dans le contenu
+            const urlMatch = (item.content || '').match(/Lien\s*:\s*(https?:\/\/\S+)/);
+            const url = urlMatch ? urlMatch[1] : null;
+            const contentWithoutUrl = (item.content || '').replace(/\n?\n?Lien\s*:\s*https?:\/\/\S+/, '').trim();
+
+            return `
             <div style="background: white; padding: 1.5rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); border-left: 4px solid var(--primary-pink);">
-                <h4 style="font-weight: 600; color: var(--gray-900); margin-bottom: 0.5rem;">${item.title}</h4>
-                <p style="color: var(--gray-600); font-size: 0.875rem; margin-bottom: 0.75rem;">${item.content || ''}</p>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <h4 style="font-weight: 600; color: var(--gray-900); margin-bottom: 0.5rem;">${item.title}</h4>
+                    <button onclick="if(confirm('Supprimer cette veille ?')) CRMApp.deleteVeille(${item.id})" style="background:none; border:none; color:var(--gray-400); cursor:pointer; font-size:0.8rem; padding:0.2rem;" title="Supprimer">&times;</button>
+                </div>
+                ${contentWithoutUrl ? `<p style="color: var(--gray-600); font-size: 0.875rem; margin-bottom: 0.75rem; white-space: pre-line;">${contentWithoutUrl}</p>` : ''}
+                ${url ? `<a href="${url}" target="_blank" style="display:inline-flex; align-items:center; gap:0.3rem; color:var(--primary-purple); font-size:0.85rem; text-decoration:none; margin-bottom:0.75rem;">Voir le lien &rarr;</a>` : ''}
                 <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.875rem; color: var(--gray-500);">
                     <span>${new Date(item.created_at).toLocaleDateString('fr-FR')}</span>
                     <button onclick="CRMApp.toggleVeilleRead(${item.id})" style="padding: 0.25rem 0.75rem; background: ${item.read ? 'var(--gray-200)' : 'var(--primary-green)'}; color: ${item.read ? 'var(--gray-700)' : 'white'}; border: none; border-radius: var(--radius-sm); cursor: pointer;">
                         ${item.read ? 'Lu' : 'Marquer lu'}
                     </button>
                 </div>
-            </div>
-        `).join('') : '<p style="text-align: center; color: var(--gray-500); padding: 2rem;">Aucune veille pour cette catégorie</p>';
+            </div>`;
+        }).join('') : '<p style="text-align: center; color: var(--gray-500); padding: 2rem;">Aucune veille pour cette catégorie</p>';
     },
 
     async toggleVeilleRead(id) {
@@ -2126,21 +2136,68 @@ Nathalie Joulie-Morand`;
         await this.loadVeille();
     },
 
-    async addVeille() {
-        const title = prompt('Titre de la veille:');
-        if (title) {
-            const content = prompt('Description:');
-            const result = await SupabaseData.addVeille(this.currentVeilleType, {
-                title,
-                content: content || ''
-            });
+    async deleteVeille(id) {
+        const { error } = await supabaseClient.from('veille').delete().eq('id', id);
+        if (error) {
+            showToast('Erreur suppression: ' + error.message, 'error');
+        } else {
+            await this.loadVeille();
+            showToast('Veille supprimée', 'success');
+        }
+    },
 
-            if (result.success) {
-                await this.loadVeille();
-                showToast('Veille ajoutée !', 'success');
+    addVeille() {
+        const modal = document.getElementById('veilleModal');
+        // Reset fields
+        document.getElementById('veille-title').value = '';
+        document.getElementById('veille-content').value = '';
+        document.getElementById('veille-url').value = '';
+        // Pre-select current category
+        this.selectVeilleCategory(this.currentVeilleType || 'formation');
+        modal.style.display = 'flex';
+    },
+
+    selectVeilleCategory(cat) {
+        this.newVeilleCategory = cat;
+        const buttons = document.querySelectorAll('#veille-modal-category button');
+        buttons.forEach(btn => {
+            if (btn.dataset.cat === cat) {
+                btn.style.background = 'var(--primary-pink)';
+                btn.style.color = 'white';
             } else {
-                showToast(result.message, 'error');
+                btn.style.background = 'var(--gray-200)';
+                btn.style.color = 'var(--gray-700)';
             }
+        });
+    },
+
+    async saveVeille() {
+        const title = document.getElementById('veille-title').value.trim();
+        const content = document.getElementById('veille-content').value.trim();
+        const url = document.getElementById('veille-url').value.trim();
+
+        if (!title) {
+            showToast('Le titre est obligatoire', 'error');
+            document.getElementById('veille-title').focus();
+            return;
+        }
+
+        const category = this.newVeilleCategory || this.currentVeilleType || 'formation';
+        const result = await SupabaseData.addVeille(category, {
+            title,
+            content: (content ? content : '') + (url ? '\n\nLien : ' + url : '')
+        });
+
+        if (result.success) {
+            document.getElementById('veilleModal').style.display = 'none';
+            // Switch to the category we just added to
+            this.currentVeilleType = category;
+            await this.loadVeille();
+            // Update filter buttons
+            this.filterVeille(category);
+            showToast('Veille ajoutée !', 'success');
+        } else {
+            showToast(result.message, 'error');
         }
     },
 

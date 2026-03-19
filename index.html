@@ -1440,6 +1440,47 @@
                 </div>
 
                 <div id="veille-container" style="display: grid; gap: 1rem;"></div>
+
+                <!-- Modal Ajouter Veille -->
+                <div id="veilleModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:10000; align-items:center; justify-content:center;">
+                    <div style="background:white; border-radius:var(--radius-xl); padding:2rem; width:90%; max-width:550px; max-height:85vh; overflow-y:auto; box-shadow:var(--shadow-xl);">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                            <h3 style="font-size:1.25rem; font-weight:700; color:var(--gray-900);">Nouvelle veille</h3>
+                            <button onclick="document.getElementById('veilleModal').style.display='none'" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:var(--gray-400);">&times;</button>
+                        </div>
+
+                        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+                            <div>
+                                <label style="display:block; font-weight:600; font-size:0.875rem; color:var(--gray-700); margin-bottom:0.5rem;">Catégorie</label>
+                                <div id="veille-modal-category" style="display:flex; gap:0.5rem;">
+                                    <button type="button" data-cat="formation" onclick="CRMApp.selectVeilleCategory('formation')" style="padding:0.5rem 1rem; background:var(--primary-pink); color:white; border:none; border-radius:var(--radius-md); font-weight:600; cursor:pointer; font-size:0.85rem;">Formation</button>
+                                    <button type="button" data-cat="metier" onclick="CRMApp.selectVeilleCategory('metier')" style="padding:0.5rem 1rem; background:var(--gray-200); color:var(--gray-700); border:none; border-radius:var(--radius-md); font-weight:600; cursor:pointer; font-size:0.85rem;">Métier</button>
+                                    <button type="button" data-cat="legal" onclick="CRMApp.selectVeilleCategory('legal')" style="padding:0.5rem 1rem; background:var(--gray-200); color:var(--gray-700); border:none; border-radius:var(--radius-md); font-weight:600; cursor:pointer; font-size:0.85rem;">Légal</button>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label style="display:block; font-weight:600; font-size:0.875rem; color:var(--gray-700); margin-bottom:0.5rem;">Titre *</label>
+                                <input type="text" id="veille-title" placeholder="Ex: Nouvelle réforme Qualiopi 2026" style="width:100%; padding:0.75rem 1rem; border:1px solid var(--gray-300); border-radius:var(--radius-md); font-family:inherit; font-size:0.9rem;">
+                            </div>
+
+                            <div>
+                                <label style="display:block; font-weight:600; font-size:0.875rem; color:var(--gray-700); margin-bottom:0.5rem;">Description</label>
+                                <textarea id="veille-content" rows="4" placeholder="Détails, notes, résumé..." style="width:100%; padding:0.75rem 1rem; border:1px solid var(--gray-300); border-radius:var(--radius-md); font-family:inherit; font-size:0.9rem; resize:vertical;"></textarea>
+                            </div>
+
+                            <div>
+                                <label style="display:block; font-weight:600; font-size:0.875rem; color:var(--gray-700); margin-bottom:0.5rem;">Lien (optionnel)</label>
+                                <input type="url" id="veille-url" placeholder="https://..." style="width:100%; padding:0.75rem 1rem; border:1px solid var(--gray-300); border-radius:var(--radius-md); font-family:inherit; font-size:0.9rem;">
+                            </div>
+                        </div>
+
+                        <div style="display:flex; justify-content:flex-end; gap:1rem; margin-top:1.5rem; padding-top:1rem; border-top:1px solid var(--gray-200);">
+                            <button onclick="document.getElementById('veilleModal').style.display='none'" style="padding:0.75rem 1.5rem; background:var(--gray-100); color:var(--gray-700); border:none; border-radius:var(--radius-md); font-weight:600; cursor:pointer;">Annuler</button>
+                            <button onclick="CRMApp.saveVeille()" style="padding:0.75rem 1.5rem; background:var(--primary-green); color:white; border:none; border-radius:var(--radius-md); font-weight:600; cursor:pointer;">Enregistrer</button>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- BPF PAGE -->
