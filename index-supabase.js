@@ -869,8 +869,11 @@ const CRMApp = {
         if (targetPage) {
             targetPage.style.display = 'block';
             this.currentPage = pageName;
-            // Scroll vers la page active
-            setTimeout(() => targetPage.scrollIntoView({ behavior: 'instant', block: 'start' }), 0);
+            // Cacher le header dashboard sur les autres pages
+            const header = document.querySelector('.dashboard-header');
+            if (header) header.style.display = (pageName === 'dashboard') ? '' : 'none';
+            // Scroll en haut
+            window.scrollTo(0, 0);
         }
 
         // Reload users when navigating to access management page
