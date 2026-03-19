@@ -80,6 +80,7 @@ const CRMApp = {
         await this.loadSupports();
         await this.loadTemplates();
         await this.loadUsers();
+        this.loadParametres();
         await this.checkExpiringDocuments();
         await this.checkQuestionnairesFroid();
     },
@@ -2241,6 +2242,58 @@ Nathalie Joulie-Morand`;
         this.currentVeilleType = category;
         await this.loadVeille();
         this.filterVeille(category);
+    },
+
+    // ==================== PARAMETRES ====================
+
+    async loadParametres() {
+        // Charger depuis localStorage (ou Supabase si table existe)
+        const params = JSON.parse(localStorage.getItem('njm_parametres') || '{}');
+        const fields = [
+            'raison-sociale', 'siret', 'num-activite', 'naf', 'rcs', 'capital',
+            'adresse', 'qualiopi', 'website', 'dirigeante-nom', 'dirigeante-qualite',
+            'dirigeante-tel', 'dirigeante-email', 'dirigeante-diplome'
+        ];
+        fields.forEach(f => {
+            const el = document.getElementById('param-' + f);
+            if (el && params[f]) el.value = params[f];
+        });
+    },
+
+    async saveParametres() {
+        const fields = [
+            'raison-sociale', 'siret', 'num-activite', 'naf', 'rcs', 'capital',
+            'adresse', 'qualiopi', 'website', 'dirigeante-nom', 'dirigeante-qualite',
+            'dirigeante-tel', 'dirigeante-email', 'dirigeante-diplome'
+        ];
+        const params = {};
+        fields.forEach(f => {
+            const el = document.getElementById('param-' + f);
+            if (el) params[f] = el.value.trim();
+        });
+        localStorage.setItem('njm_parametres', JSON.stringify(params));
+        showToast('Paramètres enregistrés !', 'success');
+    },
+
+    changeLogo(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        if (!file.type.startsWith('image/')) {
+            showToast('Veuillez sélectionner une image (PNG ou JPEG)', 'error');
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            showToast('Image trop lourde (max 5 Mo)', 'error');
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const preview = document.getElementById('param-logo-preview');
+            if (preview) preview.src = e.target.result;
+            localStorage.setItem('njm_logo', e.target.result);
+            showToast('Logo mis à jour !', 'success');
+        };
+        reader.readAsDataURL(file);
     },
 
     // ==================== BPF ====================
