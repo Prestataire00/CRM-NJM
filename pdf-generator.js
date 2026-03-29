@@ -163,7 +163,7 @@ const PdfGenerator = {
     drawTable(doc, startY, headers, rows, colWidths) {
         const startX = 15;
         const rowHeight = 8;
-        const cellPadding = 2;
+        const cellPadding = 1.5;
         const totalWidth = colWidths.reduce((a, b) => a + b, 0);
 
         doc.setDrawColor(...this.COLORS.tableOrange);
@@ -217,7 +217,7 @@ const PdfGenerator = {
                 if (i > 0) {
                     doc.line(xPos, y, xPos, y + currentRowHeight);
                 }
-                doc.setFontSize(8);
+                doc.setFontSize(7);
                 doc.setFont('helvetica', 'normal');
                 doc.setTextColor(...this.COLORS.darkGray);
                 const lines = doc.splitTextToSize(String(cell || ''), colWidths[i] - cellPadding * 2);
@@ -267,7 +267,7 @@ const PdfGenerator = {
                 'Méthodes, moyens et outils\npédagogiques'
             ];
 
-            const colWidths = [30, 55, 45, 50];
+            const colWidths = [20, 40, 65, 55];
 
             const rows = [[
                 `${formation.hours_per_learner || 0}h\n\n${formation.number_of_days || 0} ${(formation.number_of_days || 0) <= 1 ? 'jour' : 'jours'}`,
