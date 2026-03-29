@@ -17,7 +17,7 @@ const FormationForm = {
     async loadClientsAndSubcontractors() {
         try {
             const [clientsResult, subcontractorsResult] = await Promise.all([
-                SupabaseData.getClientsWithUserAccounts(),  // Utilise uniquement les clients avec compte utilisateur
+                SupabaseData.getClients(),  // Tous les clients sans filtre
                 SupabaseData.getSubcontractors()
             ]);
 

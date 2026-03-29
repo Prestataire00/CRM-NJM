@@ -387,21 +387,22 @@ const PdfGenerator = {
             const currentDate = new Date().toLocaleDateString('fr-FR');
             const startDate = this.formatDate(formation.start_date);
             const endDate = this.formatDate(formation.end_date);
-            // Lister chaque jour individuellement (demande cliente)
+            // Utiliser les dates des feuilles de présence si disponibles
             let dates = startDate;
-            if (startDate !== endDate && formation.start_date && formation.end_date) {
-                // Générer la liste des jours entre start et end
-                const daysList = [];
-                const current = new Date(formation.start_date);
-                const end = new Date(formation.end_date);
-                while (current <= end) {
-                    // Exclure les week-ends (samedi=6, dimanche=0)
-                    if (current.getDay() !== 0 && current.getDay() !== 6) {
-                        daysList.push(current.toLocaleDateString('fr-FR'));
-                    }
-                    current.setDate(current.getDate() + 1);
-                }
-                dates = daysList.length > 0 ? daysList.join(', ') : `${startDate}, ${endDate}`;
+            let sheets = formation.attendance_sheets || [];
+            if (typeof sheets === 'string') {
+                try { sheets = JSON.parse(sheets); } catch (e) { sheets = []; }
+            }
+            if (sheets.length > 0) {
+                const realDates = sheets
+                    .filter(s => s.date)
+                    .map(s => new Date(s.date).toLocaleDateString('fr-FR'))
+                    .sort((a, b) => new Date(a.split('/').reverse().join('-'))
+                        - new Date(b.split('/').reverse().join('-')));
+                if (realDates.length > 0) dates = realDates.join(', ');
+            } else if (startDate !== endDate) {
+                // Fallback : juste start_date et end_date
+                dates = `${startDate} au ${endDate}`;
             }
             const learnersData = this.parseLearners(formation);
             const learnersNames = learnersData.map(l => this.getLearnerName(l)).filter(n => n).join(', ');
@@ -477,11 +478,6 @@ const PdfGenerator = {
             y += 8;
 
             // Bullet points
-            y = this._writeBullet(doc, margin, y, 'Objectifs:', formation.objectives || 'RAS', maxW);
-            y += 1;
-            y = this._writeBullet(doc, margin, y, 'Type d\'action de formation', '(au sens de l\'article L. 900-2 du Code du travail): Acquisition et entretien des connaissances et mise en parallèle avec l\'activité.', maxW);
-            y = this._writeBullet(doc, margin, y, 'Contenus:', formation.module_1 || 'les outils, méthodes, le savoir-être pour vendre', maxW);
-            y = this._writeBullet(doc, margin, y, 'Méthodes et moyens pédagogiques:', formation.methods_tools || 'simulations, méthode Arc En Ciel, outils de coaching, plan d\'actions progressif, outils de CNV', maxW);
             y = this._writeBullet(doc, margin, y, 'Formateur:', this.getFormateurText(formation), maxW);
             y = this._writeBullet(doc, margin, y, 'Date(s):', dates, maxW);
             y = this._writeBullet(doc, margin, y, 'Durée:', `${formation.hours_per_learner || 0} heures.`, maxW);
@@ -579,7 +575,7 @@ const PdfGenerator = {
             y += 8;
 
             // Fait à...
-            doc.text(`Fait en double exemplaire, à Rodez, le ${startDate}`, 195, y, { align: 'right' });
+            doc.text(`Fait en double exemplaire, à Rodez, le ${currentDate}`, 195, y, { align: 'right' });
             y += 10;
 
             // Signatures
