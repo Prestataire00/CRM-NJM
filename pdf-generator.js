@@ -1088,11 +1088,11 @@ const PdfGenerator = {
                 doc.text('Non acquis', tblX + tblColW[0] + tblColW[1] + 2, y + 4);
                 y += 6;
 
-                // 4 lignes vides + objectifs à droite du tableau
+                // 3 lignes vides + objectifs à droite du tableau
                 const evalText = doc.splitTextToSize(formation.objectives || 'RAS', 70);
                 const rightColX = tblX + tblW + 5;
 
-                for (let r = 0; r < 4; r++) {
+                for (let r = 0; r < 3; r++) {
                     doc.rect(tblX, y, tblW, 8);
                     doc.line(tblX + tblColW[0], y, tblX + tblColW[0], y + 8);
                     doc.line(tblX + tblColW[0] + tblColW[1], y, tblX + tblColW[0] + tblColW[1], y + 8);
