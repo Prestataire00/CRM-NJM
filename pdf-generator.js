@@ -8,6 +8,9 @@ const PdfGenerator = {
     // Logo NJM - sera chargé dynamiquement
     LOGO_LOADED: false,
     LOGO_DATA: null,
+    // Signature et cachet - chargés depuis localStorage
+    SIGNATURE_DATA: null,
+    CACHET_DATA: null,
 
     /**
      * Charge le logo depuis le fichier PNG
@@ -30,6 +33,22 @@ const PdfGenerator = {
             console.warn('Logo non chargé:', e);
             return null;
         }
+    },
+
+    /**
+     * Charge la signature depuis localStorage
+     */
+    loadSignature() {
+        this.SIGNATURE_DATA = localStorage.getItem('njm_signature') || null;
+        return this.SIGNATURE_DATA;
+    },
+
+    /**
+     * Charge le cachet depuis localStorage
+     */
+    loadCachet() {
+        this.CACHET_DATA = localStorage.getItem('njm_cachet') || null;
+        return this.CACHET_DATA;
     },
 
     // Couleurs NJM
@@ -900,6 +919,8 @@ const PdfGenerator = {
     async generateCertificate(formation) {
         try {
             await this.loadLogo();
+            this.loadSignature();
+            this.loadCachet();
             const doc = this.createDoc();
             const margin = 20;
             const maxW = 170;
@@ -994,8 +1015,17 @@ const PdfGenerator = {
 
                 // Signature
                 doc.text('Cachet et signature de la responsable de l\'organisme de formation NJM Conseil', 105, y, { align: 'center' });
-                y += 8;
-                doc.text('Nathalie JOULIE   MORAND', 105, y, { align: 'center' });
+                y += 5;
+                doc.text('Nathalie JOULIE MORAND', 105, y, { align: 'center' });
+                y += 3;
+
+                // Images : signature à gauche, cachet à droite
+                if (this.SIGNATURE_DATA) {
+                    doc.addImage(this.SIGNATURE_DATA, 'PNG', 55, y, 40, 20);
+                }
+                if (this.CACHET_DATA) {
+                    doc.addImage(this.CACHET_DATA, 'PNG', 115, y, 30, 20);
+                }
 
                 this.addNJMFooter(doc);
 
@@ -1125,7 +1155,13 @@ const PdfGenerator = {
                 doc.text(`Fait à Rodez, le ${lastDate}`, 195, y, { align: 'right' });
                 y += 5;
                 doc.text('NJM Conseil', margin, y);
-                y += 15;
+                y += 3;
+
+                // Image signature (sans cachet sur l'attestation)
+                if (this.SIGNATURE_DATA) {
+                    doc.addImage(this.SIGNATURE_DATA, 'PNG', margin, y, 40, 20);
+                }
+                y += 22;
                 doc.text('Nathalie Joulié Morand', margin, y);
 
                 // Mention conservation (en rose, comme le modèle)

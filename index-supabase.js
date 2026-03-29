@@ -2259,6 +2259,12 @@ Nathalie Joulie-Morand`;
             const el = document.getElementById('param-' + f);
             if (el && params[f]) el.value = params[f];
         });
+
+        // Charger les previews signature et cachet
+        const sig = localStorage.getItem('njm_signature');
+        if (sig) { const el = document.getElementById('param-signature-preview'); if (el) el.src = sig; }
+        const cachet = localStorage.getItem('njm_cachet');
+        if (cachet) { const el = document.getElementById('param-cachet-preview'); if (el) el.src = cachet; }
     },
 
     async saveParametres() {
@@ -2293,6 +2299,48 @@ Nathalie Joulie-Morand`;
             if (preview) preview.src = e.target.result;
             localStorage.setItem('njm_logo', e.target.result);
             showToast('Logo mis à jour !', 'success');
+        };
+        reader.readAsDataURL(file);
+    },
+
+    changeSignature(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        if (!file.type.startsWith('image/')) {
+            showToast('Veuillez sélectionner une image (PNG ou JPEG)', 'error');
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            showToast('Image trop lourde (max 5 Mo)', 'error');
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const preview = document.getElementById('param-signature-preview');
+            if (preview) preview.src = e.target.result;
+            localStorage.setItem('njm_signature', e.target.result);
+            showToast('Signature mise à jour !', 'success');
+        };
+        reader.readAsDataURL(file);
+    },
+
+    changeCachet(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        if (!file.type.startsWith('image/')) {
+            showToast('Veuillez sélectionner une image (PNG ou JPEG)', 'error');
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            showToast('Image trop lourde (max 5 Mo)', 'error');
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const preview = document.getElementById('param-cachet-preview');
+            if (preview) preview.src = e.target.result;
+            localStorage.setItem('njm_cachet', e.target.result);
+            showToast('Cachet mis à jour !', 'success');
         };
         reader.readAsDataURL(file);
     },
