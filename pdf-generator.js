@@ -907,7 +907,22 @@ const PdfGenerator = {
             const learnersData = this.parseLearners(formation);
             const startDate = this.formatDate(formation.start_date);
             const endDate = this.formatDate(formation.end_date);
-            const dates = startDate === endDate ? startDate : `${startDate} au ${endDate}`;
+            // Utiliser les dates des feuilles de présence si disponibles
+            let sheets = formation.attendance_sheets || [];
+            if (typeof sheets === 'string') {
+                try { sheets = JSON.parse(sheets); } catch (e) { sheets = []; }
+            }
+            let dates;
+            if (sheets.length > 0) {
+                const realDates = sheets
+                    .filter(s => s.date)
+                    .map(s => new Date(s.date).toLocaleDateString('fr-FR'))
+                    .sort((a, b) => new Date(a.split('/').reverse().join('-'))
+                        - new Date(b.split('/').reverse().join('-')));
+                dates = realDates.length > 0 ? realDates.join(', ') : startDate;
+            } else {
+                dates = startDate === endDate ? startDate : `${startDate} au ${endDate}`;
+            }
             const lastDate = endDate || startDate || new Date().toLocaleDateString('fr-FR');
             const companyName = formation.company_name || formation.client_name || '';
 
@@ -1009,12 +1024,20 @@ const PdfGenerator = {
                 y = this._writeText(doc, margin, y, 'A suivi dans le cadre d\'une action de formation professionnelle continue, relevant de l\'article L 6313-1 du code du travail, la formation suivante :', { maxWidth: maxW });
                 y += 3;
 
-                // Titre formation centré orange bold
+                // Titre formation centré orange bold dans un rectangle bordure orange
+                const formTitle = `Formation : ${formation.formation_name || ''}`;
                 doc.setFontSize(11);
                 doc.setFont('helvetica', 'bold');
+                const titleWidth = doc.getTextWidth(formTitle);
+                const rectX = 105 - titleWidth / 2 - 4;
+                const rectW = titleWidth + 8;
+                const rectH = 8;
+                doc.setDrawColor(...this.COLORS.orange);
+                doc.setLineWidth(0.5);
+                doc.rect(rectX, y - 5, rectW, rectH);
                 doc.setTextColor(...this.COLORS.orange);
-                doc.text(`Formation : ${formation.formation_name || ''}`, 105, y, { align: 'center' });
-                y += 8;
+                doc.text(formTitle, 105, y, { align: 'center' });
+                y += 12;
 
                 // Bullets
                 doc.setFontSize(9);
