@@ -1063,52 +1063,77 @@ const PdfGenerator = {
                 doc.setFillColor(...this.COLORS.darkGray);
                 doc.circle(margin + 1.5, y - 1, 1, 'F');
                 doc.text(`L'action s'est déroulée à ${formation.training_location || ''}, les ${dates},`, margin + 5, y); y += 5;
-                doc.text(`-durée de la formation ${learnerHours}h`, margin + 5, y); y += 5;
-                doc.text(`-durée suivie par le stagiaire : ${learnerHours}h/stagiaire`, margin + 5, y); y += 5;
+                doc.text(`-durée de la formation : ${learnerHours} heures`, margin + 5, y); y += 5;
+                doc.text(`-durée suivie par le stagiaire : ${learnerHours} heures/stagiaire`, margin + 5, y); y += 5;
 
                 // Résultats évaluation
                 doc.setFillColor(...this.COLORS.darkGray);
                 doc.circle(margin + 1.5, y - 1, 1, 'F');
-                doc.text('Résultats de l\'évaluation des acquis au regard des objectifs de la formation :', margin + 5, y); y += 5;
+                doc.text('Résultats de l\'évaluation des acquis au regard des objectifs de la formation :', margin + 5, y); y += 7;
 
-                // Tableau Acquis / En cours / Non acquis
-                const tblX = margin;
-                const tblColW = [40, 35, 40];
-                const tblW = tblColW.reduce((a, b) => a + b, 0);
+                // Parser les objectifs individuels
+                const objRaw = formation.objectives || 'RAS';
+                const objItems = objRaw.split(/\n/)
+                    .map(s => s.trim())
+                    .filter(s => s.length > 0);
+
+                // Layout : objectifs à GAUCHE, tableau à DROITE (fidèle au modèle)
+                const objColW = 100;
+                const tblStartX = margin + objColW + 1;
+                const evalColW = [23, 23, 24];
+                const evalTblW = evalColW.reduce((a, b) => a + b, 0);
+
                 doc.setDrawColor(...this.COLORS.darkGray);
                 doc.setLineWidth(0.3);
-
-                // Header
-                doc.rect(tblX, y, tblW, 6);
                 doc.setFontSize(8);
-                doc.text('Acquis', tblX + 2, y + 4);
-                doc.line(tblX + tblColW[0], y, tblX + tblColW[0], y + 6);
-                doc.text('En cours', tblX + tblColW[0] + 2, y + 4);
-                doc.line(tblX + tblColW[0] + tblColW[1], y, tblX + tblColW[0] + tblColW[1], y + 6);
-                doc.text('Non acquis', tblX + tblColW[0] + tblColW[1] + 2, y + 4);
+
+                // Header du tableau (à droite)
+                let xPos = tblStartX;
+                ['Acquis', 'En cours', 'Non acquis'].forEach((label, i) => {
+                    doc.rect(xPos, y, evalColW[i], 6);
+                    doc.text(label, xPos + 2, y + 4);
+                    xPos += evalColW[i];
+                });
                 y += 6;
 
-                // 3 lignes vides + objectifs à droite du tableau
-                const evalText = doc.splitTextToSize(formation.objectives || 'RAS', 70);
-                const rightColX = tblX + tblW + 5;
+                // Lignes : objectif à gauche + cellules vides à droite
+                objItems.forEach(obj => {
+                    const lines = doc.splitTextToSize(obj, objColW - 5);
+                    const rowH = Math.max(8, lines.length * 4 + 2);
 
-                for (let r = 0; r < 3; r++) {
-                    doc.rect(tblX, y, tblW, 8);
-                    doc.line(tblX + tblColW[0], y, tblX + tblColW[0], y + 8);
-                    doc.line(tblX + tblColW[0] + tblColW[1], y, tblX + tblColW[0] + tblColW[1], y + 8);
-                    // Objectifs à droite du tableau
-                    if (evalText[r]) {
-                        doc.text(evalText[r], rightColX, y + 5);
-                    }
-                    y += 8;
-                }
+                    // Texte objectif à gauche (sans bordure)
+                    doc.setFont('helvetica', 'normal');
+                    doc.setTextColor(...this.COLORS.darkGray);
+                    lines.forEach((line, li) => {
+                        doc.text(line, margin + 5, y + 4 + li * 4);
+                    });
+
+                    // Cellules vides à droite (avec bordures)
+                    xPos = tblStartX;
+                    evalColW.forEach(w => {
+                        doc.rect(xPos, y, w, rowH);
+                        xPos += w;
+                    });
+
+                    y += rowH;
+                });
                 y += 8;
 
-                // Fait à Rodez
+                // Signature : gauche/droite (fidèle au modèle)
                 doc.setFontSize(9);
-                doc.text(`Fait à Rodez, le ${lastDate}`, margin, y);
-                y += 10;
-                doc.text('La formatrice et directrice de NJM Conseil, Nathalie Joulié Morand', margin, y);
+                doc.text('La formatrice et directrice de', margin, y);
+                doc.text(`Fait à Rodez, le ${lastDate}`, 195, y, { align: 'right' });
+                y += 5;
+                doc.text('NJM Conseil', margin, y);
+                y += 15;
+                doc.text('Nathalie Joulié Morand', margin, y);
+
+                // Mention conservation (en rose, comme le modèle)
+                const conservY = doc.internal.pageSize.height - 22;
+                doc.setFontSize(7);
+                doc.setFont('helvetica', 'bolditalic');
+                doc.setTextColor(...this.COLORS.pink);
+                doc.text('Document à conserver par le stagiaire. Aucun duplicata ne sera délivré.', 105, conservY, { align: 'center' });
 
                 this.addNJMFooter(doc);
             });
