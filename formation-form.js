@@ -908,6 +908,7 @@ const FormationForm = {
                 // === FIN AUTO-CRÉATION BPF ===
 
                 showToast('Formation créée avec succès !', 'success');
+                addNotification('formation', `Formation créée — ${formData.formation_name || ''}`);
             }
 
             this.close();

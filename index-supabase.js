@@ -83,6 +83,7 @@ const CRMApp = {
         this.loadParametres();
         await this.checkExpiringDocuments();
         await this.checkQuestionnairesFroid();
+        loadNotifications();
     },
 
     // ==================== FORMATEUR VIEW ====================
@@ -1418,6 +1419,7 @@ const CRMApp = {
 
                     if (docData) {
                         showToast('Fiche pédagogique créée !', 'success');
+                        addNotification('formation', `Fiche pédagogique générée — ${data.formation_name || ''}`);
                         this.loadFormations();
                     }
                 }
@@ -1448,6 +1450,7 @@ const CRMApp = {
 
                     if (docData) {
                         showToast('Convention créée !', 'success');
+                        addNotification('convention', `Convention générée — ${data.company_name || data.client_name || ''}`);
                         this.loadFormations();
                     }
                 }
@@ -1552,8 +1555,10 @@ const CRMApp = {
                         if (data.status === 'in_progress' || data.status === 'planned') {
                             await supabaseClient.from('formations').update({ status: 'completed' }).eq('id', id);
                             showToast('Certificat créé ! Statut passé à "Terminée"', 'success');
+                            addNotification('certificat', `Certificat généré — ${data.company_name || data.client_name || ''}`);
                         } else {
                             showToast('Certificat créé !', 'success');
+                            addNotification('certificat', `Certificat généré — ${data.company_name || data.client_name || ''}`);
                         }
                         this.loadFormations();
                     }
@@ -5131,6 +5136,7 @@ const GenericEmail = {
 
             if (result.success) {
                 showToast('Email envoyé !', 'success');
+                addNotification('mail', `Mail envoyé à ${to}`);
                 this.closeModal();
             } else {
                 const mailtoUrl = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
