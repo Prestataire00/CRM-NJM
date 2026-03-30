@@ -1003,13 +1003,12 @@ const PdfGenerator = {
 
                 // Nature de l'action
                 doc.text('Nature de l\'action concourant au développement des compétences :', margin, y); y += 6;
-                doc.setFontSize(11);
-                doc.text('\u2611', margin + 3, y);
-                doc.setFontSize(9);
+                doc.setDrawColor(...this.COLORS.darkGray);
+                doc.rect(margin + 3, y - 3, 3.5, 3.5);
+                doc.line(margin + 3.2, y - 1.5, margin + 4.5, y - 0.2);
+                doc.line(margin + 4.5, y - 0.2, margin + 6.5, y - 3.5);
                 doc.text('Action de formation', margin + 9, y); y += 5;
-                doc.setFontSize(11);
-                doc.text('\u2610', margin + 3, y);
-                doc.setFontSize(9);
+                doc.rect(margin + 3, y - 3, 3.5, 3.5);
                 doc.text('Bilan de compétences', margin + 9, y);
                 y += 8;
 
