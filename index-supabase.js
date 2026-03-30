@@ -872,10 +872,9 @@ const CRMApp = {
         // Onglet Documents
         const documentsContainer = document.getElementById('client-formation-documents');
         if (documentsContainer) {
-            const docs = formation.formation_documents || [];
+            const docs = (formation.formation_documents || []).filter(d => d.visible_client !== false);
 
             // Documents statiques toujours visibles pour le client
-            // TODO: Mettre à jour les URLs avec celles de Supabase Storage après upload des documents
             const staticDocsList = [
                 { name: 'Document préalable à la formation', type: 'doc_prealable', document_url: 'assets/static/document-prealable.docx' },
                 { name: 'Livret d\'accueil NJM Conseil', type: 'livret_accueil', document_url: 'assets/static/livret-accueil.pdf' },
@@ -886,6 +885,7 @@ const CRMApp = {
 
             const docTypes = {
                 'doc_prealable': { icon: '📋', label: 'Document préalable', color: '#2563eb' },
+                'manual': { icon: '📎', label: 'Document', color: '#6b7280' },
                 'convention': { icon: '📄', label: 'Convention', color: '#7c3aed' },
                 'attendance_sheet': { icon: '📋', label: 'Feuille de présence', color: '#059669' },
                 'certificate': { icon: '🏅', label: 'Attestation', color: '#dc2626' },
@@ -1404,13 +1404,29 @@ const CRMApp = {
                 <!-- Documents & Emails -->
                 <div class="detail-grid">
                     <div class="workflow-section">
-                        <h3>Documents (${docs.length})</h3>
+                        <h3 style="display:flex;align-items:center;justify-content:space-between;">
+                            <span>Documents (${docs.length})</span>
+                            <input type="file" id="upload-doc-${formationId}" accept=".pdf,.doc,.docx,.xlsx,.png,.jpg" onchange="CRMApp.uploadFormationDocument(${formationId}, this.files[0])" style="display:none;">
+                            <button onclick="document.getElementById('upload-doc-${formationId}').click()" style="padding:0.25rem 0.6rem;background:var(--primary-orange);color:white;border:none;border-radius:var(--radius-sm);cursor:pointer;font-size:0.8rem;font-weight:600;">+ Ajouter</button>
+                        </h3>
                         ${docs.length === 0 ? '<p style="color: var(--gray-500); font-size: 0.9rem;">Aucun document généré</p>' :
                         docs.map(doc => {
-                            const typeLabels = { 'fiche_pedagogique': 'Fiche pédagogique', 'google_doc': 'Fiche pédagogique', 'convention': 'Convention', 'attendance_sheet': 'Feuille de présence', 'certificate': 'Certificat', 'contrat_sous_traitance': 'Contrat sous-traitance' };
+                            const typeLabels = { 'fiche_pedagogique': 'Fiche pédagogique', 'google_doc': 'Fiche pédagogique', 'convention': 'Convention', 'attendance_sheet': 'Feuille de présence', 'certificate': 'Certificat', 'contrat_sous_traitance': 'Contrat sous-traitance', 'manual': 'Document' };
+                            const isManual = doc.type === 'manual';
+                            const icon = isManual ? '📎' : '📄';
                             return `<div style="display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--gray-100);">
-                                <span style="font-size: 0.9rem; color: var(--gray-700);">${doc.name || typeLabels[doc.type] || doc.type}</span>
-                                <button onclick="CRMApp.openDocument(${formationId}, '${doc.type}')" style="padding: 0.25rem 0.6rem; background: var(--gray-100); border: none; border-radius: var(--radius-sm); cursor: pointer; font-size: 0.8rem;">Ouvrir</button>
+                                <span style="font-size: 0.9rem; color: var(--gray-700);">${icon} ${doc.name || typeLabels[doc.type] || doc.type}</span>
+                                <div style="display:flex;align-items:center;gap:6px;">
+                                    ${isManual ? `
+                                        <label style="font-size:0.75rem;color:var(--gray-500);cursor:pointer;display:flex;align-items:center;gap:4px;" title="Visible par le client">
+                                            <input type="checkbox" ${doc.visible_client !== false ? 'checked' : ''} onchange="CRMApp.toggleDocVisibility(${doc.id}, this.checked)"> Client
+                                        </label>
+                                        <button onclick="CRMApp.deleteManualDocument(${doc.id}, ${formationId})" style="background:none;border:none;cursor:pointer;font-size:0.9rem;" title="Supprimer">🗑️</button>
+                                        <button onclick="window.open('${doc.document_url}', '_blank')" style="padding:0.25rem 0.6rem;background:var(--gray-100);border:none;border-radius:var(--radius-sm);cursor:pointer;font-size:0.8rem;">Ouvrir</button>
+                                    ` : `
+                                        <button onclick="CRMApp.openDocument(${formationId}, '${doc.type}')" style="padding:0.25rem 0.6rem;background:var(--gray-100);border:none;border-radius:var(--radius-sm);cursor:pointer;font-size:0.8rem;">Ouvrir</button>
+                                    `}
+                                </div>
                             </div>`;
                         }).join('')}
                     </div>
@@ -1816,6 +1832,78 @@ const CRMApp = {
             console.error('Erreur sauvegarde document:', error);
             showToast('Erreur sauvegarde: ' + error.message, 'error');
             return null;
+        }
+    },
+
+    async uploadFormationDocument(formationId, file) {
+        if (!file) return;
+        if (file.size > 10 * 1024 * 1024) {
+            showToast('Fichier trop lourd (max 10 Mo)', 'error');
+            return;
+        }
+        try {
+            showToast('Upload en cours...', 'info');
+            const fileName = `formations/${formationId}/${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
+            const { data: uploadData, error: uploadError } = await supabaseClient.storage
+                .from('documents')
+                .upload(fileName, file, { contentType: file.type, upsert: true });
+
+            if (uploadError) throw uploadError;
+
+            const { data: urlData } = supabaseClient.storage
+                .from('documents')
+                .getPublicUrl(fileName);
+
+            const publicUrl = urlData?.publicUrl || '';
+
+            const saveResult = await SupabaseData.addFormationDocument(formationId, {
+                name: file.name,
+                type: 'manual',
+                document_url: publicUrl,
+                visible_client: true,
+                uploaded_at: new Date().toISOString()
+            });
+
+            if (!saveResult.success) throw new Error(saveResult.message);
+
+            showToast('Document ajouté !', 'success');
+            addNotification('formation', `Document ajouté — ${file.name}`);
+            this.showFormationDetail(formationId);
+        } catch (error) {
+            console.error('Erreur upload document:', error);
+            showToast('Erreur upload: ' + error.message, 'error');
+        }
+    },
+
+    async deleteManualDocument(docId, formationId) {
+        const confirmed = await showConfirmDialog({
+            title: 'Supprimer le document',
+            message: 'Voulez-vous vraiment supprimer ce document ?',
+            confirmText: 'Supprimer',
+            isDangerous: true
+        });
+        if (!confirmed) return;
+        try {
+            const result = await SupabaseData.deleteFormationDocument(docId);
+            if (result.success) {
+                showToast('Document supprimé', 'success');
+                this.showFormationDetail(formationId);
+            } else {
+                showToast('Erreur : ' + result.message, 'error');
+            }
+        } catch (error) {
+            showToast('Erreur suppression: ' + error.message, 'error');
+        }
+    },
+
+    async toggleDocVisibility(docId, visible) {
+        try {
+            await supabaseClient
+                .from('formation_documents')
+                .update({ visible_client: visible })
+                .eq('id', docId);
+        } catch (error) {
+            console.warn('Erreur toggle visibilité:', error);
         }
     },
 
