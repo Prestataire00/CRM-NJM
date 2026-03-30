@@ -792,12 +792,23 @@ const SupabaseData = {
             const startDate = new Date(fiscalYear, 9, 1).toISOString();
             const endDate = new Date(fiscalYear + 1, 8, 30).toISOString();
 
-            // Get learners count
-            const { count: learnersCount } = await supabaseClient
-                .from('learners')
-                .select('*', { count: 'exact', head: true })
-                .gte('enrollment_date', startDate)
-                .lte('enrollment_date', endDate);
+            // Get learners count from formations.learners_data
+            const { data: fiscalFormations } = await supabaseClient
+                .from('formations')
+                .select('learners_data')
+                .gte('start_date', startDate)
+                .lte('start_date', endDate);
+
+            let learnersCount = 0;
+            if (fiscalFormations) {
+                fiscalFormations.forEach(f => {
+                    let learners = f.learners_data || [];
+                    if (typeof learners === 'string') {
+                        try { learners = JSON.parse(learners); } catch(e) { learners = []; }
+                    }
+                    learnersCount += learners.length;
+                });
+            }
 
             // Get formations stats
             const { count: completedFormations } = await supabaseClient
@@ -810,12 +821,11 @@ const SupabaseData = {
                 .select('*', { count: 'exact', head: true })
                 .eq('status', 'in_progress');
 
-            // Get client accesses
+            // Get client accesses (tous les comptes clients)
             const { count: clientAccesses } = await supabaseClient
                 .from('profiles')
                 .select('*', { count: 'exact', head: true })
-                .eq('role', 'client')
-                .not('last_login', 'is', null);
+                .eq('role', 'client');
 
             return {
                 success: true,
