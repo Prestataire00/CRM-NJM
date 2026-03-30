@@ -980,7 +980,7 @@ const PdfGenerator = {
                 doc.setFont('helvetica', 'normal');
                 const certText = `${learnerName}, salarié(e) de l'entreprise ${companyName} a suivi la formation `;
                 const formNameBold = formation.formation_name || '';
-                const certText2 = `, qui s'est déroulée du ${dates}, pour une durée de ${learnerHours}h.`;
+                const certText2 = `, qui s'est déroulée ${dates.includes(',') ? 'les' : 'du'} ${dates}, pour une durée de ${learnerHours}h.`;
 
                 // Écrire avec formation_name en bold
                 y = this._writeText(doc, margin, y, certText + formNameBold + certText2, { maxWidth: maxW });
@@ -995,14 +995,13 @@ const PdfGenerator = {
 
                 // Nature de l'action
                 doc.text('Nature de l\'action concourant au développement des compétences :', margin, y); y += 6;
-                // Checkbox cochée
-                doc.setDrawColor(...this.COLORS.darkGray);
-                doc.rect(margin + 3, y - 3, 3.5, 3.5);
-                doc.line(margin + 3.5, y - 1, margin + 5, y - 2.5); // croix
-                doc.line(margin + 5, y - 2.5, margin + 6.5, y + 0.5);
+                doc.setFontSize(11);
+                doc.text('\u2611', margin + 3, y);
+                doc.setFontSize(9);
                 doc.text('Action de formation', margin + 9, y); y += 5;
-                // Checkbox vide
-                doc.rect(margin + 3, y - 3, 3.5, 3.5);
+                doc.setFontSize(11);
+                doc.text('\u2610', margin + 3, y);
+                doc.setFontSize(9);
                 doc.text('Bilan de compétences', margin + 9, y);
                 y += 8;
 
