@@ -84,6 +84,56 @@ const CRMApp = {
         await this.checkExpiringDocuments();
         await this.checkQuestionnairesFroid();
         loadNotifications();
+        await this.loadRecentActivity();
+    },
+
+    // ==================== ACTIVITÉ RÉCENTE ====================
+
+    async loadRecentActivity() {
+        const { data } = await supabaseClient
+            .from('notifications')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(5);
+
+        const list = document.getElementById('recent-activity-list');
+        if (!list) return;
+
+        if (!data || data.length === 0) {
+            list.innerHTML = '<li style="color:#999;text-align:center;padding:20px;">Aucune activité récente</li>';
+            return;
+        }
+
+        const colors = {
+            mail: 'var(--primary-pink)',
+            formation: 'var(--primary-green)',
+            convention: 'var(--primary-orange)',
+            certificat: 'var(--primary-purple)',
+            client: 'var(--primary-pink)'
+        };
+
+        list.innerHTML = data.map(n => {
+            const ago = this.timeAgo(new Date(n.created_at));
+            const color = colors[n.type] || 'var(--primary-orange)';
+            return `<li class="activity-item">
+                <div class="activity-dot" style="background:${color};"></div>
+                <div class="activity-content">
+                    <div class="activity-text">${n.message}</div>
+                    <div class="activity-time">${ago}</div>
+                </div>
+            </li>`;
+        }).join('');
+    },
+
+    timeAgo(date) {
+        const seconds = Math.floor((new Date() - date) / 1000);
+        if (seconds < 60) return 'À l\'instant';
+        const minutes = Math.floor(seconds / 60);
+        if (minutes < 60) return `Il y a ${minutes} minute${minutes > 1 ? 's' : ''}`;
+        const hours = Math.floor(minutes / 60);
+        if (hours < 24) return `Il y a ${hours} heure${hours > 1 ? 's' : ''}`;
+        const days = Math.floor(hours / 24);
+        return `Il y a ${days} jour${days > 1 ? 's' : ''}`;
     },
 
     // ==================== FORMATEUR VIEW ====================
