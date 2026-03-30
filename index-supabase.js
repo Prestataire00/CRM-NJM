@@ -2253,8 +2253,14 @@ Nathalie Joulie-Morand`;
     // ==================== PARAMETRES ====================
 
     async loadParametres() {
-        // Charger depuis localStorage (ou Supabase si table existe)
-        const params = JSON.parse(localStorage.getItem('njm_parametres') || '{}');
+        // Charger depuis Supabase, fallback localStorage
+        let params = {};
+        const companyResult = await SupabaseData.getSetting('company');
+        if (companyResult.success && companyResult.data) {
+            params = companyResult.data;
+        } else {
+            params = JSON.parse(localStorage.getItem('njm_parametres') || '{}');
+        }
         const fields = [
             'raison-sociale', 'siret', 'num-activite', 'naf', 'rcs', 'capital',
             'adresse', 'qualiopi', 'website', 'dirigeante-nom', 'dirigeante-qualite',
@@ -2266,9 +2272,11 @@ Nathalie Joulie-Morand`;
         });
 
         // Charger les previews signature et cachet
-        const sig = localStorage.getItem('njm_signature');
+        const sigResult = await SupabaseData.getSetting('signature');
+        const sig = (sigResult.success && sigResult.data) ? sigResult.data : localStorage.getItem('njm_signature');
         if (sig) { const el = document.getElementById('param-signature-preview'); if (el) el.src = sig; }
-        const cachet = localStorage.getItem('njm_cachet');
+        const cachetResult = await SupabaseData.getSetting('cachet');
+        const cachet = (cachetResult.success && cachetResult.data) ? cachetResult.data : localStorage.getItem('njm_cachet');
         if (cachet) { const el = document.getElementById('param-cachet-preview'); if (el) el.src = cachet; }
     },
 
@@ -2284,7 +2292,12 @@ Nathalie Joulie-Morand`;
             if (el) params[f] = el.value.trim();
         });
         localStorage.setItem('njm_parametres', JSON.stringify(params));
-        showToast('Paramètres enregistrés !', 'success');
+        const result = await SupabaseData.updateSetting('company', params);
+        if (result.success) {
+            showToast('Paramètres enregistrés !', 'success');
+        } else {
+            showToast('Paramètres sauvegardés localement (erreur Supabase)', 'warning');
+        }
     },
 
     changeLogo(event) {
@@ -2303,6 +2316,7 @@ Nathalie Joulie-Morand`;
             const preview = document.getElementById('param-logo-preview');
             if (preview) preview.src = e.target.result;
             localStorage.setItem('njm_logo', e.target.result);
+            SupabaseData.updateSetting('logo', e.target.result);
             showToast('Logo mis à jour !', 'success');
         };
         reader.readAsDataURL(file);
@@ -2324,6 +2338,7 @@ Nathalie Joulie-Morand`;
             const preview = document.getElementById('param-signature-preview');
             if (preview) preview.src = e.target.result;
             localStorage.setItem('njm_signature', e.target.result);
+            SupabaseData.updateSetting('signature', e.target.result);
             showToast('Signature mise à jour !', 'success');
         };
         reader.readAsDataURL(file);
@@ -2345,6 +2360,7 @@ Nathalie Joulie-Morand`;
             const preview = document.getElementById('param-cachet-preview');
             if (preview) preview.src = e.target.result;
             localStorage.setItem('njm_cachet', e.target.result);
+            SupabaseData.updateSetting('cachet', e.target.result);
             showToast('Cachet mis à jour !', 'success');
         };
         reader.readAsDataURL(file);

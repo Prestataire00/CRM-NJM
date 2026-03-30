@@ -38,16 +38,18 @@ const PdfGenerator = {
     /**
      * Charge la signature depuis localStorage
      */
-    loadSignature() {
-        this.SIGNATURE_DATA = localStorage.getItem('njm_signature') || null;
+    async loadSignature() {
+        const result = await SupabaseData.getSetting('signature');
+        this.SIGNATURE_DATA = (result.success && result.data) ? result.data : localStorage.getItem('njm_signature');
         return this.SIGNATURE_DATA;
     },
 
     /**
-     * Charge le cachet depuis localStorage
+     * Charge le cachet depuis Supabase, fallback localStorage
      */
-    loadCachet() {
-        this.CACHET_DATA = localStorage.getItem('njm_cachet') || null;
+    async loadCachet() {
+        const result = await SupabaseData.getSetting('cachet');
+        this.CACHET_DATA = (result.success && result.data) ? result.data : localStorage.getItem('njm_cachet');
         return this.CACHET_DATA;
     },
 
@@ -919,8 +921,8 @@ const PdfGenerator = {
     async generateCertificate(formation) {
         try {
             await this.loadLogo();
-            this.loadSignature();
-            this.loadCachet();
+            await this.loadSignature();
+            await this.loadCachet();
             const doc = this.createDoc();
             const margin = 20;
             const maxW = 170;
