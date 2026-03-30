@@ -2125,7 +2125,8 @@ Nathalie Joulie-Morand`;
                 title: '🔑 Invitation client - Accès espace formation',
                 to: clientEmail,
                 subject,
-                body
+                body,
+                formationId
             });
         } catch (error) {
             console.error('Erreur invitation client:', error);
@@ -2186,7 +2187,8 @@ Nathalie Joulie-Morand`;
                 title: '📩 Relance convention',
                 to: clientEmail,
                 subject,
-                body
+                body,
+                formationId
             });
         } catch (error) {
             console.error('Erreur relance convention:', error);
@@ -2253,7 +2255,8 @@ Nathalie JOULIÉ MORAND`;
                 to: clientEmail,
                 subject,
                 body,
-                showQuestionnaires: true
+                showQuestionnaires: true,
+                formationId
             });
         } catch (error) {
             console.error('Erreur mail fin de formation:', error);
@@ -2299,7 +2302,8 @@ Nathalie Joulie-Morand`;
                 to: clientEmail,
                 subject,
                 body,
-                showQuestionnaires: true
+                showQuestionnaires: true,
+                formationId
             });
         } catch (error) {
             console.error('Erreur relance questionnaires:', error);
@@ -5360,7 +5364,8 @@ const GenericEmail = {
         if (modal) modal.style.display = 'none';
     },
 
-    show({ title, to, subject, body, showQuestionnaires = false }) {
+    show({ title, to, subject, body, showQuestionnaires = false, formationId = null }) {
+        this.currentFormationId = formationId;
         document.getElementById('generic-email-title').textContent = title || 'Envoi de mail';
         document.getElementById('generic-email-to').value = to || '';
         document.getElementById('generic-email-subject').value = subject || '';
@@ -5459,6 +5464,13 @@ const GenericEmail = {
             if (result.success) {
                 showToast('Email envoyé !', 'success');
                 addNotification('mail', `Mail envoyé à ${to}`);
+                if (this.currentFormationId) {
+                    await SupabaseData.logConvocationSent(this.currentFormationId, {
+                        sent_to: to,
+                        subject: subject,
+                        sent_by: 'resend'
+                    });
+                }
                 this.closeModal();
             } else {
                 const mailtoUrl = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
