@@ -1458,6 +1458,37 @@ const CRMApp = {
                         <p style="color: var(--gray-400); font-size: 0.85rem;">Chargement...</p>
                     </div>
                 </div>
+
+                <!-- Résultats des acquis -->
+                ${learnersData.length > 0 && formation.objectives ? `
+                <div class="workflow-section">
+                    <h3 style="display:flex;align-items:center;justify-content:space-between;">
+                        <span>📊 Résultats des acquis</span>
+                        <button onclick="CRMApp.saveAcquis(${formationId})" style="padding:0.35rem 0.85rem;background:var(--primary-green);color:white;border:none;border-radius:var(--radius-md);font-size:0.8rem;font-weight:600;cursor:pointer;">Enregistrer</button>
+                    </h3>
+                    ${(() => {
+                        const objectives = (formation.objectives || '').split(/\n/).map(s => s.trim()).filter(s => s.length > 0);
+                        if (objectives.length === 0) return '';
+                        return learnersData.map((l, li) => {
+                            const name = ((l.first_name || '') + ' ' + (l.last_name || '')).trim();
+                            const acquis = l.acquis || [];
+                            return '<div style="margin-bottom:1.5rem;">' +
+                                '<h4 style="font-size:0.9rem;font-weight:600;color:var(--gray-700);margin-bottom:0.5rem;">' + name + '</h4>' +
+                                objectives.map((obj, oi) =>
+                                    '<div style="padding:0.5rem 0;border-bottom:1px solid var(--gray-100);">' +
+                                        '<div style="font-size:0.85rem;color:var(--gray-600);margin-bottom:4px;">' + obj + '</div>' +
+                                        '<div style="display:flex;gap:1rem;">' +
+                                            '<label style="font-size:0.8rem;cursor:pointer;"><input type="radio" name="acquis-' + li + '-' + oi + '" value="acquis" ' + (acquis[oi] === 'acquis' ? 'checked' : '') + '> Acquis</label>' +
+                                            '<label style="font-size:0.8rem;cursor:pointer;"><input type="radio" name="acquis-' + li + '-' + oi + '" value="en_cours" ' + (acquis[oi] === 'en_cours' ? 'checked' : '') + '> En cours</label>' +
+                                            '<label style="font-size:0.8rem;cursor:pointer;"><input type="radio" name="acquis-' + li + '-' + oi + '" value="non_acquis" ' + (acquis[oi] === 'non_acquis' ? 'checked' : '') + '> Non acquis</label>' +
+                                        '</div>' +
+                                    '</div>'
+                                ).join('') +
+                            '</div>';
+                        }).join('');
+                    })()}
+                </div>
+                ` : ''}
             `;
 
             // Charger les supports assignés
@@ -1904,6 +1935,45 @@ const CRMApp = {
                 .eq('id', docId);
         } catch (error) {
             console.warn('Erreur toggle visibilité:', error);
+        }
+    },
+
+    async saveAcquis(formationId) {
+        try {
+            const { data: formation, error } = await supabaseClient
+                .from('formations')
+                .select('learners_data, objectives')
+                .eq('id', formationId)
+                .single();
+
+            if (error) throw error;
+
+            let learnersData = formation.learners_data || [];
+            if (typeof learnersData === 'string') {
+                try { learnersData = JSON.parse(learnersData); } catch(e) { learnersData = []; }
+            }
+
+            const objectives = (formation.objectives || '').split(/\n/).map(s => s.trim()).filter(s => s.length > 0);
+
+            learnersData.forEach((l, li) => {
+                l.acquis = objectives.map((_, oi) => {
+                    const radio = document.querySelector(`input[name="acquis-${li}-${oi}"]:checked`);
+                    return radio ? radio.value : '';
+                });
+            });
+
+            const result = await SupabaseData.updateFormation(formationId, {
+                learners_data: JSON.stringify(learnersData)
+            });
+
+            if (result.success) {
+                showToast('Résultats des acquis enregistrés !', 'success');
+            } else {
+                showToast('Erreur : ' + result.message, 'error');
+            }
+        } catch (error) {
+            console.error('Erreur saveAcquis:', error);
+            showToast('Erreur sauvegarde acquis: ' + error.message, 'error');
         }
     },
 

@@ -1127,8 +1127,8 @@ const PdfGenerator = {
                 });
                 y += 6;
 
-                // Lignes : objectif à gauche + cellules vides à droite
-                objItems.forEach(obj => {
+                // Lignes : objectif à gauche + cellules à droite (X si acquis renseigné)
+                objItems.forEach((obj, objIndex) => {
                     const lines = doc.splitTextToSize(obj, objColW - 5);
                     const rowH = Math.max(8, lines.length * 4 + 2);
 
@@ -1139,10 +1139,17 @@ const PdfGenerator = {
                         doc.text(line, margin + 5, y + 4 + li * 4);
                     });
 
-                    // Cellules vides à droite (avec bordures)
+                    // Cellules à droite (avec bordures + X si acquis renseigné)
+                    const acqResult = learner.acquis?.[objIndex] || '';
                     xPos = tblStartX;
-                    evalColW.forEach(w => {
+                    ['acquis', 'en_cours', 'non_acquis'].forEach((val, i) => {
+                        const w = evalColW[i];
                         doc.rect(xPos, y, w, rowH);
+                        if (acqResult === val) {
+                            doc.setFontSize(10);
+                            doc.text('X', xPos + w / 2 - 2, y + rowH / 2 + 1);
+                            doc.setFontSize(8);
+                        }
                         xPos += w;
                     });
 
