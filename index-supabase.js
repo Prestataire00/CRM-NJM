@@ -136,6 +136,169 @@ const CRMApp = {
         return `Il y a ${days} jour${days > 1 ? 's' : ''}`;
     },
 
+    // ==================== CLIENTS CRUD ====================
+
+    clientsAllData: [],
+
+    async loadClientsList() {
+        const result = await SupabaseData.getClients();
+        if (result.success) {
+            this.clientsAllData = result.data;
+            this.renderClientsTable(result.data);
+        }
+    },
+
+    filterClients() {
+        const search = (document.getElementById('clients-search')?.value || '').toLowerCase();
+        const filtered = this.clientsAllData.filter(c =>
+            (c.company_name || '').toLowerCase().includes(search) ||
+            (c.contact_name || '').toLowerCase().includes(search) ||
+            (c.email || '').toLowerCase().includes(search) ||
+            (c.city || '').toLowerCase().includes(search)
+        );
+        this.renderClientsTable(filtered);
+    },
+
+    renderClientsTable(clients) {
+        const tbody = document.getElementById('clients-table-body');
+        if (!tbody) return;
+        if (clients.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="padding:40px;text-align:center;color:#999;">Aucun client trouvé</td></tr>';
+            return;
+        }
+        tbody.innerHTML = clients.map(c => `<tr style="border-bottom:1px solid var(--gray-100);">
+            <td style="padding:12px 16px;font-weight:600;">${c.company_name || ''}</td>
+            <td style="padding:12px 16px;">${c.contact_name || ''}</td>
+            <td style="padding:12px 16px;">${c.email || ''}</td>
+            <td style="padding:12px 16px;">${c.phone || ''}</td>
+            <td style="padding:12px 16px;">${c.city || ''}</td>
+            <td style="padding:12px 16px;text-align:center;">
+                <button onclick="CRMApp.showEditClientModal(${c.id})" style="background:none;border:none;cursor:pointer;font-size:1rem;" title="Modifier">✏️</button>
+                <button onclick="CRMApp.confirmDeleteClient(${c.id})" style="background:none;border:none;cursor:pointer;font-size:1rem;margin-left:8px;" title="Supprimer">🗑️</button>
+            </td>
+        </tr>`).join('');
+    },
+
+    showAddClientModal() { this._showClientModal(); },
+
+    showEditClientModal(id) {
+        const client = this.clientsAllData.find(c => c.id === id);
+        if (client) this._showClientModal(client);
+    },
+
+    _showClientModal(client = null) {
+        const isEdit = !!client;
+        const c = client || {};
+        const existing = document.getElementById('client-modal');
+        if (existing) existing.remove();
+
+        const modal = document.createElement('div');
+        modal.id = 'client-modal';
+        modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;';
+        modal.innerHTML = `
+            <div style="background:white;border-radius:16px;padding:2rem;width:90%;max-width:550px;max-height:90vh;overflow-y:auto;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+                    <h3 style="margin:0;font-size:1.25rem;">${isEdit ? 'Modifier le client' : 'Nouveau client'}</h3>
+                    <button onclick="document.getElementById('client-modal').remove()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;">&times;</button>
+                </div>
+                <div style="display:grid;gap:1rem;">
+                    <div>
+                        <label style="display:block;font-weight:600;font-size:0.85rem;margin-bottom:4px;">Raison sociale *</label>
+                        <input type="text" id="client-company-name" value="${c.company_name || ''}" style="width:100%;padding:0.65rem;border:1px solid var(--gray-300);border-radius:var(--radius-md);font-family:inherit;">
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                        <div>
+                            <label style="display:block;font-weight:600;font-size:0.85rem;margin-bottom:4px;">Nom du contact</label>
+                            <input type="text" id="client-contact-name" value="${c.contact_name || ''}" style="width:100%;padding:0.65rem;border:1px solid var(--gray-300);border-radius:var(--radius-md);font-family:inherit;">
+                        </div>
+                        <div>
+                            <label style="display:block;font-weight:600;font-size:0.85rem;margin-bottom:4px;">Email</label>
+                            <input type="email" id="client-email" value="${c.email || ''}" style="width:100%;padding:0.65rem;border:1px solid var(--gray-300);border-radius:var(--radius-md);font-family:inherit;">
+                        </div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                        <div>
+                            <label style="display:block;font-weight:600;font-size:0.85rem;margin-bottom:4px;">Téléphone</label>
+                            <input type="text" id="client-phone" value="${c.phone || ''}" style="width:100%;padding:0.65rem;border:1px solid var(--gray-300);border-radius:var(--radius-md);font-family:inherit;">
+                        </div>
+                        <div>
+                            <label style="display:block;font-weight:600;font-size:0.85rem;margin-bottom:4px;">Ville</label>
+                            <input type="text" id="client-city" value="${c.city || ''}" style="width:100%;padding:0.65rem;border:1px solid var(--gray-300);border-radius:var(--radius-md);font-family:inherit;">
+                        </div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:2fr 1fr;gap:1rem;">
+                        <div>
+                            <label style="display:block;font-weight:600;font-size:0.85rem;margin-bottom:4px;">Adresse</label>
+                            <input type="text" id="client-address" value="${c.address || ''}" style="width:100%;padding:0.65rem;border:1px solid var(--gray-300);border-radius:var(--radius-md);font-family:inherit;">
+                        </div>
+                        <div>
+                            <label style="display:block;font-weight:600;font-size:0.85rem;margin-bottom:4px;">Code postal</label>
+                            <input type="text" id="client-postal-code" value="${c.postal_code || ''}" style="width:100%;padding:0.65rem;border:1px solid var(--gray-300);border-radius:var(--radius-md);font-family:inherit;">
+                        </div>
+                    </div>
+                    <div>
+                        <label style="display:block;font-weight:600;font-size:0.85rem;margin-bottom:4px;">Notes</label>
+                        <textarea id="client-notes" rows="3" style="width:100%;padding:0.65rem;border:1px solid var(--gray-300);border-radius:var(--radius-md);font-family:inherit;resize:vertical;">${c.notes || ''}</textarea>
+                    </div>
+                </div>
+                <div style="display:flex;justify-content:flex-end;gap:1rem;margin-top:1.5rem;">
+                    <button onclick="document.getElementById('client-modal').remove()" style="padding:0.65rem 1.25rem;background:var(--gray-200);border:none;border-radius:var(--radius-md);cursor:pointer;font-weight:600;">Annuler</button>
+                    <button onclick="CRMApp.saveClient(${isEdit ? c.id : 'null'})" style="padding:0.65rem 1.25rem;background:var(--primary-green);color:white;border:none;border-radius:var(--radius-md);cursor:pointer;font-weight:600;">${isEdit ? 'Enregistrer' : 'Créer'}</button>
+                </div>
+            </div>`;
+        document.body.appendChild(modal);
+    },
+
+    async saveClient(id) {
+        const data = {
+            company_name: document.getElementById('client-company-name').value.trim(),
+            contact_name: document.getElementById('client-contact-name').value.trim(),
+            email: document.getElementById('client-email').value.trim(),
+            phone: document.getElementById('client-phone').value.trim(),
+            address: document.getElementById('client-address').value.trim(),
+            postal_code: document.getElementById('client-postal-code').value.trim(),
+            city: document.getElementById('client-city').value.trim(),
+            notes: document.getElementById('client-notes').value.trim()
+        };
+        if (!data.company_name) {
+            showToast('La raison sociale est obligatoire', 'error');
+            return;
+        }
+        let result;
+        if (id) {
+            result = await SupabaseData.updateClient(id, data);
+        } else {
+            result = await SupabaseData.addClient(data);
+        }
+        if (result.success) {
+            showToast(id ? 'Client mis à jour !' : 'Client créé !', 'success');
+            addNotification('client', id ? `Client modifié — ${data.company_name}` : `Client créé — ${data.company_name}`);
+            document.getElementById('client-modal').remove();
+            this.loadClientsList();
+        } else {
+            showToast('Erreur : ' + result.message, 'error');
+        }
+    },
+
+    async confirmDeleteClient(id) {
+        const client = this.clientsAllData.find(c => c.id === id);
+        const confirmed = await showConfirmDialog({
+            title: 'Supprimer le client',
+            message: `Voulez-vous vraiment supprimer "${client?.company_name || ''}" ?`,
+            confirmText: 'Supprimer',
+            isDangerous: true
+        });
+        if (confirmed) {
+            const result = await SupabaseData.deleteClient(id);
+            if (result.success) {
+                showToast('Client supprimé', 'success');
+                this.loadClientsList();
+            } else {
+                showToast('Erreur suppression : ' + result.message, 'error');
+            }
+        }
+    },
+
     // ==================== FORMATEUR VIEW ====================
 
     async initFormateurView(user) {
@@ -933,9 +1096,14 @@ const CRMApp = {
             setTimeout(() => this.loadBPF(), 100);
         }
 
+        if (pageName === 'clients') {
+            setTimeout(() => this.loadClientsList(), 100);
+        }
+
         const pageTitles = {
             'dashboard': 'Tableau de bord',
             'formations': 'Formation 2026',
+            'clients': 'Clients',
             'veille': 'Veille',
             'bpf': 'BPF',
             'biblio-supports': 'Bibliothèque Supports',
