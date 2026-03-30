@@ -1367,7 +1367,7 @@ const CRMApp = {
                         <h2>${formation.formation_name || 'Formation'}</h2>
                         <div class="meta">
                             ${formation.company_name || formation.client_name || 'Client'} &bull;
-                            ${startDate}${startDate !== endDate ? ' - ' + endDate : ''} &bull;
+                            ${formation.custom_dates || (startDate + (startDate !== endDate ? ' - ' + endDate : ''))} &bull;
                             ${formation.training_location || ''} &bull;
                             ${learnersData.length} apprenant(s) &bull;
                             ${formation.hours_per_learner || 0}h &bull;

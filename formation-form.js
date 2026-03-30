@@ -313,6 +313,11 @@ const FormationForm = {
                     <input type="date" id="end_date" value="${f.end_date || ''}" required>
                 </div>
 
+                <div class="form-group" style="grid-column: span 2;">
+                    <label>Dates (texte libre)</label>
+                    <input type="text" id="custom_dates" value="${f.custom_dates || ''}" placeholder="ex : 13, 14, 15, 16 Janvier 2026">
+                </div>
+
                 <div class="form-group">
                     <label>Lieu de la formation</label>
                     <input type="text" id="training_location" value="${f.training_location || ''}">
@@ -722,7 +727,7 @@ const FormationForm = {
         const f = this.currentFormation;
         const fields = [
             'formation_name', 'formation_type', 'collaboration_mode', 'client_id', 'subcontractor_id',
-            'start_date', 'end_date', 'training_location', 'number_of_days',
+            'start_date', 'end_date', 'custom_dates', 'training_location', 'number_of_days',
             'hours_per_day', 'hours_per_learner', 'total_amount', 'status',
             'company_name', 'company_address', 'company_postal_code', 'company_director_name', 'client_email',
             'target_audience', 'prerequisites', 'objectives', 'module_1',
@@ -808,6 +813,7 @@ const FormationForm = {
             subcontractor_last_name: subcontractorLastName,
             start_date: document.getElementById('start_date').value,
             end_date: document.getElementById('end_date').value,
+            custom_dates: document.getElementById('custom_dates').value.trim() || null,
             training_location: document.getElementById('training_location').value,
             number_of_days: parseInt(document.getElementById('number_of_days').value) || null,
             hours_per_day: null,

@@ -408,22 +408,26 @@ const PdfGenerator = {
             const currentDate = new Date().toLocaleDateString('fr-FR');
             const startDate = this.formatDate(formation.start_date);
             const endDate = this.formatDate(formation.end_date);
-            // Utiliser les dates des feuilles de présence si disponibles
-            let dates = startDate;
-            let sheets = formation.attendance_sheets || [];
-            if (typeof sheets === 'string') {
-                try { sheets = JSON.parse(sheets); } catch (e) { sheets = []; }
-            }
-            if (sheets.length > 0) {
-                const realDates = sheets
-                    .filter(s => s.date)
-                    .map(s => new Date(s.date).toLocaleDateString('fr-FR'))
-                    .sort((a, b) => new Date(a.split('/').reverse().join('-'))
-                        - new Date(b.split('/').reverse().join('-')));
-                if (realDates.length > 0) dates = realDates.join(', ');
-            } else if (startDate !== endDate) {
-                // Fallback : juste start_date et end_date
-                dates = `${startDate} au ${endDate}`;
+            // Priorité : custom_dates > attendance_sheets > fallback start/end
+            let dates;
+            if (formation.custom_dates) {
+                dates = formation.custom_dates;
+            } else {
+                dates = startDate;
+                let sheets = formation.attendance_sheets || [];
+                if (typeof sheets === 'string') {
+                    try { sheets = JSON.parse(sheets); } catch (e) { sheets = []; }
+                }
+                if (sheets.length > 0) {
+                    const realDates = sheets
+                        .filter(s => s.date)
+                        .map(s => new Date(s.date).toLocaleDateString('fr-FR'))
+                        .sort((a, b) => new Date(a.split('/').reverse().join('-'))
+                            - new Date(b.split('/').reverse().join('-')));
+                    if (realDates.length > 0) dates = realDates.join(', ');
+                } else if (startDate !== endDate) {
+                    dates = `${startDate} au ${endDate}`;
+                }
             }
             const learnersData = this.parseLearners(formation);
             const learnersNames = learnersData.map(l => this.getLearnerName(l)).filter(n => n).join(', ');
@@ -930,21 +934,25 @@ const PdfGenerator = {
             const learnersData = this.parseLearners(formation);
             const startDate = this.formatDate(formation.start_date);
             const endDate = this.formatDate(formation.end_date);
-            // Utiliser les dates des feuilles de présence si disponibles
-            let sheets = formation.attendance_sheets || [];
-            if (typeof sheets === 'string') {
-                try { sheets = JSON.parse(sheets); } catch (e) { sheets = []; }
-            }
+            // Priorité : custom_dates > attendance_sheets > fallback start/end
             let dates;
-            if (sheets.length > 0) {
-                const realDates = sheets
-                    .filter(s => s.date)
-                    .map(s => new Date(s.date).toLocaleDateString('fr-FR'))
-                    .sort((a, b) => new Date(a.split('/').reverse().join('-'))
-                        - new Date(b.split('/').reverse().join('-')));
-                dates = realDates.length > 0 ? realDates.join(', ') : startDate;
+            if (formation.custom_dates) {
+                dates = formation.custom_dates;
             } else {
-                dates = startDate === endDate ? startDate : `${startDate} au ${endDate}`;
+                let sheets = formation.attendance_sheets || [];
+                if (typeof sheets === 'string') {
+                    try { sheets = JSON.parse(sheets); } catch (e) { sheets = []; }
+                }
+                if (sheets.length > 0) {
+                    const realDates = sheets
+                        .filter(s => s.date)
+                        .map(s => new Date(s.date).toLocaleDateString('fr-FR'))
+                        .sort((a, b) => new Date(a.split('/').reverse().join('-'))
+                            - new Date(b.split('/').reverse().join('-')));
+                    dates = realDates.length > 0 ? realDates.join(', ') : startDate;
+                } else {
+                    dates = startDate === endDate ? startDate : `${startDate} au ${endDate}`;
+                }
             }
             const lastDate = endDate || startDate || new Date().toLocaleDateString('fr-FR');
             const companyName = formation.company_name || formation.client_name || '';
