@@ -1424,6 +1424,7 @@ const CRMApp = {
                                         <button onclick="CRMApp.deleteManualDocument(${doc.id}, ${formationId})" style="background:none;border:none;cursor:pointer;font-size:0.9rem;" title="Supprimer">🗑️</button>
                                         <button onclick="window.open('${doc.document_url}', '_blank')" style="padding:0.25rem 0.6rem;background:var(--gray-100);border:none;border-radius:var(--radius-sm);cursor:pointer;font-size:0.8rem;">Ouvrir</button>
                                     ` : `
+                                        <button onclick="CRMApp.deleteManualDocument(${doc.id}, ${formationId})" style="background:none;border:none;cursor:pointer;font-size:0.9rem;" title="Supprimer">🗑️</button>
                                         <button onclick="CRMApp.openDocument(${formationId}, '${doc.type}')" style="padding:0.25rem 0.6rem;background:var(--gray-100);border:none;border-radius:var(--radius-sm);cursor:pointer;font-size:0.8rem;">Ouvrir</button>
                                     `}
                                 </div>
