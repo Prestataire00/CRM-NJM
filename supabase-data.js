@@ -1419,12 +1419,13 @@ const SupabaseData = {
     // Delete client
     async deleteClient(id) {
         try {
-            const { error } = await supabaseClient
+            const { error, count } = await supabaseClient
                 .from('clients')
-                .delete()
+                .delete({ count: 'exact' })
                 .eq('id', id);
 
             if (error) throw error;
+            if (count === 0) return { success: false, message: 'Suppression refusée — vérifiez vos droits admin.' };
             return { success: true };
         } catch (error) {
             console.error('Error deleting client:', error);
