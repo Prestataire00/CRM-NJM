@@ -654,6 +654,26 @@ const PdfGenerator = {
 
     async generateConventionDocx(formation) {
         try {
+            // Chargement dynamique PizZip + docxtemplater
+            if (!window.PizZip) {
+                await new Promise((resolve, reject) => {
+                    const s = document.createElement('script');
+                    s.src = 'https://unpkg.com/pizzip@3.1.4/dist/pizzip.js';
+                    s.onload = resolve;
+                    s.onerror = reject;
+                    document.head.appendChild(s);
+                });
+            }
+            if (!window.docxtemplater) {
+                await new Promise((resolve, reject) => {
+                    const s = document.createElement('script');
+                    s.src = 'https://unpkg.com/docxtemplater@3.37.12/build/docxtemplater.js';
+                    s.onload = resolve;
+                    s.onerror = reject;
+                    document.head.appendChild(s);
+                });
+            }
+
             // 1. Charger le template depuis Supabase Storage
             const { data, error } = await supabaseClient.storage
                 .from('templates')
@@ -663,7 +683,7 @@ const PdfGenerator = {
 
             const arrayBuffer = await data.arrayBuffer();
             const zip = new PizZip(arrayBuffer);
-            const Docxtemplater = window.docxtemplater || window.Docxtemplater;
+            const Docxtemplater = window.docxtemplater;
             const doc = new Docxtemplater(zip, {
                 paragraphLoop: true,
                 linebreaks: true
