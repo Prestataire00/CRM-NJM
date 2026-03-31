@@ -550,13 +550,7 @@ const PdfGenerator = {
             y += 1;
             y = this._writeBullet(doc, margin, y, 'Modalités de suivi et appréciation des résultats:', 'fiche de présence émargée, accompagnement rectificatif et évaluation des productions de l\'apprenant.', maxW);
 
-            // Saut de page seulement si on n'est pas deja en haut d'une page
-            if (y > 60) {
-                this.addNJMFooter(doc);
-                doc.addPage();
-                y = this.addNJMHeader(doc);
-            }
-            y += 4;
+            y += 6;
 
             // Article 2
             doc.setFontSize(9);
@@ -596,6 +590,7 @@ const PdfGenerator = {
             // Article 3
             doc.setFont('helvetica', 'bold');
             doc.setTextColor(...this.COLORS.darkGray);
+            doc.setDrawColor(...this.COLORS.darkGray);
             doc.text('Article 3- Dispositions financières :', margin, y);
             const a3w = doc.getTextWidth('Article 3- Dispositions financières :');
             doc.line(margin, y + 0.5, margin + a3w, y + 0.5);
@@ -620,6 +615,7 @@ const PdfGenerator = {
             // Article 4
             doc.setFont('helvetica', 'bold');
             doc.setTextColor(...this.COLORS.darkGray);
+            doc.setDrawColor(...this.COLORS.darkGray);
             doc.text('Article 4- Dédit ou abandon :', margin, y);
             const a4w = doc.getTextWidth('Article 4- Dédit ou abandon :');
             doc.line(margin, y + 0.5, margin + a4w, y + 0.5);
@@ -638,6 +634,7 @@ const PdfGenerator = {
             // Article 5
             doc.setFont('helvetica', 'bold');
             doc.setTextColor(...this.COLORS.darkGray);
+            doc.setDrawColor(...this.COLORS.darkGray);
             doc.text('Article 5- Date d\'effet et durée de la convention :', margin, y);
             const a5w = doc.getTextWidth('Article 5- Date d\'effet et durée de la convention :');
             doc.line(margin, y + 0.5, margin + a5w, y + 0.5);
@@ -649,6 +646,7 @@ const PdfGenerator = {
             // Article 6
             doc.setFont('helvetica', 'bold');
             doc.setTextColor(...this.COLORS.darkGray);
+            doc.setDrawColor(...this.COLORS.darkGray);
             doc.text('Article 6- Différends éventuels :', margin, y);
             const a6w = doc.getTextWidth('Article 6- Différends éventuels :');
             doc.line(margin, y + 0.5, margin + a6w, y + 0.5);
