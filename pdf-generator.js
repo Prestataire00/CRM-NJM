@@ -962,6 +962,7 @@ const PdfGenerator = {
     async generateAttendanceSheet(formation) {
         try {
             await this.loadLogo();
+            await this.loadSignature();
             const doc = this.createDoc();
             const margin = 20;
             const pinkColor = this.COLORS.pink;
@@ -1076,6 +1077,13 @@ const PdfGenerator = {
                 doc.setTextColor(...this.COLORS.darkGray);
                 doc.text('Nathalie JOULIE-MORAND', startX + 3, y + 6);
                 doc.text('Formatrice', startX + 3, y + 11);
+                // Signature dans les colonnes Matin et Apres-midi
+                if (this.SIGNATURE_DATA) {
+                    const matinX = startX + colWidths[0] + 2;
+                    const apremX = startX + colWidths[0] + colWidths[1] + 2;
+                    doc.addImage(this.SIGNATURE_DATA, 'PNG', matinX, y + 2, 30, 22);
+                    doc.addImage(this.SIGNATURE_DATA, 'PNG', apremX, y + 2, 30, 22);
+                }
                 y += sigHeight + 5;
 
                 // Texte règlement intérieur
