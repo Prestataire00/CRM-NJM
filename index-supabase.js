@@ -5692,6 +5692,66 @@ const DocumentPreview = {
         return values;
     },
 
+    async downloadPdf() {
+        try {
+            if (typeof PdfGenerator === 'undefined') {
+                showToast('Service PDF non disponible', 'error');
+                return;
+            }
+
+            showToast('G\u00E9n\u00E9ration du PDF...', 'info');
+
+            // Construire un objet formation avec les valeurs du formulaire
+            const vars = this.getFormValues();
+            const f = { ...this.currentFormationData };
+
+            // Mapper les valeurs du formulaire vers les champs formation
+            if (vars.company_name) f.company_name = vars.company_name;
+            if (vars.company_address) { f.company_address = vars.company_address; f.client_address = vars.company_address; }
+            if (vars.company_postal_city) { f.company_postal_code = vars.company_postal_city; f.client_postal_city = vars.company_postal_city; }
+            if (vars.contact_name) { f.company_director_name = vars.contact_name; f.contact_name = vars.contact_name; }
+            if (vars.contact_title) { f.company_director_title = vars.contact_title; f.contact_title = vars.contact_title; }
+            if (vars.contact_role) f.contact_role = vars.contact_role;
+            if (vars.formation_name) f.formation_name = vars.formation_name;
+            if (vars.objectives) f.objectives = vars.objectives;
+            if (vars.module_content) f.module_1 = vars.module_content;
+            if (vars.content) f.module_1 = vars.content;
+            if (vars.methods) f.methods_tools = vars.methods;
+            if (vars.training_location) f.training_location = vars.training_location;
+            if (vars.duration) f.hours_per_learner = vars.duration;
+            if (vars.dates) f.custom_dates = vars.dates;
+            if (vars.price) { f.total_amount = vars.price; f.price = vars.price; }
+            if (vars.total_amount) { f.total_amount = vars.total_amount; f.price = vars.total_amount; }
+
+            // Appeler le bon generateur PDF selon le type
+            const generators = {
+                convention: 'generateConvention',
+                fiche_pedagogique: 'generatePedagogicalSheet',
+                contrat_sous_traitance: 'generateContratSousTraitance',
+                attendance_sheet: 'generateAttendanceSheet',
+                certificate: 'generateCertificate',
+            };
+
+            const method = generators[this.currentType];
+            if (!method || !PdfGenerator[method]) {
+                showToast('G\u00E9n\u00E9rateur PDF non disponible pour ce type', 'error');
+                return;
+            }
+
+            const result = await PdfGenerator[method](f);
+            if (result && result.success) {
+                // Enregistrer dans le CRM
+                await CRMApp._uploadAndSaveDoc(this.currentFormationId, result, this.currentType);
+                CRMApp.loadFormations();
+                showToast('PDF g\u00E9n\u00E9r\u00E9 !', 'success');
+                this.close();
+            }
+        } catch (err) {
+            console.error('Erreur DocumentPreview.downloadPdf:', err);
+            showToast('Erreur: ' + err.message, 'error');
+        }
+    },
+
     async download() {
         try {
             const config = DOC_CONFIGS[this.currentType];
