@@ -344,6 +344,10 @@ const PdfGenerator = {
                 this.addNJMFooter(doc);
                 doc.addPage();
                 y = this.addNJMHeader(doc);
+                // Reset font/color apres le header (qui laisse la couleur orange)
+                doc.setFontSize(fontSize);
+                doc.setFont('helvetica', font);
+                doc.setTextColor(...(options.color || this.COLORS.darkGray));
             }
             doc.text(line, x, y);
             y += lineHeight;
@@ -527,11 +531,13 @@ const PdfGenerator = {
             y += 1;
             y = this._writeBullet(doc, margin, y, 'Modalités de suivi et appréciation des résultats:', 'fiche de présence émargée, accompagnement rectificatif et évaluation des productions de l\'apprenant.', maxW);
 
-            this.addNJMFooter(doc);
-
-            // ===== PAGE 2 =====
-            doc.addPage();
-            y = 20;
+            // Saut de page seulement si on n'est pas deja en haut d'une page
+            if (y > 60) {
+                this.addNJMFooter(doc);
+                doc.addPage();
+                y = this.addNJMHeader(doc);
+            }
+            y += 4;
 
             // Article 2
             doc.setFontSize(9);
