@@ -377,22 +377,33 @@ const PdfGenerator = {
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(...this.COLORS.darkGray);
         const remaining = maxWidth - 5 - labelW;
-        const lines = doc.splitTextToSize(String(value || 'RAS'), remaining > 30 ? remaining : maxWidth - 5);
+
+        // Respecter les \n dans la valeur : splitter d'abord par \n, puis par largeur
+        const rawLines = String(value || 'RAS').split('\n');
+        const allLines = [];
+        rawLines.forEach((raw, idx) => {
+            const w = (idx === 0 && remaining > 30) ? remaining : maxWidth - 5;
+            const wrapped = doc.splitTextToSize(raw.trim(), w);
+            wrapped.forEach(l => allLines.push(l));
+        });
 
         // First line after label
-        if (lines.length > 0) {
-            doc.text(lines[0], x + 5 + labelW, y);
+        if (allLines.length > 0) {
+            doc.text(allLines[0], x + 5 + labelW, y);
         }
         y += 4.5;
 
         // Remaining lines
-        for (let i = 1; i < lines.length; i++) {
+        for (let i = 1; i < allLines.length; i++) {
             if (y > doc.internal.pageSize.height - bottomMargin) {
                 this.addNJMFooter(doc);
                 doc.addPage();
                 y = this.addNJMHeader(doc);
+                doc.setFontSize(9);
+                doc.setFont('helvetica', 'normal');
+                doc.setTextColor(...this.COLORS.darkGray);
             }
-            doc.text(lines[i], x + 5, y);
+            doc.text(allLines[i], x + 5, y);
             y += 4.5;
         }
         return y;
@@ -559,6 +570,7 @@ const PdfGenerator = {
 
             // Article 3
             doc.setFont('helvetica', 'bold');
+            doc.setTextColor(...this.COLORS.darkGray);
             doc.text('Article 3- Dispositions financières :', margin, y);
             const a3w = doc.getTextWidth('Article 3- Dispositions financières :');
             doc.line(margin, y + 0.5, margin + a3w, y + 0.5);
@@ -582,6 +594,7 @@ const PdfGenerator = {
 
             // Article 4
             doc.setFont('helvetica', 'bold');
+            doc.setTextColor(...this.COLORS.darkGray);
             doc.text('Article 4- Dédit ou abandon :', margin, y);
             const a4w = doc.getTextWidth('Article 4- Dédit ou abandon :');
             doc.line(margin, y + 0.5, margin + a4w, y + 0.5);
@@ -599,6 +612,7 @@ const PdfGenerator = {
 
             // Article 5
             doc.setFont('helvetica', 'bold');
+            doc.setTextColor(...this.COLORS.darkGray);
             doc.text('Article 5- Date d\'effet et durée de la convention :', margin, y);
             const a5w = doc.getTextWidth('Article 5- Date d\'effet et durée de la convention :');
             doc.line(margin, y + 0.5, margin + a5w, y + 0.5);
@@ -609,6 +623,7 @@ const PdfGenerator = {
 
             // Article 6
             doc.setFont('helvetica', 'bold');
+            doc.setTextColor(...this.COLORS.darkGray);
             doc.text('Article 6- Différends éventuels :', margin, y);
             const a6w = doc.getTextWidth('Article 6- Différends éventuels :');
             doc.line(margin, y + 0.5, margin + a6w, y + 0.5);
