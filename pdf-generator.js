@@ -1196,12 +1196,9 @@ const PdfGenerator = {
                 doc.text('Nathalie JOULIE MORAND', 105, y, { align: 'center' });
                 y += 3;
 
-                // Images : signature à gauche, cachet à droite
+                // Cachet+signature (image unique)
                 if (this.SIGNATURE_DATA) {
-                    doc.addImage(this.SIGNATURE_DATA, 'PNG', 55, y, 40, 20);
-                }
-                if (this.CACHET_DATA) {
-                    doc.addImage(this.CACHET_DATA, 'PNG', 115, y, 30, 20);
+                    doc.addImage(this.SIGNATURE_DATA, 'PNG', 75, y, 50, 28);
                 }
 
                 this.addNJMFooter(doc);
