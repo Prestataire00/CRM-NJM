@@ -652,7 +652,42 @@ const CRMApp = {
                     <!-- Onglet Documents -->
                     <div id="mission-tab-documents" class="mission-tab-content" style="display: none;">
                         <h3 style="font-size: 0.875rem; font-weight: 600; color: var(--gray-500); text-transform: uppercase; margin-bottom: 1rem;">Documents de la formation</h3>
-                        ${documentsHtml}
+                        ${(formation.formation_documents || []).filter(d => d.type !== 'contrat_sous_traitance').length > 0
+                            ? (formation.formation_documents || []).filter(d => d.type !== 'contrat_sous_traitance').map(doc => {
+                                const docTypes = {
+                                    'fiche_pedagogique': { icon: '📝', label: 'Fiche pédagogique', color: '#ea580c' },
+                                    'convention': { icon: '📄', label: 'Convention', color: '#7c3aed' },
+                                    'attendance_sheet': { icon: '📋', label: 'Feuille de présence', color: '#059669' },
+                                    'certificate': { icon: '🏅', label: 'Certificat / Attestation', color: '#dc2626' },
+                                };
+                                const docType = docTypes[doc.type] || { icon: '📑', label: doc.type, color: '#0284c7' };
+                                return '<a href="#" onclick="event.preventDefault(); CRMApp.openDocument(' + formation.id + ', \\'' + doc.type + '\\')" style="display:flex;align-items:center;gap:0.75rem;padding:0.75rem 1rem;background:var(--gray-50);border-radius:var(--radius-md);text-decoration:none;color:var(--gray-900);margin-bottom:0.5rem;cursor:pointer;" onmouseover="this.style.background=\\'var(--gray-100)\\'" onmouseout="this.style.background=\\'var(--gray-50)\\'"><span style="font-size:1.5rem;">' + docType.icon + '</span><div style="flex:1;"><div style="font-weight:500;">' + (doc.name || docType.label) + '</div><div style="font-size:0.75rem;color:' + docType.color + ';">' + docType.label + '</div></div></a>';
+                            }).join('')
+                            : '<p style="color:var(--gray-500);text-align:center;padding:1rem;">Aucun document disponible</p>'
+                        }
+
+                        <!-- Documents statiques -->
+                        <div style="margin-top: 1rem; border-top: 1px solid var(--gray-200); padding-top: 1rem;">
+                            <h3 style="font-size: 0.875rem; font-weight: 600; color: var(--gray-500); text-transform: uppercase; margin-bottom: 0.75rem;">Documents permanents</h3>
+                            <a href="assets/static/livret-accueil.pdf" target="_blank" style="display:flex;align-items:center;gap:0.75rem;padding:0.6rem 1rem;background:var(--gray-50);border-radius:var(--radius-md);text-decoration:none;color:var(--gray-900);margin-bottom:0.4rem;cursor:pointer;">
+                                <span style="font-size:1.25rem;">📖</span><div style="font-weight:500;font-size:0.9rem;">Livret d'accueil NJM Conseil</div>
+                            </a>
+                            <a href="assets/static/fiche-reclamation.pdf" target="_blank" style="display:flex;align-items:center;gap:0.75rem;padding:0.6rem 1rem;background:var(--gray-50);border-radius:var(--radius-md);text-decoration:none;color:var(--gray-900);margin-bottom:0.4rem;cursor:pointer;">
+                                <span style="font-size:1.25rem;">📋</span><div style="font-weight:500;font-size:0.9rem;">Fiche de réclamation</div>
+                            </a>
+                        </div>
+
+                        <!-- Contrat sous-traitance (visible uniquement pour le formateur) -->
+                        ${(() => {
+                            const contrat = (formation.formation_documents || []).find(d => d.type === 'contrat_sous_traitance');
+                            return '<div style="margin-top:1rem;border-top:1px solid var(--gray-200);padding-top:1rem;">' +
+                                '<h3 style="font-size:0.875rem;font-weight:600;color:var(--gray-500);text-transform:uppercase;margin-bottom:0.75rem;">Contrat de sous-traitance</h3>' +
+                                (contrat
+                                    ? '<a href="#" onclick="event.preventDefault(); CRMApp.openDocument(' + formation.id + ', \\'contrat_sous_traitance\\')" style="display:flex;align-items:center;gap:0.75rem;padding:0.75rem 1rem;background:var(--gray-50);border-radius:var(--radius-md);text-decoration:none;color:var(--gray-900);cursor:pointer;"><span style="font-size:1.5rem;">📝</span><div style="flex:1;"><div style="font-weight:500;">' + (contrat.name || 'Contrat sous-traitance') + '</div><div style="font-size:0.75rem;color:#b45309;">Contrat sous-traitance</div></div></a>'
+                                    : '<p style="color:var(--gray-400);font-size:0.85rem;padding:0.5rem;">Contrat non encore généré par l\\'administratrice.</p>'
+                                ) +
+                            '</div>';
+                        })()}
                     </div>
                 </div>
 
@@ -872,7 +907,7 @@ const CRMApp = {
         // Onglet Documents
         const documentsContainer = document.getElementById('client-formation-documents');
         if (documentsContainer) {
-            const docs = (formation.formation_documents || []).filter(d => d.visible_client !== false);
+            const docs = (formation.formation_documents || []).filter(d => d.visible_client !== false && d.type !== 'contrat_sous_traitance');
 
             // Documents statiques toujours visibles pour le client
             const staticDocsList = [
@@ -1352,7 +1387,10 @@ const CRMApp = {
                     label: 'Contrat sous-traitance', done: hasDoc('contrat_sous_traitance'),
                     actionLabel: hasDoc('contrat_sous_traitance') ? 'Ouvrir' : 'Creer',
                     actionClass: hasDoc('contrat_sous_traitance') ? 'open' : 'generate',
-                    action: hasDoc('contrat_sous_traitance') ? `CRMApp.openDocument(${formationId}, 'contrat_sous_traitance')` : `CRMApp.createContratSousTraitance(${formationId})`
+                    action: hasDoc('contrat_sous_traitance') ? `CRMApp.openDocument(${formationId}, 'contrat_sous_traitance')` : `CRMApp.createContratSousTraitance(${formationId})`,
+                    secondActionLabel: 'Envoyer',
+                    secondActionClass: 'send',
+                    secondAction: `CRMApp.sendContratSousTraitance(${formationId})`
                 });
             }
 
@@ -1397,6 +1435,7 @@ const CRMApp = {
                                 <span class="label ${w.done ? 'done' : ''}">${w.label}</span>
                             </div>
                             <button class="action-btn ${w.actionClass}" onclick="${w.action}">${w.actionLabel}</button>
+                            ${w.secondAction ? `<button class="action-btn ${w.secondActionClass}" onclick="${w.secondAction}" style="margin-left:0.25rem;">${w.secondActionLabel}</button>` : ''}
                         </div>
                     `).join('')}
                 </div>
@@ -1676,6 +1715,47 @@ const CRMApp = {
 
     async createContratSousTraitance(id) {
         await DocumentPreview.open(id, 'contrat_sous_traitance');
+    },
+
+    async sendContratSousTraitance(id) {
+        try {
+            const { data: formation, error } = await supabaseClient
+                .from('formations')
+                .select('*')
+                .eq('id', id)
+                .single();
+            if (error) throw error;
+
+            // Chercher l'email du sous-traitant via subcontractors ou profiles
+            let subEmail = '';
+            let subName = `${formation.subcontractor_first_name || ''} ${formation.subcontractor_last_name || ''}`.trim();
+
+            if (formation.subcontractor_id) {
+                const { data: sub } = await supabaseClient
+                    .from('subcontractors')
+                    .select('email, name, first_name, last_name')
+                    .eq('id', formation.subcontractor_id)
+                    .single();
+                if (sub) {
+                    subEmail = sub.email || '';
+                    if (!subName) subName = sub.name || `${sub.first_name || ''} ${sub.last_name || ''}`.trim();
+                }
+            }
+
+            const companyName = formation.company_name || formation.client_name || '';
+            const formationName = formation.formation_name || '';
+
+            GenericEmail.show({
+                title: 'Envoyer le contrat de sous-traitance',
+                to: subEmail,
+                subject: `Contrat de sous-traitance \u2014 ${formationName} \u2014 ${companyName}`,
+                body: `Bonjour ${subName},\n\nVeuillez trouver ci-joint ou dans votre espace formateur le contrat de sous-traitance pour la formation "${formationName}" (client : ${companyName}).\n\nJe vous invite \u00E0 vous connecter \u00E0 votre espace formateur pour consulter l'ensemble des documents relatifs \u00E0 cette mission.\n\nCordialement,\nNathalie JOULIE MORAND\nNJM Conseil`,
+                formationId: id,
+            });
+        } catch (err) {
+            console.error('Erreur envoi contrat sous-traitance:', err);
+            showToast('Erreur: ' + err.message, 'error');
+        }
     },
 
     async createAttendanceSheet(id) {
