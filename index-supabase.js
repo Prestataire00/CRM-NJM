@@ -1667,174 +1667,23 @@ const CRMApp = {
     },
 
     async createPedagogicalSheet(id) {
-        try {
-            const { data, error } = await supabaseClient
-                .from('formations')
-                .select('*')
-                .eq('id', id)
-                .single();
-
-            if (error) throw error;
-
-            if (typeof PdfGenerator !== 'undefined') {
-                const result = await PdfGenerator.generatePedagogicalSheet(data);
-
-                if (result && result.success) {
-                    // Sauvegarder le PDF dans Supabase Storage puis lier
-                    const docData = await this._uploadAndSaveDoc(id, result, 'fiche_pedagogique');
-
-                    if (docData) {
-                        showToast('Fiche pédagogique créée !', 'success');
-                        addNotification('formation', `Fiche pédagogique générée — ${data.formation_name || ''}`);
-                        this.loadFormations();
-                    }
-                }
-            } else {
-                showToast("Le service de génération PDF n'est pas disponible", 'error');
-            }
-        } catch (error) {
-            console.error('Erreur lors de la récupération de la formation:', error);
-            showToast('Impossible de récupérer la formation', 'error');
-        }
+        await DocumentPreview.open(id, 'fiche_pedagogique');
     },
 
     async createConvention(id) {
-        try {
-            const { data, error } = await supabaseClient
-                .from('formations')
-                .select('*')
-                .eq('id', id)
-                .single();
-
-            if (error) throw error;
-
-            if (typeof PdfGenerator !== 'undefined') {
-                const result = await PdfGenerator.generateConventionDocx(data);
-
-                if (result && result.success) {
-                    const docData = await this._uploadAndSaveDoc(id, result, 'convention');
-
-                    if (docData) {
-                        addNotification('convention', `Convention générée — ${data.company_name || data.client_name || ''}`);
-                        this.loadFormations();
-                    }
-                }
-            } else {
-                showToast("Le service de génération n'est pas disponible", 'error');
-            }
-        } catch (error) {
-            console.error('Erreur lors de la récupération de la formation:', error);
-            showToast('Impossible de récupérer la formation', 'error');
-        }
+        await DocumentPreview.open(id, 'convention');
     },
 
     async createContratSousTraitance(id) {
-        try {
-            const { data, error } = await supabaseClient
-                .from('formations')
-                .select('*')
-                .eq('id', id)
-                .single();
-
-            if (error) throw error;
-
-            if (!data.subcontractor_first_name) {
-                showToast('Aucun sous-traitant associé', 'warning');
-                return;
-            }
-
-            if (typeof PdfGenerator !== 'undefined') {
-                const result = await PdfGenerator.generateContratSousTraitance(data);
-
-                if (result && result.success) {
-                    const docData = await this._uploadAndSaveDoc(id, result, 'contrat_sous_traitance');
-
-                    if (docData) {
-                        showToast('Contrat sous-traitance créé !', 'success');
-                        this.loadFormations();
-                    }
-                }
-            } else {
-                showToast("Le service de génération PDF n'est pas disponible", 'error');
-            }
-        } catch (error) {
-            console.error('Erreur lors de la création du contrat de sous-traitance:', error);
-            showToast('Erreur création contrat', 'error');
-        }
+        await DocumentPreview.open(id, 'contrat_sous_traitance');
     },
 
     async createAttendanceSheet(id) {
-        try {
-            const { data, error } = await supabaseClient
-                .from('formations')
-                .select('*')
-                .eq('id', id)
-                .single();
-
-            if (error) throw error;
-
-            if (typeof PdfGenerator !== 'undefined') {
-                const result = await PdfGenerator.generateAttendanceSheet(data);
-
-                if (result && result.success) {
-                    const docData = await this._uploadAndSaveDoc(id, result, 'attendance_sheet');
-
-                    if (docData) {
-                        // Transition automatique : Planifiée → En cours après feuille de présence
-                        if (data.status === 'planned') {
-                            await supabaseClient.from('formations').update({ status: 'in_progress' }).eq('id', id);
-                            showToast('Feuille créée ! Statut passé à "En cours"', 'success');
-                        } else {
-                            showToast('Feuille de présence créée !', 'success');
-                        }
-                        this.loadFormations();
-                    }
-                }
-            } else {
-                showToast('Service PDF non disponible', 'error');
-            }
-        } catch (error) {
-            console.error('Erreur lors de la récupération de la formation:', error);
-            showToast('Impossible de récupérer la formation', 'error');
-        }
+        await DocumentPreview.open(id, 'attendance_sheet');
     },
 
     async createCertificate(id) {
-        try {
-            const { data, error } = await supabaseClient
-                .from('formations')
-                .select('*')
-                .eq('id', id)
-                .single();
-
-            if (error) throw error;
-
-            if (typeof PdfGenerator !== 'undefined') {
-                const result = await PdfGenerator.generateCertificate(data);
-
-                if (result && result.success) {
-                    const docData = await this._uploadAndSaveDoc(id, result, 'certificate');
-
-                    if (docData) {
-                        // Transition automatique : En cours → Terminée après certificat
-                        if (data.status === 'in_progress' || data.status === 'planned') {
-                            await supabaseClient.from('formations').update({ status: 'completed' }).eq('id', id);
-                            showToast('Certificat créé ! Statut passé à "Terminée"', 'success');
-                            addNotification('certificat', `Certificat généré — ${data.company_name || data.client_name || ''}`);
-                        } else {
-                            showToast('Certificat créé !', 'success');
-                            addNotification('certificat', `Certificat généré — ${data.company_name || data.client_name || ''}`);
-                        }
-                        this.loadFormations();
-                    }
-                }
-            } else {
-                showToast('Service PDF non disponible', 'error');
-            }
-        } catch (error) {
-            console.error('Erreur lors de la récupération de la formation:', error);
-            showToast('Impossible de récupérer la formation', 'error');
-        }
+        await DocumentPreview.open(id, 'certificate');
     },
 
     /**
@@ -5557,8 +5406,362 @@ const GenericEmail = {
     }
 };
 
+// ==================== DOCUMENT PREVIEW (modal generique) ====================
+
+const DOC_CONFIGS = {
+    convention: {
+        title: 'Convention de formation',
+        template: 'convention_template.docx',
+        fields: [
+            { key: 'company_name', label: 'Nom du client', type: 'input' },
+            { key: 'company_address', label: 'Adresse', type: 'input' },
+            { key: 'company_postal_city', label: 'CP / Ville', type: 'input' },
+            { key: 'contact_title', label: 'Civilit\u00E9', type: 'input' },
+            { key: 'contact_name', label: 'Nom dirigeant', type: 'input' },
+            { key: 'contact_role', label: 'Fonction', type: 'input' },
+            { key: 'formation_name', label: 'Titre formation', type: 'input' },
+            { key: 'trainer', label: 'Formateur', type: 'input' },
+            { key: 'dates', label: 'Dates', type: 'input' },
+            { key: 'duration', label: 'Dur\u00E9e (heures)', type: 'input' },
+            { key: 'training_location', label: 'Lieu', type: 'input' },
+            { key: 'learner_count', label: 'Effectif', type: 'input' },
+            { key: 'learners', label: 'Apprenants', type: 'textarea' },
+            { key: 'price', label: 'Montant (\u20AC)', type: 'input' },
+            { key: 'objectives', label: 'Objectifs', type: 'readonly' },
+            { key: 'module_content', label: 'Contenus', type: 'readonly' },
+            { key: 'methods', label: 'M\u00E9thodes', type: 'readonly' },
+            { key: 'signature_date', label: 'Date signature', type: 'input' },
+        ],
+        prepareVars(f) {
+            const learnersData = PdfGenerator.parseLearners(f);
+            const learnersList = learnersData.map(l => PdfGenerator.getLearnerName(l)).filter(n => n).join(', ');
+            const startDate = f.start_date ? new Date(f.start_date).toLocaleDateString('fr-FR') : '';
+            const endDate = f.end_date ? new Date(f.end_date).toLocaleDateString('fr-FR') : '';
+            const dates = f.custom_dates || (startDate === endDate ? startDate : `${startDate} au ${endDate}`);
+            return {
+                company_name: f.company_name || f.client_name || '',
+                company_address: f.company_address || f.client_address || '',
+                company_postal_city: f.company_postal_code || f.client_postal_city || '',
+                contact_title: f.company_director_title || f.contact_title || 'M.',
+                contact_name: f.company_director_name || f.contact_name || '',
+                contact_role: f.contact_role || 'dirigeant',
+                formation_name: f.formation_name || '',
+                trainer: PdfGenerator.getFormateurText(f),
+                dates,
+                duration: String(f.hours_per_learner || f.total_hours || ''),
+                training_location: f.training_location || '',
+                learner_count: String(learnersData.length || 1),
+                learners: learnersList,
+                price: String(f.total_amount || f.price || ''),
+                objectives: f.objectives || '',
+                module_content: f.module_1 || '',
+                methods: f.methods_tools || '',
+                signature_date: new Date().toLocaleDateString('fr-FR'),
+            };
+        },
+    },
+
+    fiche_pedagogique: {
+        title: 'Fiche p\u00E9dagogique',
+        template: 'fiche_peda_template.docx',
+        fields: [
+            { key: 'formation_name', label: 'Titre formation', type: 'input' },
+            { key: 'public', label: 'Public', type: 'input' },
+            { key: 'prerequisites', label: 'Pr\u00E9 requis', type: 'input' },
+            { key: 'duration', label: 'Dur\u00E9e (heures)', type: 'input' },
+            { key: 'objectives', label: 'Objectifs', type: 'textarea' },
+            { key: 'content', label: 'Contenu', type: 'textarea' },
+            { key: 'methods', label: 'M\u00E9thodes et outils', type: 'textarea' },
+            { key: 'evaluation', label: 'M\u00E9thodologie d\'\u00E9valuation', type: 'input' },
+            { key: 'added_value', label: 'Le + apport\u00E9', type: 'input' },
+            { key: 'access_delays', label: 'D\u00E9lais d\'acc\u00E8s', type: 'input' },
+        ],
+        prepareVars(f) {
+            return {
+                formation_name: f.formation_name || '',
+                public: f.target_audience || '',
+                prerequisites: f.prerequisites || 'RAS',
+                duration: String(f.hours_per_learner || ''),
+                objectives: f.objectives || '',
+                content: f.module_1 || '',
+                methods: f.methods_tools || '',
+                evaluation: f.evaluation_methodology || '',
+                added_value: f.added_value || '',
+                access_delays: f.access_delays || 'les dates disponibles le sont \u00E0 partir du 6 mois',
+            };
+        },
+    },
+
+    contrat_sous_traitance: {
+        title: 'Contrat de sous-traitance',
+        template: 'contrat_sous_traitance_template.docx',
+        fields: [
+            { key: 'trainer_name', label: 'Nom sous-traitant', type: 'input' },
+            { key: 'trainer_address', label: 'Adresse sous-traitant', type: 'input' },
+            { key: 'trainer_siret', label: 'SIRET sous-traitant', type: 'input' },
+            { key: 'trainer_nda', label: 'N\u00B0 activit\u00E9 sous-traitant', type: 'input' },
+            { key: 'formation_name', label: 'Titre formation', type: 'input' },
+            { key: 'dates', label: 'Dates', type: 'input' },
+            { key: 'duration', label: 'Dur\u00E9e (heures)', type: 'input' },
+            { key: 'price', label: 'Prix/jour (\u20AC)', type: 'input' },
+            { key: 'signature_date', label: 'Date signature', type: 'input' },
+        ],
+        prepareVars(f) {
+            const startDate = f.start_date ? new Date(f.start_date).toLocaleDateString('fr-FR') : '';
+            const endDate = f.end_date ? new Date(f.end_date).toLocaleDateString('fr-FR') : '';
+            const dates = f.custom_dates || (startDate === endDate ? startDate : `${startDate} au ${endDate}`);
+            return {
+                trainer_name: `${f.subcontractor_first_name || ''} ${f.subcontractor_last_name || ''}`.trim(),
+                trainer_address: f.subcontractor_address || '',
+                trainer_siret: f.subcontractor_siret || '',
+                trainer_nda: f.subcontractor_nda || '',
+                formation_name: f.formation_name || '',
+                dates,
+                duration: String(f.hours_per_learner || ''),
+                price: '600',
+                signature_date: new Date().toLocaleDateString('fr-FR'),
+            };
+        },
+    },
+
+    attendance_sheet: {
+        title: 'Feuille de pr\u00E9sence',
+        template: 'feuille_presence_template.docx',
+        fields: [
+            { key: 'formation_name', label: 'Titre formation', type: 'input' },
+            { key: 'date', label: 'Date', type: 'input' },
+            { key: 'training_location', label: 'Lieu', type: 'input' },
+            { key: 'learner_1', label: 'Apprenant 1', type: 'input' },
+            { key: 'learner_2', label: 'Apprenant 2', type: 'input' },
+            { key: 'learner_3', label: 'Apprenant 3', type: 'input' },
+            { key: 'learner_4', label: 'Apprenant 4', type: 'input' },
+            { key: 'learner_5', label: 'Apprenant 5', type: 'input' },
+            { key: 'learner_6', label: 'Apprenant 6', type: 'input' },
+            { key: 'learner_7', label: 'Apprenant 7', type: 'input' },
+            { key: 'learner_8', label: 'Apprenant 8', type: 'input' },
+        ],
+        prepareVars(f) {
+            const learnersData = PdfGenerator.parseLearners(f);
+            const vars = {
+                formation_name: f.formation_name || '',
+                date: f.start_date ? new Date(f.start_date).toLocaleDateString('fr-FR') : '',
+                training_location: f.training_location || '',
+            };
+            for (let i = 1; i <= 8; i++) {
+                const l = learnersData[i - 1];
+                vars[`learner_${i}`] = l ? PdfGenerator.getLearnerName(l) : '';
+                vars[`hours_${i}`] = l && l.hours ? `${l.hours}h` : '';
+            }
+            return vars;
+        },
+    },
+
+    certificate: {
+        title: 'Certificat / Attestation',
+        template: 'attestation_template.docx',
+        fields: [
+            { key: 'learner_name', label: 'Nom apprenant', type: 'input' },
+            { key: 'company_name', label: 'Entreprise', type: 'input' },
+            { key: 'formation_name', label: 'Titre formation', type: 'input' },
+            { key: 'objectives', label: 'Objectifs', type: 'readonly' },
+            { key: 'training_location', label: 'Lieu', type: 'input' },
+            { key: 'dates', label: 'Dates', type: 'input' },
+            { key: 'duration', label: 'Dur\u00E9e (heures)', type: 'input' },
+            { key: 'signature_date', label: 'Date signature', type: 'input' },
+        ],
+        prepareVars(f) {
+            const learnersData = PdfGenerator.parseLearners(f);
+            const firstLearner = learnersData[0] || {};
+            const startDate = f.start_date ? new Date(f.start_date).toLocaleDateString('fr-FR') : '';
+            const endDate = f.end_date ? new Date(f.end_date).toLocaleDateString('fr-FR') : '';
+            const dates = f.custom_dates || (startDate === endDate ? startDate : `du ${startDate} au ${endDate}`);
+            return {
+                learner_name: PdfGenerator.getLearnerName(firstLearner),
+                company_name: f.company_name || f.client_name || '',
+                formation_name: f.formation_name || '',
+                objectives: f.objectives || '',
+                training_location: f.training_location || '',
+                dates,
+                duration: String(firstLearner.hours || f.hours_per_learner || ''),
+                signature_date: endDate || new Date().toLocaleDateString('fr-FR'),
+            };
+        },
+    },
+};
+
+const DocumentPreview = {
+    currentType: null,
+    currentFormationData: null,
+    currentFormationId: null,
+
+    async open(formationId, docType) {
+        try {
+            showToast('Chargement...', 'info');
+
+            const config = DOC_CONFIGS[docType];
+            if (!config) {
+                showToast('Type de document inconnu: ' + docType, 'error');
+                return;
+            }
+
+            // Fetch formation
+            const { data, error } = await supabaseClient
+                .from('formations')
+                .select('*')
+                .eq('id', formationId)
+                .single();
+            if (error) throw error;
+
+            this.currentType = docType;
+            this.currentFormationData = data;
+            this.currentFormationId = formationId;
+
+            // Preparer les valeurs par defaut
+            const vars = config.prepareVars(data);
+
+            // Generer le formulaire
+            const container = document.getElementById('doc-preview-fields');
+            container.innerHTML = '';
+
+            config.fields.forEach(field => {
+                const wrapper = document.createElement('div');
+                if (field.type === 'textarea') {
+                    wrapper.style.gridColumn = '1 / -1';
+                }
+
+                const label = document.createElement('label');
+                label.textContent = field.label;
+                label.style.cssText = 'display: block; font-size: 0.8rem; font-weight: 600; color: var(--gray-600); margin-bottom: 0.25rem;';
+                wrapper.appendChild(label);
+
+                if (field.type === 'readonly') {
+                    const div = document.createElement('div');
+                    div.style.cssText = 'padding: 0.5rem; background: var(--gray-100); border-radius: var(--radius-md); font-size: 0.85rem; color: var(--gray-500); white-space: pre-wrap; max-height: 80px; overflow-y: auto;';
+                    div.textContent = vars[field.key] || '';
+                    div.dataset.key = field.key;
+                    div.classList.add('doc-preview-readonly');
+                    wrapper.appendChild(div);
+                } else if (field.type === 'textarea') {
+                    const ta = document.createElement('textarea');
+                    ta.value = vars[field.key] || '';
+                    ta.dataset.key = field.key;
+                    ta.classList.add('doc-preview-input');
+                    ta.style.cssText = 'width: 100%; padding: 0.5rem; border: 1px solid var(--gray-300); border-radius: var(--radius-md); font-size: 0.85rem; min-height: 60px; resize: vertical;';
+                    wrapper.appendChild(ta);
+                } else {
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.value = vars[field.key] || '';
+                    input.dataset.key = field.key;
+                    input.classList.add('doc-preview-input');
+                    input.style.cssText = 'width: 100%; padding: 0.5rem; border: 1px solid var(--gray-300); border-radius: var(--radius-md); font-size: 0.85rem;';
+                    wrapper.appendChild(input);
+                }
+
+                container.appendChild(wrapper);
+            });
+
+            // Titre + ouvrir modal
+            document.getElementById('doc-preview-title').textContent = config.title;
+            document.getElementById('documentPreviewModal').style.display = 'flex';
+
+        } catch (err) {
+            console.error('Erreur DocumentPreview.open:', err);
+            showToast('Erreur: ' + err.message, 'error');
+        }
+    },
+
+    close() {
+        document.getElementById('documentPreviewModal').style.display = 'none';
+        document.getElementById('doc-preview-fields').innerHTML = '';
+        this.currentType = null;
+        this.currentFormationData = null;
+        this.currentFormationId = null;
+    },
+
+    getFormValues() {
+        const values = {};
+        // Editable inputs
+        document.querySelectorAll('#doc-preview-fields .doc-preview-input').forEach(el => {
+            values[el.dataset.key] = el.value || '';
+        });
+        // Readonly fields
+        document.querySelectorAll('#doc-preview-fields .doc-preview-readonly').forEach(el => {
+            values[el.dataset.key] = el.textContent || '';
+        });
+        return values;
+    },
+
+    async download() {
+        try {
+            const config = DOC_CONFIGS[this.currentType];
+            if (!config) return;
+
+            showToast('G\u00E9n\u00E9ration du document...', 'info');
+
+            // Charger PizZip
+            if (!window.PizZip) {
+                await new Promise((resolve, reject) => {
+                    const s = document.createElement('script');
+                    s.src = 'https://unpkg.com/pizzip@3.1.4/dist/pizzip.js';
+                    s.onload = resolve; s.onerror = reject;
+                    document.head.appendChild(s);
+                });
+            }
+
+            // Charger le template
+            const { data, error } = await supabaseClient.storage
+                .from('templates')
+                .download(config.template);
+            if (error) throw new Error('Template non trouv\u00E9: ' + error.message);
+
+            const arrayBuffer = await data.arrayBuffer();
+            const zip = new window.PizZip(arrayBuffer);
+            let xml = zip.file('word/document.xml').asText();
+
+            // Remplacer les variables
+            const vars = this.getFormValues();
+            Object.entries(vars).forEach(([key, value]) => {
+                xml = xml.split(`{{${key}}}`).join(value || '');
+            });
+
+            // Remettre le XML
+            zip.file('word/document.xml', xml);
+
+            // Generer et telecharger
+            const blob = zip.generate({
+                type: 'blob',
+                mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            });
+
+            const fileName = `${config.title} - ${this.currentFormationData.formation_name || 'Formation'} - ${this.currentFormationData.company_name || this.currentFormationData.client_name || 'Client'}`;
+
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${fileName}.docx`;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            // Enregistrer dans le CRM
+            const result = { success: true, name: fileName };
+            await CRMApp._uploadAndSaveDoc(this.currentFormationId, result, this.currentType);
+            addNotification(this.currentType, `${config.title} g\u00E9n\u00E9r\u00E9(e) \u2014 ${this.currentFormationData.company_name || this.currentFormationData.client_name || ''}`);
+            CRMApp.loadFormations();
+
+            showToast(`${config.title} t\u00E9l\u00E9charg\u00E9(e) !`, 'success');
+            this.close();
+
+        } catch (err) {
+            console.error('Erreur DocumentPreview.download:', err);
+            showToast('Erreur: ' + err.message, 'error');
+        }
+    },
+};
+
 // Expose globally for HTML event handlers
 window.CRMApp = CRMApp;
 window.UserManagement = UserManagement;
 window.ConvocationEmail = ConvocationEmail;
 window.GenericEmail = GenericEmail;
+window.DocumentPreview = DocumentPreview;

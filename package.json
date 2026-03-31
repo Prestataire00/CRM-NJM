@@ -21,5 +21,8 @@
   "homepage": "https://github.com/Prestataire00/CRM-NJM#readme",
   "dependencies": {
     "supabase": "^2.81.3"
+  },
+  "devDependencies": {
+    "docx": "^9.6.1"
   }
 }
