@@ -36,20 +36,42 @@ const PdfGenerator = {
     },
 
     /**
-     * Charge la signature depuis localStorage
+     * Charge la signature (cachet+signature) depuis Supabase, fallback fichier local
      */
     async loadSignature() {
         const result = await SupabaseData.getSetting('signature');
         this.SIGNATURE_DATA = (result.success && result.data) ? result.data : localStorage.getItem('njm_signature');
+        if (!this.SIGNATURE_DATA) {
+            try {
+                const response = await fetch('cachet-njm.png');
+                const blob = await response.blob();
+                this.SIGNATURE_DATA = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result);
+                    reader.readAsDataURL(blob);
+                });
+            } catch (e) { console.warn('Signature non chargee:', e); }
+        }
         return this.SIGNATURE_DATA;
     },
 
     /**
-     * Charge le cachet depuis Supabase, fallback localStorage
+     * Charge le cachet depuis Supabase, fallback fichier local
      */
     async loadCachet() {
         const result = await SupabaseData.getSetting('cachet');
         this.CACHET_DATA = (result.success && result.data) ? result.data : localStorage.getItem('njm_cachet');
+        if (!this.CACHET_DATA) {
+            try {
+                const response = await fetch('cachet-njm.png');
+                const blob = await response.blob();
+                this.CACHET_DATA = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result);
+                    reader.readAsDataURL(blob);
+                });
+            } catch (e) { console.warn('Cachet non charge:', e); }
+        }
         return this.CACHET_DATA;
     },
 
@@ -774,6 +796,7 @@ const PdfGenerator = {
     async generateContratSousTraitance(formation) {
         try {
             await this.loadLogo();
+            await this.loadSignature();
             const doc = this.createDoc();
             const margin = 20;
             const maxW = 170;
@@ -913,6 +936,11 @@ const PdfGenerator = {
             doc.text('Quentin DURAND', 120, y); y += 8;
             doc.setFont('helvetica', 'normal');
             doc.text('NJM Conseil', margin, y);
+
+            // Cachet/signature NJM
+            if (this.SIGNATURE_DATA) {
+                doc.addImage(this.SIGNATURE_DATA, 'PNG', margin, y + 3, 40, 28);
+            }
 
             this.addNJMFooter(doc);
 
