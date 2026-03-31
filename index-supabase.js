@@ -5539,7 +5539,7 @@ const DOC_CONFIGS = {
                 formation_name: f.formation_name || '',
                 date: f.start_date ? new Date(f.start_date).toLocaleDateString('fr-FR') : '',
                 training_location: f.training_location || '',
-                _learners: learnersData.map(l => PdfGenerator.getLearnerName(l)).filter(n => n),
+                _learners: learnersData.map(l => ({ name: PdfGenerator.getLearnerName(l), hours: l.hours || '' })).filter(l => l.name),
             };
             return vars;
         },
@@ -5678,7 +5678,8 @@ const DocumentPreview = {
                 const existingLearners = vars._learners || [];
                 const count = Math.max(existingLearners.length, 1);
                 for (let i = 0; i < count; i++) {
-                    this.addLearnerRow(existingLearners[i] || '');
+                    const l = existingLearners[i];
+                    this.addLearnerRow(l ? l.name : '', l ? l.hours : '');
                 }
             }
 
@@ -5692,7 +5693,7 @@ const DocumentPreview = {
         }
     },
 
-    addLearnerRow(name) {
+    addLearnerRow(name, hours) {
         const list = document.getElementById('doc-preview-learners-list');
         if (!list) return;
 
@@ -5707,6 +5708,13 @@ const DocumentPreview = {
         input.classList.add('doc-learner-input');
         input.style.cssText = 'flex: 1; padding: 0.5rem; border: 1px solid var(--gray-300); border-radius: var(--radius-md); font-size: 0.85rem;';
 
+        const hoursInput = document.createElement('input');
+        hoursInput.type = 'text';
+        hoursInput.value = hours || '';
+        hoursInput.placeholder = 'Heures';
+        hoursInput.classList.add('doc-learner-hours');
+        hoursInput.style.cssText = 'width: 70px; padding: 0.5rem; border: 1px solid var(--gray-300); border-radius: var(--radius-md); font-size: 0.85rem; text-align: center;';
+
         const removeBtn = document.createElement('button');
         removeBtn.type = 'button';
         removeBtn.textContent = '\u00D7';
@@ -5714,6 +5722,7 @@ const DocumentPreview = {
         removeBtn.onclick = () => row.remove();
 
         row.appendChild(input);
+        row.appendChild(hoursInput);
         row.appendChild(removeBtn);
         list.appendChild(row);
     },
@@ -5737,14 +5746,16 @@ const DocumentPreview = {
             values[el.dataset.key] = el.textContent || '';
         });
         // Dynamic learners
-        const learnerInputs = document.querySelectorAll('#doc-preview-learners-list .doc-learner-input');
-        if (learnerInputs.length > 0) {
-            learnerInputs.forEach((input, i) => {
-                values[`learner_${i + 1}`] = input.value || '';
-                values[`hours_${i + 1}`] = '';
+        const learnerRows = document.querySelectorAll('#doc-preview-learners-list .doc-learner-row');
+        if (learnerRows.length > 0) {
+            learnerRows.forEach((row, i) => {
+                const nameInput = row.querySelector('.doc-learner-input');
+                const hoursInput = row.querySelector('.doc-learner-hours');
+                values[`learner_${i + 1}`] = nameInput ? nameInput.value || '' : '';
+                values[`hours_${i + 1}`] = hoursInput ? (hoursInput.value ? hoursInput.value + 'h' : '') : '';
             });
             // Vider les slots restants dans le template (jusqu'a 20)
-            for (let i = learnerInputs.length + 1; i <= 20; i++) {
+            for (let i = learnerRows.length + 1; i <= 20; i++) {
                 values[`learner_${i}`] = '';
                 values[`hours_${i}`] = '';
             }
