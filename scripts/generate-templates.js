@@ -202,7 +202,7 @@ async function generateConvention() {
 
                     bulletPoint('Objectifs:', '{{objectives}}'),
                     bulletPoint('Type d\'action de formation', '(au sens de l\'article L. 900-2 du Code du travail): Acquisition et entretien des connaissances et mise en parall\u00E8le avec l\'activit\u00E9.'),
-                    bulletPoint('Contenus:', '{{module_content}}'),
+                    bulletPoint('Contenus:', '{{content_summary}}'),
                     bulletPoint('M\u00E9thodes et moyens p\u00E9dagogiques:', '{{methods}}'),
                     bulletPoint('Formateur:', '{{trainer}}'),
                     bulletPoint('Date(s):', '{{dates}}'),

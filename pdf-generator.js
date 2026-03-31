@@ -562,7 +562,7 @@ const PdfGenerator = {
             // Bullet points (ordre conforme au modèle de référence)
             y = this._writeBullet(doc, margin, y, 'Objectifs:', formation.objectives || 'RAS', maxW);
             y = this._writeBullet(doc, margin, y, 'Type d\'action de formation', '(au sens de l\'article L. 900-2 du Code du travail): Acquisition et entretien des connaissances et mise en parallèle avec l\'activité.', maxW);
-            y = this._writeBullet(doc, margin, y, 'Contenus:', formation.module_1 || formation.program_summary || 'RAS', maxW);
+            y = this._writeBullet(doc, margin, y, 'Contenus:', formation.content_summary || formation.program_summary || 'RAS', maxW);
             y = this._writeBullet(doc, margin, y, 'Méthodes et moyens pédagogiques:', formation.methods_tools || 'RAS', maxW);
             y = this._writeBullet(doc, margin, y, 'Formateur:', this.getFormateurText(formation), maxW);
             y = this._writeBullet(doc, margin, y, 'Date(s):', dates, maxW);

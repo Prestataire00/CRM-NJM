@@ -5428,7 +5428,8 @@ const DOC_CONFIGS = {
             { key: 'learners', label: 'Apprenants', type: 'textarea' },
             { key: 'price', label: 'Montant (\u20AC)', type: 'input' },
             { key: 'objectives', label: 'Objectifs', type: 'textarea' },
-            { key: 'module_content', label: 'Contenus', type: 'textarea' },
+            { key: 'content_summary', label: 'Contenus (r\u00E9sum\u00E9 court — Article 1)', type: 'input' },
+            { key: 'module_content', label: 'Contenus (d\u00E9tail — Article 2)', type: 'textarea' },
             { key: 'methods', label: 'M\u00E9thodes', type: 'textarea' },
             { key: 'signature_date', label: 'Date signature', type: 'input' },
         ],
@@ -5454,6 +5455,7 @@ const DOC_CONFIGS = {
                 learners: learnersList,
                 price: String(f.total_amount || f.price || ''),
                 objectives: f.objectives || '',
+                content_summary: f.content_summary || '',
                 module_content: f.module_1 || '',
                 methods: f.methods_tools || '',
                 signature_date: new Date().toLocaleDateString('fr-FR'),
@@ -5802,6 +5804,7 @@ const DocumentPreview = {
             if (vars.contact_role) f.contact_role = vars.contact_role;
             if (vars.formation_name) f.formation_name = vars.formation_name;
             if (vars.objectives) f.objectives = vars.objectives;
+            if (vars.content_summary) f.content_summary = vars.content_summary;
             if (vars.module_content) f.module_1 = vars.module_content;
             if (vars.content) f.module_1 = vars.content;
             if (vars.methods) f.methods_tools = vars.methods;
@@ -5857,6 +5860,7 @@ const DocumentPreview = {
                 contact_role: 'contact_role',
                 formation_name: 'formation_name',
                 objectives: 'objectives',
+                content_summary: 'content_summary',
                 module_content: 'module_1',
                 content: 'module_1',
                 methods: 'methods_tools',
