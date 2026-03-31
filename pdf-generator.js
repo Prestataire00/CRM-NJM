@@ -384,31 +384,50 @@ const PdfGenerator = {
 
         // Respecter les \n dans la valeur : splitter d'abord par \n, puis par largeur
         const rawLines = String(value || 'RAS').split('\n');
+        const isMultiLine = rawLines.length > 1;
         const allLines = [];
         rawLines.forEach((raw, idx) => {
-            const w = (idx === 0 && remaining > 30) ? remaining : maxWidth - 5;
-            const wrapped = doc.splitTextToSize(raw.trim(), w);
-            wrapped.forEach(l => allLines.push(l));
+            const w = (!isMultiLine && idx === 0 && remaining > 30) ? remaining : maxWidth - 5;
+            const trimmed = raw.trim();
+            if (trimmed) {
+                const wrapped = doc.splitTextToSize(trimmed, w);
+                wrapped.forEach(l => allLines.push(l));
+            }
         });
 
-        // First line after label
-        if (allLines.length > 0) {
-            doc.text(allLines[0], x + 5 + labelW, y);
-        }
-        y += 4.5;
-
-        // Remaining lines
-        for (let i = 1; i < allLines.length; i++) {
-            if (y > doc.internal.pageSize.height - bottomMargin) {
-                this.addNJMFooter(doc);
-                doc.addPage();
-                y = this.addNJMHeader(doc);
-                doc.setFontSize(9);
-                doc.setFont('helvetica', 'normal');
-                doc.setTextColor(...this.COLORS.darkGray);
-            }
-            doc.text(allLines[i], x + 5, y);
+        if (isMultiLine) {
+            // Multi-ligne : contenu en dessous du label
             y += 4.5;
+            for (let i = 0; i < allLines.length; i++) {
+                if (y > doc.internal.pageSize.height - bottomMargin) {
+                    this.addNJMFooter(doc);
+                    doc.addPage();
+                    y = this.addNJMHeader(doc);
+                    doc.setFontSize(9);
+                    doc.setFont('helvetica', 'normal');
+                    doc.setTextColor(...this.COLORS.darkGray);
+                }
+                doc.text(allLines[i], x + 5, y);
+                y += 4.5;
+            }
+        } else {
+            // Mono-ligne : valeur a cote du label
+            if (allLines.length > 0) {
+                doc.text(allLines[0], x + 5 + labelW, y);
+            }
+            y += 4.5;
+            for (let i = 1; i < allLines.length; i++) {
+                if (y > doc.internal.pageSize.height - bottomMargin) {
+                    this.addNJMFooter(doc);
+                    doc.addPage();
+                    y = this.addNJMHeader(doc);
+                    doc.setFontSize(9);
+                    doc.setFont('helvetica', 'normal');
+                    doc.setTextColor(...this.COLORS.darkGray);
+                }
+                doc.text(allLines[i], x + 5, y);
+                y += 4.5;
+            }
         }
         return y;
     },
