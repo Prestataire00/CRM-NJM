@@ -2261,6 +2261,28 @@
                         </div>
                     </div>
 
+                    <!-- Pieces jointes PDF -->
+                    <div id="generic-email-attachments" style="display: none; margin-bottom: 1.5rem; background: #f0f9ff; padding: 1rem; border-radius: var(--radius-md); border: 1px solid #bfdbfe;">
+                        <label style="display: block; font-weight: 600; color: var(--gray-800); margin-bottom: 0.75rem; font-size: 0.9rem;">Joindre des documents PDF</label>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                            <label style="font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 0.4rem;">
+                                <input type="checkbox" name="email-attach" value="fiche_pedagogique"> Fiche p&eacute;dagogique
+                            </label>
+                            <label style="font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 0.4rem;">
+                                <input type="checkbox" name="email-attach" value="convention"> Convention
+                            </label>
+                            <label style="font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 0.4rem;">
+                                <input type="checkbox" name="email-attach" value="attendance_sheet"> Feuille de pr&eacute;sence
+                            </label>
+                            <label style="font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 0.4rem;">
+                                <input type="checkbox" name="email-attach" value="certificate"> Certificat / Attestation
+                            </label>
+                            <label style="font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 0.4rem;">
+                                <input type="checkbox" name="email-attach" value="contrat_sous_traitance"> Contrat sous-traitance
+                            </label>
+                        </div>
+                    </div>
+
                     <div style="margin-bottom: 1.5rem;">
                         <label style="display: block; font-weight: 500; color: var(--gray-700); margin-bottom: 0.5rem;">Corps du mail</label>
                         <textarea id="generic-email-body"

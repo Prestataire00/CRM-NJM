@@ -5384,11 +5384,18 @@ const GenericEmail = {
         const questSection = document.getElementById('generic-email-questionnaires');
         if (questSection) {
             questSection.style.display = showQuestionnaires ? 'block' : 'none';
-            // Reset les selects
             const evalSelect = document.getElementById('generic-email-quest-eval');
             const satisSelect = document.getElementById('generic-email-quest-satis');
             if (evalSelect) evalSelect.value = '';
             if (satisSelect) satisSelect.value = '';
+        }
+
+        // Afficher les pieces jointes si on a une formation
+        const attachSection = document.getElementById('generic-email-attachments');
+        if (attachSection) {
+            attachSection.style.display = formationId ? 'block' : 'none';
+            // Reset les checkboxes
+            document.querySelectorAll('input[name="email-attach"]').forEach(cb => cb.checked = false);
         }
 
         const sendBtn = document.getElementById('generic-email-send-btn');
@@ -5465,10 +5472,48 @@ const GenericEmail = {
         }
 
         sendBtn.disabled = true;
-        sendBtn.innerHTML = '⏳ Envoi en cours...';
+        sendBtn.innerHTML = '\u23F3 Envoi en cours...';
 
         try {
-            const result = await EmailService.sendEmail(to, subject, body);
+            // Generer les pieces jointes PDF cochees
+            const attachments = [];
+            const checkedDocs = document.querySelectorAll('input[name="email-attach"]:checked');
+            if (checkedDocs.length > 0 && this.currentFormationId) {
+                sendBtn.innerHTML = '\u23F3 G\u00E9n\u00E9ration des PDF...';
+                const { data: formation } = await supabaseClient
+                    .from('formations').select('*').eq('id', this.currentFormationId).single();
+
+                if (formation) {
+                    const generators = {
+                        fiche_pedagogique: { method: 'generatePedagogicalSheet', label: 'Fiche p\u00E9dagogique' },
+                        convention: { method: 'generateConvention', label: 'Convention' },
+                        contrat_sous_traitance: { method: 'generateContratSousTraitance', label: 'Contrat sous-traitance' },
+                        attendance_sheet: { method: 'generateAttendanceSheet', label: 'Feuille de pr\u00E9sence' },
+                        certificate: { method: 'generateCertificate', label: 'Certificat' },
+                    };
+                    for (const cb of checkedDocs) {
+                        const gen = generators[cb.value];
+                        if (gen && PdfGenerator[gen.method]) {
+                            const result = await PdfGenerator[gen.method](formation);
+                            if (result && result.success && result.blob) {
+                                const base64 = await new Promise((resolve) => {
+                                    const reader = new FileReader();
+                                    reader.onloadend = () => resolve(reader.result.split(',')[1]);
+                                    reader.readAsDataURL(result.blob);
+                                });
+                                attachments.push({
+                                    name: `${gen.label} - ${formation.formation_name || 'Formation'}.pdf`,
+                                    data: base64,
+                                    mimeType: 'application/pdf'
+                                });
+                            }
+                        }
+                    }
+                }
+                sendBtn.innerHTML = '\u23F3 Envoi en cours...';
+            }
+
+            const result = await EmailService.sendEmail(to, subject, body, attachments);
 
             if (result.success) {
                 showToast('Email envoyé !', 'success');
