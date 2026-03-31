@@ -656,8 +656,8 @@ const PdfGenerator = {
         try {
             // 1. Charger le template depuis Supabase Storage
             const { data, error } = await supabaseClient.storage
-                .from('documents')
-                .download('templates/convention_template.docx');
+                .from('templates')
+                .download('convention_template.docx');
 
             if (error) throw new Error('Template introuvable dans Supabase Storage : ' + error.message);
 
