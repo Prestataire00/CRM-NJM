@@ -652,21 +652,7 @@ const CRMApp = {
                     <!-- Onglet Documents -->
                     <div id="mission-tab-documents" class="mission-tab-content" style="display: none;">
                         <h3 style="font-size: 0.875rem; font-weight: 600; color: var(--gray-500); text-transform: uppercase; margin-bottom: 1rem;">Documents de la formation</h3>
-                        ${(formation.formation_documents || []).filter(d => d.type !== 'contrat_sous_traitance').length > 0
-                            ? (formation.formation_documents || []).filter(d => d.type !== 'contrat_sous_traitance').map(doc => {
-                                const docTypes = {
-                                    'fiche_pedagogique': { icon: '📝', label: 'Fiche pédagogique', color: '#ea580c' },
-                                    'convention': { icon: '📄', label: 'Convention', color: '#7c3aed' },
-                                    'attendance_sheet': { icon: '📋', label: 'Feuille de présence', color: '#059669' },
-                                    'certificate': { icon: '🏅', label: 'Certificat / Attestation', color: '#dc2626' },
-                                };
-                                const docType = docTypes[doc.type] || { icon: '📑', label: doc.type, color: '#0284c7' };
-                                return '<a href="#" onclick="event.preventDefault(); CRMApp.openDocument(' + formation.id + ', \\'' + doc.type + '\\')" style="display:flex;align-items:center;gap:0.75rem;padding:0.75rem 1rem;background:var(--gray-50);border-radius:var(--radius-md);text-decoration:none;color:var(--gray-900);margin-bottom:0.5rem;cursor:pointer;" onmouseover="this.style.background=\\'var(--gray-100)\\'" onmouseout="this.style.background=\\'var(--gray-50)\\'"><span style="font-size:1.5rem;">' + docType.icon + '</span><div style="flex:1;"><div style="font-weight:500;">' + (doc.name || docType.label) + '</div><div style="font-size:0.75rem;color:' + docType.color + ';">' + docType.label + '</div></div></a>';
-                            }).join('')
-                            : '<p style="color:var(--gray-500);text-align:center;padding:1rem;">Aucun document disponible</p>'
-                        }
-
-                        <!-- Documents statiques -->
+                        <div id="formateur-docs-list"></div>
                         <div style="margin-top: 1rem; border-top: 1px solid var(--gray-200); padding-top: 1rem;">
                             <h3 style="font-size: 0.875rem; font-weight: 600; color: var(--gray-500); text-transform: uppercase; margin-bottom: 0.75rem;">Documents permanents</h3>
                             <a href="assets/static/livret-accueil.pdf" target="_blank" style="display:flex;align-items:center;gap:0.75rem;padding:0.6rem 1rem;background:var(--gray-50);border-radius:var(--radius-md);text-decoration:none;color:var(--gray-900);margin-bottom:0.4rem;cursor:pointer;">
@@ -676,18 +662,10 @@ const CRMApp = {
                                 <span style="font-size:1.25rem;">📋</span><div style="font-weight:500;font-size:0.9rem;">Fiche de réclamation</div>
                             </a>
                         </div>
-
-                        <!-- Contrat sous-traitance (visible uniquement pour le formateur) -->
-                        ${(() => {
-                            const contrat = (formation.formation_documents || []).find(d => d.type === 'contrat_sous_traitance');
-                            return '<div style="margin-top:1rem;border-top:1px solid var(--gray-200);padding-top:1rem;">' +
-                                '<h3 style="font-size:0.875rem;font-weight:600;color:var(--gray-500);text-transform:uppercase;margin-bottom:0.75rem;">Contrat de sous-traitance</h3>' +
-                                (contrat
-                                    ? '<a href="#" onclick="event.preventDefault(); CRMApp.openDocument(' + formation.id + ', \\'contrat_sous_traitance\\')" style="display:flex;align-items:center;gap:0.75rem;padding:0.75rem 1rem;background:var(--gray-50);border-radius:var(--radius-md);text-decoration:none;color:var(--gray-900);cursor:pointer;"><span style="font-size:1.5rem;">📝</span><div style="flex:1;"><div style="font-weight:500;">' + (contrat.name || 'Contrat sous-traitance') + '</div><div style="font-size:0.75rem;color:#b45309;">Contrat sous-traitance</div></div></a>'
-                                    : '<p style="color:var(--gray-400);font-size:0.85rem;padding:0.5rem;">Contrat non encore généré par l\\'administratrice.</p>'
-                                ) +
-                            '</div>';
-                        })()}
+                        <div id="formateur-contrat-section" style="margin-top: 1rem; border-top: 1px solid var(--gray-200); padding-top: 1rem;">
+                            <h3 style="font-size: 0.875rem; font-weight: 600; color: var(--gray-500); text-transform: uppercase; margin-bottom: 0.75rem;">Contrat de sous-traitance</h3>
+                            <div id="formateur-contrat-content"></div>
+                        </div>
                     </div>
                 </div>
 
@@ -707,6 +685,38 @@ const CRMApp = {
         });
 
         document.body.appendChild(modal);
+
+        // Remplir les documents formateur dynamiquement
+        const docsListEl = document.getElementById('formateur-docs-list');
+        if (docsListEl) {
+            const formDocs = (formation.formation_documents || []).filter(d => d.type !== 'contrat_sous_traitance');
+            if (formDocs.length === 0) {
+                docsListEl.innerHTML = '<p style="color:var(--gray-500);text-align:center;padding:1rem;">Aucun document disponible</p>';
+            } else {
+                const docTypeMap = {
+                    fiche_pedagogique: { icon: '\uD83D\uDCDD', label: 'Fiche p\u00E9dagogique', color: '#ea580c' },
+                    google_doc: { icon: '\uD83D\uDCDD', label: 'Fiche p\u00E9dagogique', color: '#ea580c' },
+                    convention: { icon: '\uD83D\uDCC4', label: 'Convention', color: '#7c3aed' },
+                    attendance_sheet: { icon: '\uD83D\uDCCB', label: 'Feuille de pr\u00E9sence', color: '#059669' },
+                    certificate: { icon: '\uD83C\uDFC5', label: 'Certificat / Attestation', color: '#dc2626' },
+                };
+                docsListEl.innerHTML = formDocs.map(doc => {
+                    const dt = docTypeMap[doc.type] || { icon: '\uD83D\uDCD1', label: doc.type, color: '#0284c7' };
+                    return '<a href="#" onclick="event.preventDefault(); CRMApp.openDocument(' + formation.id + ', \'' + doc.type + '\')" style="display:flex;align-items:center;gap:0.75rem;padding:0.75rem 1rem;background:var(--gray-50);border-radius:var(--radius-md);text-decoration:none;color:var(--gray-900);margin-bottom:0.5rem;cursor:pointer;"><span style="font-size:1.5rem;">' + dt.icon + '</span><div style="flex:1;"><div style="font-weight:500;">' + (doc.name || dt.label) + '</div><div style="font-size:0.75rem;color:' + dt.color + ';">' + dt.label + '</div></div></a>';
+                }).join('');
+            }
+        }
+
+        // Remplir la section contrat
+        const contratEl = document.getElementById('formateur-contrat-content');
+        if (contratEl) {
+            const contrat = (formation.formation_documents || []).find(d => d.type === 'contrat_sous_traitance');
+            if (contrat) {
+                contratEl.innerHTML = '<a href="#" onclick="event.preventDefault(); CRMApp.openDocument(' + formation.id + ', \'contrat_sous_traitance\')" style="display:flex;align-items:center;gap:0.75rem;padding:0.75rem 1rem;background:var(--gray-50);border-radius:var(--radius-md);text-decoration:none;color:var(--gray-900);cursor:pointer;"><span style="font-size:1.5rem;">\uD83D\uDCDD</span><div style="flex:1;"><div style="font-weight:500;">' + (contrat.name || 'Contrat sous-traitance') + '</div><div style="font-size:0.75rem;color:#b45309;">Contrat sous-traitance</div></div></a>';
+            } else {
+                contratEl.innerHTML = '<p style="color:var(--gray-400);font-size:0.85rem;padding:0.5rem;">Contrat non encore g\u00E9n\u00E9r\u00E9 par l\'administratrice.</p>';
+            }
+        }
     },
 
     switchMissionTab(tabName) {
