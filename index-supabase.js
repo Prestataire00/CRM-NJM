@@ -5541,7 +5541,7 @@ const DOC_CONFIGS = {
                 formation_name: f.formation_name || '',
                 date: f.start_date ? new Date(f.start_date).toLocaleDateString('fr-FR') : '',
                 training_location: f.training_location || '',
-                _learners: learnersData.map(l => ({ name: PdfGenerator.getLearnerName(l), hours: l.hours || '' })).filter(l => l.name),
+                _learners: learnersData.map(l => ({ name: PdfGenerator.getLearnerName(l), hours: l.hours || f.hours_per_learner || '' })).filter(l => l.name),
             };
             return vars;
         },
