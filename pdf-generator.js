@@ -686,7 +686,8 @@ const PdfGenerator = {
             const Docxtemplater = window.docxtemplater;
             const doc = new Docxtemplater(zip, {
                 paragraphLoop: true,
-                linebreaks: true
+                linebreaks: true,
+                nullGetter: () => '',
             });
 
             // 2. Préparer les variables
@@ -716,7 +717,7 @@ const PdfGenerator = {
             const today = new Date().toLocaleDateString('fr-FR');
 
             // 3. Remplir le template
-            doc.render({
+            const variables = {
                 company_name: formation.company_name || formation.client_name || '',
                 company_address: formation.company_address || '',
                 company_postal_code: formation.company_postal_code || '',
@@ -734,7 +735,18 @@ const PdfGenerator = {
                 learners: learnersList,
                 total_amount: String(formation.total_amount || 0),
                 signature_date: today,
-            });
+            };
+
+            try {
+                doc.render(variables);
+            } catch (e) {
+                if (e.properties && e.properties.errors) {
+                    e.properties.errors.forEach(err => {
+                        console.error('Docxtemplater error:', err.properties);
+                    });
+                }
+                throw e;
+            }
 
             // 4. Générer et télécharger le .docx
             const output = doc.getZip().generate({
