@@ -5904,6 +5904,23 @@ const DocumentPreview = {
                 f.learners_data = learnersData;
             }
 
+            // Injecter les apprenants dynamiques (feuille de presence)
+            const learnerKeys = Object.keys(vars).filter(k => k.match(/^learner_\d+$/) && vars[k]);
+            if (learnerKeys.length > 0) {
+                const newLearners = learnerKeys.map(k => {
+                    const idx = k.replace('learner_', '');
+                    const parts = vars[k].split(' ');
+                    return {
+                        first_name: parts[0] || '',
+                        last_name: parts.slice(1).join(' ') || '',
+                        hours: (vars[`hours_${idx}`] || '').replace('h', ''),
+                    };
+                }).filter(l => l.first_name || l.last_name);
+                if (newLearners.length > 0) {
+                    f.learners_data = newLearners;
+                }
+            }
+
             // Appeler le bon generateur PDF selon le type
             const generators = {
                 convention: 'generateConvention',

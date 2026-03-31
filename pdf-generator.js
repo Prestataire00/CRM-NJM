@@ -1059,14 +1059,24 @@ const PdfGenerator = {
                     y += rowHeight;
                 }
 
-                // Zone signature formatrice (dans le tableau)
+                // Zone signature formatrice (dans le tableau, avec colonnes)
+                const sigHeight = 30;
                 doc.setDrawColor(...pinkColor);
-                doc.rect(startX, y, totalWidth, 30);
+                doc.rect(startX, y, totalWidth, sigHeight);
+                // Separateurs de colonnes
+                xPos = startX + colWidths[0];
+                doc.line(xPos, y, xPos, y + sigHeight);
+                xPos += colWidths[1];
+                doc.line(xPos, y, xPos, y + sigHeight);
+                xPos += colWidths[2];
+                doc.line(xPos, y, xPos, y + sigHeight);
+                // Texte dans la 1ere colonne
                 doc.setFontSize(9);
                 doc.setFont('helvetica', 'bold');
+                doc.setTextColor(...this.COLORS.darkGray);
                 doc.text('Nathalie JOULIE-MORAND', startX + 3, y + 6);
                 doc.text('Formatrice', startX + 3, y + 11);
-                y += 35;
+                y += sigHeight + 5;
 
                 // Texte règlement intérieur
                 doc.setFontSize(8);
