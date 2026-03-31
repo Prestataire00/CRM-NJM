@@ -302,7 +302,7 @@ const SupabaseData = {
             return { success: true, data };
         } catch (error) {
             console.error('Error updating formation:', error);
-            return { success: false, message: 'Erreur lors de la mise à jour de la formation.' };
+            return { success: false, message: error.message || 'Erreur lors de la mise à jour de la formation.' };
         }
     },
 

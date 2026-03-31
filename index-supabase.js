@@ -5985,7 +5985,7 @@ const DocumentPreview = {
             };
 
             Object.entries(vars).forEach(([key, value]) => {
-                if (mapping[key] && value !== undefined) {
+                if (mapping[key] && value !== undefined && !key.startsWith('_')) {
                     updates[mapping[key]] = value;
                 }
             });
@@ -5995,7 +5995,19 @@ const DocumentPreview = {
                 return;
             }
 
-            const result = await SupabaseData.updateFormation(this.currentFormationId, updates);
+            // Sauvegarder — retirer les colonnes inexistantes en cas d'erreur
+            let result = await SupabaseData.updateFormation(this.currentFormationId, updates);
+            let retries = 0;
+            while (!result.success && result.message && retries < 5) {
+                const match = result.message.match(/column "([^"]+)"/);
+                if (!match) break;
+                console.warn('Colonne inexistante, retrait:', match[1]);
+                delete updates[match[1]];
+                if (Object.keys(updates).length === 0) break;
+                result = await SupabaseData.updateFormation(this.currentFormationId, updates);
+                retries++;
+            }
+
             if (result.success) {
                 showToast('Modifications enregistr\u00E9es !', 'success');
                 CRMApp.loadFormations();
