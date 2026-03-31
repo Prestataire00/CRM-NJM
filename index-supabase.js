@@ -5527,18 +5527,11 @@ const DOC_CONFIGS = {
     attendance_sheet: {
         title: 'Feuille de pr\u00E9sence',
         template: 'feuille_presence_template.docx',
+        dynamicLearners: true,
         fields: [
             { key: 'formation_name', label: 'Titre formation', type: 'input' },
             { key: 'date', label: 'Date', type: 'input' },
             { key: 'training_location', label: 'Lieu', type: 'input' },
-            { key: 'learner_1', label: 'Apprenant 1', type: 'input' },
-            { key: 'learner_2', label: 'Apprenant 2', type: 'input' },
-            { key: 'learner_3', label: 'Apprenant 3', type: 'input' },
-            { key: 'learner_4', label: 'Apprenant 4', type: 'input' },
-            { key: 'learner_5', label: 'Apprenant 5', type: 'input' },
-            { key: 'learner_6', label: 'Apprenant 6', type: 'input' },
-            { key: 'learner_7', label: 'Apprenant 7', type: 'input' },
-            { key: 'learner_8', label: 'Apprenant 8', type: 'input' },
         ],
         prepareVars(f) {
             const learnersData = PdfGenerator.parseLearners(f);
@@ -5546,12 +5539,8 @@ const DOC_CONFIGS = {
                 formation_name: f.formation_name || '',
                 date: f.start_date ? new Date(f.start_date).toLocaleDateString('fr-FR') : '',
                 training_location: f.training_location || '',
+                _learners: learnersData.map(l => PdfGenerator.getLearnerName(l)).filter(n => n),
             };
-            for (let i = 1; i <= 8; i++) {
-                const l = learnersData[i - 1];
-                vars[`learner_${i}`] = l ? PdfGenerator.getLearnerName(l) : '';
-                vars[`hours_${i}`] = l && l.hours ? `${l.hours}h` : '';
-            }
             return vars;
         },
     },
@@ -5661,6 +5650,38 @@ const DocumentPreview = {
                 container.appendChild(wrapper);
             });
 
+            // Apprenants dynamiques (feuille de presence)
+            if (config.dynamicLearners) {
+                const learnersSection = document.createElement('div');
+                learnersSection.style.gridColumn = '1 / -1';
+                learnersSection.id = 'doc-preview-learners';
+
+                const learnersTitle = document.createElement('div');
+                learnersTitle.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;';
+                learnersTitle.innerHTML = '<label style="font-size: 0.8rem; font-weight: 600; color: var(--gray-600);">Apprenants</label>';
+                const addBtn = document.createElement('button');
+                addBtn.type = 'button';
+                addBtn.textContent = '+ Ajouter un apprenant';
+                addBtn.style.cssText = 'padding: 0.3rem 0.75rem; background: var(--primary-orange, #E36A3A); color: white; border: none; border-radius: var(--radius-md); font-size: 0.8rem; font-weight: 600; cursor: pointer;';
+                addBtn.onclick = () => DocumentPreview.addLearnerRow();
+                learnersTitle.appendChild(addBtn);
+                learnersSection.appendChild(learnersTitle);
+
+                const learnersList = document.createElement('div');
+                learnersList.id = 'doc-preview-learners-list';
+                learnersList.style.cssText = 'display: flex; flex-direction: column; gap: 0.4rem;';
+                learnersSection.appendChild(learnersList);
+
+                container.appendChild(learnersSection);
+
+                // Ajouter les apprenants existants (minimum 1)
+                const existingLearners = vars._learners || [];
+                const count = Math.max(existingLearners.length, 1);
+                for (let i = 0; i < count; i++) {
+                    this.addLearnerRow(existingLearners[i] || '');
+                }
+            }
+
             // Titre + ouvrir modal
             document.getElementById('doc-preview-title').textContent = config.title;
             document.getElementById('documentPreviewModal').style.display = 'flex';
@@ -5669,6 +5690,32 @@ const DocumentPreview = {
             console.error('Erreur DocumentPreview.open:', err);
             showToast('Erreur: ' + err.message, 'error');
         }
+    },
+
+    addLearnerRow(name) {
+        const list = document.getElementById('doc-preview-learners-list');
+        if (!list) return;
+
+        const row = document.createElement('div');
+        row.style.cssText = 'display: flex; gap: 0.4rem; align-items: center;';
+        row.classList.add('doc-learner-row');
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = name || '';
+        input.placeholder = 'Nom et pr\u00E9nom';
+        input.classList.add('doc-learner-input');
+        input.style.cssText = 'flex: 1; padding: 0.5rem; border: 1px solid var(--gray-300); border-radius: var(--radius-md); font-size: 0.85rem;';
+
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.textContent = '\u00D7';
+        removeBtn.style.cssText = 'width: 28px; height: 28px; background: var(--gray-200); border: none; border-radius: var(--radius-md); font-size: 1.1rem; cursor: pointer; color: var(--gray-600); display: flex; align-items: center; justify-content: center;';
+        removeBtn.onclick = () => row.remove();
+
+        row.appendChild(input);
+        row.appendChild(removeBtn);
+        list.appendChild(row);
     },
 
     close() {
@@ -5689,6 +5736,19 @@ const DocumentPreview = {
         document.querySelectorAll('#doc-preview-fields .doc-preview-readonly').forEach(el => {
             values[el.dataset.key] = el.textContent || '';
         });
+        // Dynamic learners
+        const learnerInputs = document.querySelectorAll('#doc-preview-learners-list .doc-learner-input');
+        if (learnerInputs.length > 0) {
+            learnerInputs.forEach((input, i) => {
+                values[`learner_${i + 1}`] = input.value || '';
+                values[`hours_${i + 1}`] = '';
+            });
+            // Vider les slots restants dans le template (jusqu'a 20)
+            for (let i = learnerInputs.length + 1; i <= 20; i++) {
+                values[`learner_${i}`] = '';
+                values[`hours_${i}`] = '';
+            }
+        }
         return values;
     },
 

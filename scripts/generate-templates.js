@@ -450,7 +450,7 @@ async function generateFeuillePresence() {
                     headerCell('Nombre d\'heures par\napprenant', colW[3]),
                 ],
             }),
-            ...Array.from({ length: 8 }, (_, i) => learnerRow(i + 1)),
+            ...Array.from({ length: 20 }, (_, i) => learnerRow(i + 1)),
             // Signature row
             new TableRow({
                 height: { value: 1200, rule: 'atLeast' },
