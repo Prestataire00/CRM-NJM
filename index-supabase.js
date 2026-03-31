@@ -1709,19 +1709,18 @@ const CRMApp = {
             if (error) throw error;
 
             if (typeof PdfGenerator !== 'undefined') {
-                const result = await PdfGenerator.generateConvention(data);
+                const result = await PdfGenerator.generateConventionDocx(data);
 
                 if (result && result.success) {
                     const docData = await this._uploadAndSaveDoc(id, result, 'convention');
 
                     if (docData) {
-                        showToast('Convention créée !', 'success');
                         addNotification('convention', `Convention générée — ${data.company_name || data.client_name || ''}`);
                         this.loadFormations();
                     }
                 }
             } else {
-                showToast("Le service de génération PDF n'est pas disponible", 'error');
+                showToast("Le service de génération n'est pas disponible", 'error');
             }
         } catch (error) {
             console.error('Erreur lors de la récupération de la formation:', error);

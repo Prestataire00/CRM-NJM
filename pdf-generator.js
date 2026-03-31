@@ -401,6 +401,7 @@ const PdfGenerator = {
     async generateConvention(formation) {
         try {
             await this.loadLogo();
+            await this.loadSignature();
             const doc = this.createDoc();
             const margin = 20;
             const maxW = 170;
@@ -502,7 +503,11 @@ const PdfGenerator = {
             doc.text(`Convention de formation : ${formation.formation_name || ''}`, 105, y, { align: 'center' });
             y += 8;
 
-            // Bullet points
+            // Bullet points (ordre conforme au modèle de référence)
+            y = this._writeBullet(doc, margin, y, 'Objectifs:', formation.objectives || 'RAS', maxW);
+            y = this._writeBullet(doc, margin, y, 'Type d\'action de formation', '(au sens de l\'article L. 900-2 du Code du travail): Acquisition et entretien des connaissances et mise en parallèle avec l\'activité.', maxW);
+            y = this._writeBullet(doc, margin, y, 'Contenus:', formation.module_1 || formation.program_summary || 'RAS', maxW);
+            y = this._writeBullet(doc, margin, y, 'Méthodes et moyens pédagogiques:', formation.methods_tools || 'RAS', maxW);
             y = this._writeBullet(doc, margin, y, 'Formateur:', this.getFormateurText(formation), maxW);
             y = this._writeBullet(doc, margin, y, 'Date(s):', dates, maxW);
             y = this._writeBullet(doc, margin, y, 'Durée:', `${formation.hours_per_learner || 0} heures.`, maxW);
@@ -529,22 +534,28 @@ const PdfGenerator = {
 
             doc.setFont('helvetica', 'normal');
             doc.text('Objectifs :', margin, y); y += 4;
-            y = this._writeText(doc, margin + 3, y, `-   ${formation.objectives || 'RAS'}`, { maxWidth: maxW - 3 });
+            (formation.objectives || 'RAS').split('\n').filter(l => l.trim()).forEach(line => {
+                y = this._writeText(doc, margin + 3, y, `-   ${line.trim()}`, { maxWidth: maxW - 3 });
+            });
             y += 2;
 
             doc.setFont('helvetica', 'normal');
             doc.text('Contenus :', margin, y); y += 4;
-            y = this._writeText(doc, margin + 3, y, `-   ${formation.module_1 || 'RAS'}`, { maxWidth: maxW - 3 });
+            (formation.module_1 || 'RAS').split('\n').filter(l => l.trim()).forEach(line => {
+                y = this._writeText(doc, margin + 3, y, `-   ${line.trim()}`, { maxWidth: maxW - 3 });
+            });
             y += 2;
 
             doc.setFont('helvetica', 'normal');
             doc.text('Modalités :', margin, y); y += 4;
-            y = this._writeText(doc, margin + 3, y, `-   ${formation.methods_tools || 'RAS'}`, { maxWidth: maxW - 3 });
+            (formation.methods_tools || 'RAS').split('\n').filter(l => l.trim()).forEach(line => {
+                y = this._writeText(doc, margin + 3, y, `-   ${line.trim()}`, { maxWidth: maxW - 3 });
+            });
             y += 2;
 
             doc.setFont('helvetica', 'normal');
             doc.text('Mode d\'évaluation des acquis :', margin, y); y += 4;
-            doc.text('-   Questionnaire individuel en ligne', margin + 3, y); y += 8;
+            doc.text('-   Questionnaire individuel en ligne en fin de formation', margin + 3, y); y += 8;
 
             // Article 3
             doc.setFont('helvetica', 'bold');
@@ -555,7 +566,14 @@ const PdfGenerator = {
 
             const amount = formation.total_amount || 0;
             doc.setFont('helvetica', 'normal');
-            y = this._writeText(doc, margin + 8, y, `a) Le client, en contrepartie des actions de formation réalisées, s'engage à verser à l'organisme de formation, une somme correspondant aux frais de formation de : ${amount} € nets. S'y ajoutent des frais de déplacement.`, { maxWidth: maxW - 8 });
+            y = this._writeText(doc, margin + 8, y, 'a) Le client, en contrepartie des actions de formation réalisées, s\'engage à verser à l\'organisme de formation, une somme correspondant aux frais de formation de :', { maxWidth: maxW - 8 });
+            // Montant en bold sur la ligne suivante
+            doc.setFont('helvetica', 'bold');
+            doc.text(`${amount} € nets.`, margin + 8, y);
+            const amountW = doc.getTextWidth(`${amount} € nets. `);
+            doc.setFont('helvetica', 'normal');
+            doc.text('S\'y ajoutent des frais de déplacement.', margin + 8 + amountW, y);
+            y += 4.5;
             y += 1;
             y = this._writeText(doc, margin + 8, y, 'b) L\'organisme de formation, en contrepartie des sommes reçues, s\'engage à réaliser toutes les actions prévues dans le cadre de la présente convention ainsi qu\'à fournir tout document et pièce de nature à justifier la réalité et la validité des dépenses de formation engagées à ce titre.', { maxWidth: maxW - 8 });
             y += 1;
@@ -607,11 +625,15 @@ const PdfGenerator = {
             doc.text('Pour le client,', margin + 10, y);
             doc.text('Pour l\'organisme de formation,', 120, y);
             y += 5;
-            doc.text('Nathalie JOULIE MORAND, gérante', 120, y);
-            y += 8;
             doc.text(formation.company_director_name || '', margin + 10, y);
-            y += 4;
+            doc.text('Nathalie JOULIE MORAND, gérante', 120, y);
+            y += 5;
             doc.text(formation.company_name || formation.client_name || '', margin + 10, y);
+
+            // Image signature sous le nom de la gérante
+            if (this.SIGNATURE_DATA) {
+                doc.addImage(this.SIGNATURE_DATA, 'PNG', 120, y + 2, 40, 20);
+            }
 
             this.addNJMFooter(doc);
 
@@ -624,6 +646,97 @@ const PdfGenerator = {
         } catch (error) {
             console.error('Erreur génération convention:', error);
             alert('Erreur: ' + error.message);
+            return { success: false, message: error.message };
+        }
+    },
+
+    // ==================== CONVENTION DOCX (docxtemplater) ====================
+
+    async generateConventionDocx(formation) {
+        try {
+            // 1. Charger le template depuis Supabase Storage
+            const { data, error } = await supabaseClient.storage
+                .from('documents')
+                .download('templates/convention_template.docx');
+
+            if (error) throw new Error('Template introuvable dans Supabase Storage : ' + error.message);
+
+            const arrayBuffer = await data.arrayBuffer();
+            const zip = new PizZip(arrayBuffer);
+            const doc = new window.docxtemplater(zip, {
+                paragraphLoop: true,
+                linebreaks: true
+            });
+
+            // 2. Préparer les variables
+            const startDate = formation.start_date ? new Date(formation.start_date).toLocaleDateString('fr-FR') : '';
+            const endDate = formation.end_date ? new Date(formation.end_date).toLocaleDateString('fr-FR') : '';
+
+            let dates = formation.custom_dates || '';
+            if (!dates) {
+                let sheets = formation.attendance_sheets || [];
+                if (typeof sheets === 'string') {
+                    try { sheets = JSON.parse(sheets); } catch (e) { sheets = []; }
+                }
+                if (sheets.length > 0) {
+                    const realDates = sheets
+                        .filter(s => s.date)
+                        .map(s => new Date(s.date).toLocaleDateString('fr-FR'))
+                        .sort((a, b) => new Date(a.split('/').reverse().join('-')) - new Date(b.split('/').reverse().join('-')));
+                    if (realDates.length > 0) dates = realDates.join(', ');
+                }
+                if (!dates) {
+                    dates = startDate === endDate ? startDate : `${startDate} au ${endDate}`;
+                }
+            }
+
+            const learnersData = this.parseLearners(formation);
+            const learnersList = learnersData.map(l => this.getLearnerName(l)).filter(n => n).join(', ');
+            const today = new Date().toLocaleDateString('fr-FR');
+
+            // 3. Remplir le template
+            doc.render({
+                company_name: formation.company_name || formation.client_name || '',
+                company_address: formation.company_address || '',
+                company_postal_code: formation.company_postal_code || '',
+                company_director_name: formation.company_director_name || '',
+                company_director_title: formation.company_director_title || 'dirigeant(e)',
+                formation_name: formation.formation_name || '',
+                objectives: (formation.objectives || '').replace(/\n/g, '\n'),
+                module_content: formation.module_1 || '',
+                methods: formation.methods_tools || '',
+                trainer: this.getFormateurText(formation),
+                dates: dates,
+                duration: `${formation.hours_per_learner || formation.total_hours || 0}`,
+                training_location: formation.training_location || '',
+                learner_count: String(learnersData.length || 1),
+                learners: learnersList,
+                total_amount: String(formation.total_amount || 0),
+                signature_date: today,
+            });
+
+            // 4. Générer et télécharger le .docx
+            const output = doc.getZip().generate({
+                type: 'blob',
+                mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            });
+
+            const fileName = `Convention - ${formation.company_name || formation.client_name || 'Client'} - ${formation.formation_name || 'Formation'}`;
+
+            const url = URL.createObjectURL(output);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${fileName}.docx`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            showToast('Convention générée (.docx) !', 'success');
+            return { success: true, name: fileName };
+        } catch (error) {
+            console.error('Erreur génération convention docx:', error);
+            showToast('Erreur génération convention : ' + error.message, 'error');
             return { success: false, message: error.message };
         }
     },
