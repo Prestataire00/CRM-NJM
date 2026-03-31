@@ -803,9 +803,14 @@ const PdfGenerator = {
 
             const startDate = this.formatDate(formation.start_date);
             const endDate = this.formatDate(formation.end_date);
-            const dates = formation.start_date && formation.end_date ? `du ${startDate} au ${endDate}` : '';
+            const dates = formation.custom_dates || (formation.start_date && formation.end_date ? `du ${startDate} au ${endDate}` : '');
             const totalHours = parseFloat(formation.hours_per_learner) || 0;
             const clientName = formation.company_name || formation.client_name || '';
+            const subName = `${formation.subcontractor_first_name || ''} ${formation.subcontractor_last_name || ''}`.trim() || 'Sous-traitant';
+            const subAddress = formation.subcontractor_address || '';
+            const subSiret = formation.subcontractor_siret || '';
+            const subNda = formation.subcontractor_nda || '';
+            const signatureDate = new Date().toLocaleDateString('fr-FR');
 
             // ===== PAGE 1 =====
             let y = this.addNJMHeader(doc);
@@ -831,9 +836,9 @@ const PdfGenerator = {
             doc.setFont('helvetica', 'bold');
             doc.text('Et', margin, y); y += 7;
 
-            // 2 - Sous-traitant (Quentin Durand hardcodé)
+            // 2 - Sous-traitant (dynamique)
             doc.setFont('helvetica', 'normal');
-            y = this._writeText(doc, margin, y, '2 – Quentin DURAND, 49, rue de la vieille gare 12 850 Onet le Château 89868143200016, organisme de formation enregistré sous le numéro 76120102812 auprès du Préfet de la région Occitanie,', { maxWidth: maxW });
+            y = this._writeText(doc, margin, y, `2 \u2013 ${subName}, ${subAddress} ${subSiret}, organisme de formation enregistr\u00E9 sous le num\u00E9ro ${subNda} aupr\u00E8s du Pr\u00E9fet de la r\u00E9gion Occitanie,`, { maxWidth: maxW });
             doc.text('ci-après « le sous-traitant »', margin, y); y += 8;
 
             doc.text('Il a été convenu ce qui suit :', margin, y); y += 7;
@@ -850,9 +855,7 @@ const PdfGenerator = {
             doc.text('Article 2 : Objet du contrat', margin, y); y += 6;
             doc.setFont('helvetica', 'normal');
             doc.text(`La formation, objet du contrat, est la suivante : « ${formation.formation_name || ''} », pour ${clientName}`, margin, y, { maxWidth: maxW }); y += 5;
-            doc.setTextColor(...this.COLORS.orange);
             doc.text(`Date(s) : ${dates}`, margin, y); y += 5;
-            doc.setTextColor(...this.COLORS.darkGray);
             doc.text(`Heures :  ${totalHours}h`, margin, y); y += 7;
 
             // Article 3
@@ -928,12 +931,12 @@ const PdfGenerator = {
             y += 6;
 
             // Signatures
-            doc.text('Fait à Cassan, le', margin, y); y += 10;
+            doc.text(`Fait \u00E0 Cassan, le ${signatureDate}`, margin, y); y += 10;
             doc.text('Le donneur d\'ordre,', margin, y);
             doc.text('Le sous-traitant,', 120, y); y += 5;
             doc.setFont('helvetica', 'bold');
             doc.text('Nathalie JOULIE MORAND', margin, y);
-            doc.text('Quentin DURAND', 120, y); y += 8;
+            doc.text(subName, 120, y); y += 8;
             doc.setFont('helvetica', 'normal');
             doc.text('NJM Conseil', margin, y);
 

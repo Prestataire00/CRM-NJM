@@ -5982,6 +5982,16 @@ const DocumentPreview = {
             if (vars.dates) f.custom_dates = vars.dates;
             if (vars.price) { f.total_amount = vars.price; f.price = vars.price; }
             if (vars.total_amount) { f.total_amount = vars.total_amount; f.price = vars.total_amount; }
+            // Sous-traitant
+            if (vars.trainer_name) {
+                const parts = vars.trainer_name.split(' ');
+                f.subcontractor_first_name = parts[0] || '';
+                f.subcontractor_last_name = parts.slice(1).join(' ') || '';
+            }
+            if (vars.trainer_address) f.subcontractor_address = vars.trainer_address;
+            if (vars.trainer_siret) f.subcontractor_siret = vars.trainer_siret;
+            if (vars.trainer_nda) f.subcontractor_nda = vars.trainer_nda;
+            if (vars.signature_date) f.signature_date = vars.signature_date;
 
             // Injecter les acquis modifies dans les learners_data
             if (vars._acquis) {
