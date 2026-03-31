@@ -654,123 +654,80 @@ const PdfGenerator = {
 
     async generateConventionDocx(formation) {
         try {
-            // Chargement dynamique PizZip + docxtemplater
+            // Charger PizZip si pas disponible
             if (!window.PizZip) {
                 await new Promise((resolve, reject) => {
                     const s = document.createElement('script');
                     s.src = 'https://unpkg.com/pizzip@3.1.4/dist/pizzip.js';
-                    s.onload = resolve;
-                    s.onerror = reject;
-                    document.head.appendChild(s);
-                });
-            }
-            if (!window.docxtemplater) {
-                await new Promise((resolve, reject) => {
-                    const s = document.createElement('script');
-                    s.src = 'https://unpkg.com/docxtemplater@3.37.12/build/docxtemplater.js';
-                    s.onload = resolve;
-                    s.onerror = reject;
+                    s.onload = resolve; s.onerror = reject;
                     document.head.appendChild(s);
                 });
             }
 
-            // 1. Charger le template depuis Supabase Storage
+            // Charger le template depuis Supabase Storage
             const { data, error } = await supabaseClient.storage
                 .from('templates')
                 .download('convention_template.docx');
-
-            if (error) throw new Error('Template introuvable dans Supabase Storage : ' + error.message);
+            if (error) throw new Error('Template non trouvé : ' + error.message);
 
             const arrayBuffer = await data.arrayBuffer();
-            const zip = new PizZip(arrayBuffer);
-            const Docxtemplater = window.docxtemplater;
-            const doc = new Docxtemplater(zip, {
-                paragraphLoop: true,
-                linebreaks: true,
-                nullGetter: () => '',
-            });
+            const zip = new window.PizZip(arrayBuffer);
 
-            // 2. Préparer les variables
+            // Lire le XML
+            let xml = zip.file('word/document.xml').asText();
+
+            // Préparer les variables
             const startDate = formation.start_date ? new Date(formation.start_date).toLocaleDateString('fr-FR') : '';
             const endDate = formation.end_date ? new Date(formation.end_date).toLocaleDateString('fr-FR') : '';
-
-            let dates = formation.custom_dates || '';
-            if (!dates) {
-                let sheets = formation.attendance_sheets || [];
-                if (typeof sheets === 'string') {
-                    try { sheets = JSON.parse(sheets); } catch (e) { sheets = []; }
-                }
-                if (sheets.length > 0) {
-                    const realDates = sheets
-                        .filter(s => s.date)
-                        .map(s => new Date(s.date).toLocaleDateString('fr-FR'))
-                        .sort((a, b) => new Date(a.split('/').reverse().join('-')) - new Date(b.split('/').reverse().join('-')));
-                    if (realDates.length > 0) dates = realDates.join(', ');
-                }
-                if (!dates) {
-                    dates = startDate === endDate ? startDate : `${startDate} au ${endDate}`;
-                }
-            }
-
+            const dates = formation.custom_dates || (startDate === endDate ? startDate : `${startDate} au ${endDate}`);
             const learnersData = this.parseLearners(formation);
-            const learnersList = learnersData.map(l => this.getLearnerName(l)).filter(n => n).join(', ');
+            const learnersList = learnersData.map(l => `${l.first_name || ''} ${l.last_name || ''}`.trim()).join(', ');
             const today = new Date().toLocaleDateString('fr-FR');
 
-            // 3. Remplir le template
-            const variables = {
+            const vars = {
                 company_name: formation.company_name || formation.client_name || '',
-                company_address: formation.company_address || '',
-                company_postal_code: formation.company_postal_code || '',
-                company_director_name: formation.company_director_name || '',
-                company_director_title: formation.company_director_title || 'dirigeant(e)',
+                company_address: formation.client_address || '',
+                company_postal_code: formation.client_postal_city || '',
+                company_director_title: formation.contact_title || 'M.',
+                company_director_name: formation.contact_name || '',
                 formation_name: formation.formation_name || '',
-                objectives: (formation.objectives || '').replace(/\n/g, '\n'),
+                objectives: (formation.objectives || '').replace(/\n/g, ' '),
                 module_content: formation.module_1 || '',
                 methods: formation.methods_tools || '',
-                trainer: this.getFormateurText(formation),
+                trainer: formation.trainer_name || 'Mme Nathalie JOULIE MORAND',
                 dates: dates,
-                duration: `${formation.hours_per_learner || formation.total_hours || 0}`,
+                duration: String(formation.hours_per_learner || formation.total_hours || ''),
                 training_location: formation.training_location || '',
                 learner_count: String(learnersData.length || 1),
                 learners: learnersList,
-                total_amount: String(formation.total_amount || 0),
+                total_amount: String(formation.price || ''),
                 signature_date: today,
             };
 
-            try {
-                doc.render(variables);
-            } catch (e) {
-                if (e.properties && e.properties.errors) {
-                    e.properties.errors.forEach(err => {
-                        console.error('Docxtemplater error:', err.properties);
-                    });
-                }
-                throw e;
-            }
-
-            // 4. Générer et télécharger le .docx
-            const output = doc.getZip().generate({
-                type: 'blob',
-                mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            // Remplacer toutes les variables {{key}} par leur valeur
+            Object.entries(vars).forEach(([key, value]) => {
+                xml = xml.split(`{{${key}}}`).join(value);
             });
 
-            const fileName = `Convention - ${formation.company_name || formation.client_name || 'Client'} - ${formation.formation_name || 'Formation'}`;
+            // Remettre le XML modifié dans le zip
+            zip.file('word/document.xml', xml);
 
-            const url = URL.createObjectURL(output);
+            // Générer et télécharger
+            const blob = zip.generate({ type: 'blob', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+            const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `${fileName}.docx`;
-            document.body.appendChild(a);
+            a.download = `Convention - ${formation.formation_name || 'Formation'} - ${formation.client_name || 'Client'}.docx`;
             a.click();
-            document.body.removeChild(a);
             URL.revokeObjectURL(url);
 
             showToast('Convention générée (.docx) !', 'success');
-            return { success: true, name: fileName };
+            addNotification('convention', `Convention générée — ${formation.company_name || formation.client_name || ''}`);
+            return { success: true };
         } catch (error) {
             console.error('Erreur génération convention docx:', error);
-            showToast('Erreur génération convention : ' + error.message, 'error');
-            return { success: false, message: error.message };
+            showToast('Erreur : ' + error.message, 'error');
+            return { success: false };
         }
     },
 
