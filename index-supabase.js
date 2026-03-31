@@ -5601,6 +5601,23 @@ const DocumentPreview = {
                 .single();
             if (error) throw error;
 
+            // Fetch client pour pre-remplir les infos manquantes
+            if (data.client_id) {
+                const { data: client } = await supabaseClient
+                    .from('clients')
+                    .select('*')
+                    .eq('id', data.client_id)
+                    .single();
+                if (client) {
+                    if (!data.company_name && !data.client_name) data.company_name = client.company_name || '';
+                    if (!data.company_address && !data.client_address) data.company_address = client.address || client.company_address || '';
+                    if (!data.company_postal_code && !data.client_postal_city) data.company_postal_code = client.postal_code || client.city || '';
+                    if (!data.company_director_name && !data.contact_name) data.company_director_name = client.contact_name || client.director_name || '';
+                    if (!data.company_director_title && !data.contact_title) data.company_director_title = client.contact_title || '';
+                    if (!data.contact_role) data.contact_role = client.contact_role || 'dirigeant';
+                }
+            }
+
             this.currentType = docType;
             this.currentFormationData = data;
             this.currentFormationId = formationId;
@@ -5819,6 +5836,63 @@ const DocumentPreview = {
             }
         } catch (err) {
             console.error('Erreur DocumentPreview.downloadPdf:', err);
+            showToast('Erreur: ' + err.message, 'error');
+        }
+    },
+
+    async saveToDb() {
+        try {
+            if (!this.currentFormationId) return;
+
+            const vars = this.getFormValues();
+            const updates = {};
+
+            // Mapper les champs du formulaire vers les colonnes de la table formations
+            const mapping = {
+                company_name: 'company_name',
+                company_address: 'company_address',
+                company_postal_city: 'company_postal_code',
+                contact_name: 'company_director_name',
+                contact_title: 'company_director_title',
+                contact_role: 'contact_role',
+                formation_name: 'formation_name',
+                objectives: 'objectives',
+                module_content: 'module_1',
+                content: 'module_1',
+                methods: 'methods_tools',
+                training_location: 'training_location',
+                duration: 'hours_per_learner',
+                dates: 'custom_dates',
+                price: 'total_amount',
+                total_amount: 'total_amount',
+                // Fiche peda
+                public: 'target_audience',
+                prerequisites: 'prerequisites',
+                evaluation: 'evaluation_methodology',
+                added_value: 'added_value',
+                access_delays: 'access_delays',
+            };
+
+            Object.entries(vars).forEach(([key, value]) => {
+                if (mapping[key] && value !== undefined) {
+                    updates[mapping[key]] = value;
+                }
+            });
+
+            if (Object.keys(updates).length === 0) {
+                showToast('Rien \u00E0 enregistrer', 'info');
+                return;
+            }
+
+            const result = await SupabaseData.updateFormation(this.currentFormationId, updates);
+            if (result.success) {
+                showToast('Modifications enregistr\u00E9es !', 'success');
+                CRMApp.loadFormations();
+            } else {
+                showToast('Erreur: ' + result.message, 'error');
+            }
+        } catch (err) {
+            console.error('Erreur DocumentPreview.saveToDb:', err);
             showToast('Erreur: ' + err.message, 'error');
         }
     },
