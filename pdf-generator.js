@@ -663,7 +663,8 @@ const PdfGenerator = {
 
             const arrayBuffer = await data.arrayBuffer();
             const zip = new PizZip(arrayBuffer);
-            const doc = new window.docxtemplater(zip, {
+            const Docxtemplater = window.docxtemplater || window.Docxtemplater;
+            const doc = new Docxtemplater(zip, {
                 paragraphLoop: true,
                 linebreaks: true
             });
