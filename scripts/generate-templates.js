@@ -48,7 +48,7 @@ function njmHeader() {
     return [
         new Paragraph({
             children: [
-                new ImageRun({ data: logoBuffer, transformation: { width: 100, height: 58 }, type: 'png' }),
+                new ImageRun({ data: logoBuffer, transformation: { width: 140, height: 81 }, type: 'png' }),
             ],
         }),
         new Paragraph({ alignment: AlignmentType.RIGHT, spacing: { before: 0 }, children: [bold('MARKETING', { size: 13, color: ORANGE })] }),
@@ -104,7 +104,7 @@ function pageProps() {
 // Cachet image run (reuse)
 function cachetImage(w, h) {
     if (!cachetBuffer) return null;
-    return new ImageRun({ data: cachetBuffer, transformation: { width: w || 120, height: h || 85 }, type: 'png' });
+    return new ImageRun({ data: cachetBuffer, transformation: { width: w || 150, height: h || 110 }, type: 'png' });
 }
 
 // Bullet: cercle orange + label orange bold + valeur

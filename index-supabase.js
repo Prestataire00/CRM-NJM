@@ -5672,11 +5672,14 @@ const DOC_CONFIGS = {
         ],
         prepareVars(f) {
             const learnersData = PdfGenerator.parseLearners(f);
+            const totalHours = parseFloat(f.hours_per_learner) || 0;
+            const numDays = parseInt(f.number_of_days) || 1;
+            const hoursPerDay = numDays > 0 ? Math.round(totalHours / numDays) : totalHours;
             const vars = {
                 formation_name: f.formation_name || '',
                 date: f.start_date ? new Date(f.start_date).toLocaleDateString('fr-FR') : '',
                 training_location: f.training_location || '',
-                _learners: learnersData.map(l => ({ name: PdfGenerator.getLearnerName(l), hours: l.hours || f.hours_per_learner || '' })).filter(l => l.name),
+                _learners: learnersData.map(l => ({ name: PdfGenerator.getLearnerName(l), hours: l.hours || String(hoursPerDay) || '' })).filter(l => l.name),
             };
             return vars;
         },
@@ -5687,6 +5690,7 @@ const DOC_CONFIGS = {
         template: 'attestation_template.docx',
         dynamicAcquis: true,
         fields: [
+            { key: 'learner_name', label: 'Nom apprenant', type: 'input' },
             { key: 'company_name', label: 'Entreprise', type: 'input' },
             { key: 'formation_name', label: 'Titre formation', type: 'input' },
             { key: 'objectives', label: 'Objectifs', type: 'textarea' },
@@ -5701,13 +5705,15 @@ const DOC_CONFIGS = {
             const endDate = f.end_date ? new Date(f.end_date).toLocaleDateString('fr-FR') : '';
             const dates = f.custom_dates || (startDate === endDate ? startDate : `du ${startDate} au ${endDate}`);
             const objectives = (f.objectives || '').split(/\n/).map(s => s.trim()).filter(s => s.length > 0);
+            const firstLearner = learnersData[0] || {};
             return {
+                learner_name: PdfGenerator.getLearnerName(firstLearner),
                 company_name: f.company_name || f.client_name || '',
                 formation_name: f.formation_name || '',
                 objectives: f.objectives || '',
                 training_location: f.training_location || '',
                 dates,
-                duration: String(f.hours_per_learner || ''),
+                duration: String(firstLearner.hours || f.hours_per_learner || ''),
                 signature_date: endDate || new Date().toLocaleDateString('fr-FR'),
                 _learners: learnersData.map(l => ({
                     name: PdfGenerator.getLearnerName(l),
@@ -6196,7 +6202,10 @@ const DocumentPreview = {
             // Remplacer les variables
             const vars = this.getFormValues();
             Object.entries(vars).forEach(([key, value]) => {
-                xml = xml.split(`{{${key}}}`).join(value || '');
+                if (key.startsWith('_')) return; // skip internal vars
+                // Convertir les \n en retours a la ligne OOXML
+                let safeValue = (value || '').replace(/\n/g, '</w:t><w:br/><w:t>');
+                xml = xml.split(`{{${key}}}`).join(safeValue);
             });
 
             // Remettre le XML
