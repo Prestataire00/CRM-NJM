@@ -335,9 +335,9 @@ const PdfGenerator = {
             const fileName = `Fiche Pédagogique - ${formation.formation_name || 'Formation'}`;
             const pdfBlob = doc.output('blob');
             const pdfUrl = URL.createObjectURL(pdfBlob);
-            window.open(pdfUrl, '_blank');
+            const a = document.createElement('a'); a.href = pdfUrl; a.download = `${fileName}.pdf`; a.click(); URL.revokeObjectURL(pdfUrl);
 
-            return { success: true, name: fileName, blob: pdfBlob, url: pdfUrl };
+            return { success: true, name: fileName, blob: pdfBlob };
         } catch (error) {
             console.error('Erreur génération fiche pédagogique:', error);
             alert('Erreur: ' + error.message);
@@ -723,9 +723,9 @@ const PdfGenerator = {
             const fileName = `Convention - ${formation.company_name || formation.client_name || 'Client'} - ${formation.formation_name || 'Formation'}`;
             const pdfBlob = doc.output('blob');
             const pdfUrl = URL.createObjectURL(pdfBlob);
-            window.open(pdfUrl, '_blank');
+            const a = document.createElement('a'); a.href = pdfUrl; a.download = `${fileName}.pdf`; a.click(); URL.revokeObjectURL(pdfUrl);
 
-            return { success: true, name: fileName, blob: pdfBlob, url: pdfUrl };
+            return { success: true, name: fileName, blob: pdfBlob };
         } catch (error) {
             console.error('Erreur génération convention:', error);
             alert('Erreur: ' + error.message);
@@ -975,9 +975,9 @@ const PdfGenerator = {
             const fileName = `Contrat sous-traitance - ${clientName || 'Client'} - ${formation.formation_name || 'Formation'}`;
             const pdfBlob = doc.output('blob');
             const pdfUrl = URL.createObjectURL(pdfBlob);
-            window.open(pdfUrl, '_blank');
+            const a = document.createElement('a'); a.href = pdfUrl; a.download = `${fileName}.pdf`; a.click(); URL.revokeObjectURL(pdfUrl);
 
-            return { success: true, name: fileName, blob: pdfBlob, url: pdfUrl };
+            return { success: true, name: fileName, blob: pdfBlob };
         } catch (error) {
             console.error('Erreur génération contrat:', error);
             alert('Erreur: ' + error.message);
@@ -1163,9 +1163,9 @@ const PdfGenerator = {
             const fileName = `Feuille de présence - ${formation.formation_name || 'Formation'}`;
             const pdfBlob = doc.output('blob');
             const pdfUrl = URL.createObjectURL(pdfBlob);
-            window.open(pdfUrl, '_blank');
+            const a = document.createElement('a'); a.href = pdfUrl; a.download = `${fileName}.pdf`; a.click(); URL.revokeObjectURL(pdfUrl);
 
-            return { success: true, name: fileName, blob: pdfBlob, url: pdfUrl };
+            return { success: true, name: fileName, blob: pdfBlob };
         } catch (error) {
             console.error('Erreur génération feuille de présence:', error);
             alert('Erreur: ' + error.message);
@@ -1440,12 +1440,12 @@ const PdfGenerator = {
                 this.addNJMFooter(doc);
             });
 
-            const fileName = `Certificat - ${formation.formation_name || 'Formation'} - ${formation.client_name || 'Client'}`;
+            const fileName = `Certificat - ${formation.formation_name || 'Formation'} - ${formation.company_name || formation.client_name || 'Client'}`;
             const pdfBlob = doc.output('blob');
             const pdfUrl = URL.createObjectURL(pdfBlob);
-            window.open(pdfUrl, '_blank');
+            const a = document.createElement('a'); a.href = pdfUrl; a.download = `${fileName}.pdf`; a.click(); URL.revokeObjectURL(pdfUrl);
 
-            return { success: true, name: fileName, blob: pdfBlob, url: pdfUrl };
+            return { success: true, name: fileName, blob: pdfBlob };
         } catch (error) {
             console.error('Erreur génération certificat:', error);
             alert('Erreur: ' + error.message);
