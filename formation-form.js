@@ -113,6 +113,21 @@ const FormationForm = {
         if (section) section.style.display = mode === 'sous-traitant' ? 'block' : 'none';
     },
 
+    onSubcontractorChange(subId) {
+        const sub = this.subcontractorsData.find(s => s.id === parseInt(subId));
+        if (!sub) return;
+        // Auto-remplir les champs sous-traitant si vides
+        const map = {
+            'subcontractor_address': sub.address || '',
+            'subcontractor_siret': sub.siret || '',
+            'subcontractor_nda': sub.nda || '',
+        };
+        Object.entries(map).forEach(([id, val]) => {
+            const el = document.getElementById(id);
+            if (el && !el.value.trim() && val) el.value = val;
+        });
+    },
+
     onClientChange(clientId) {
         const client = this.clientsData.find(c => c.id === parseInt(clientId));
         if (!client) return;
@@ -229,10 +244,28 @@ const FormationForm = {
 
                 <div id="subcontractor-section" class="form-group form-group-full" style="display: ${showSub ? 'block' : 'none'}; background: #fef3c7; padding: 1rem; border-radius: 8px; border: 1px solid #fcd34d;">
                     <label style="color: #92400e; font-weight: 600;">Sous-traitant *</label>
-                    <select id="subcontractor_id" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px; font-family: inherit; margin-top: 0.5rem;">
+                    <select id="subcontractor_id" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px; font-family: inherit; margin-top: 0.5rem;" onchange="FormationForm.onSubcontractorChange(this.value)">
                         <option value="">S\u00E9lectionnez un sous-traitant...</option>
                         ${subOpts}
                     </select>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 0.75rem;">
+                        <div>
+                            <label style="font-size: 0.8rem; color: #92400e;">Adresse</label>
+                            <input type="text" id="subcontractor_address" value="${f.subcontractor_address || ''}" style="width:100%;padding:0.5rem;border:1px solid var(--gray-300);border-radius:6px;font-size:0.85rem;">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.8rem; color: #92400e;">SIRET</label>
+                            <input type="text" id="subcontractor_siret" value="${f.subcontractor_siret || ''}" style="width:100%;padding:0.5rem;border:1px solid var(--gray-300);border-radius:6px;font-size:0.85rem;">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.8rem; color: #92400e;">N\u00B0 activit\u00E9 (NDA)</label>
+                            <input type="text" id="subcontractor_nda" value="${f.subcontractor_nda || ''}" style="width:100%;padding:0.5rem;border:1px solid var(--gray-300);border-radius:6px;font-size:0.85rem;">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.8rem; color: #92400e;">Prix/jour (\u20AC)</label>
+                            <input type="number" id="subcontractor_price" value="${f.subcontractor_price || '600'}" step="1" min="0" style="width:100%;padding:0.5rem;border:1px solid var(--gray-300);border-radius:6px;font-size:0.85rem;">
+                        </div>
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -301,11 +334,17 @@ const FormationForm = {
                         <input type="text" id="company_director_name" value="${f.company_director_name || ''}">
                     </div>
                     <div class="form-group">
-                        <label>Qualit\u00E9</label>
+                        <label>Civilit\u00E9</label>
                         <select id="company_director_title">
-                            <option value="dirigeant" ${(f.company_director_title || 'dirigeant') === 'dirigeant' ? 'selected' : ''}>Dirigeant</option>
+                            <option value="M." ${(f.company_director_title || '') === 'M.' ? 'selected' : ''}>M.</option>
+                            <option value="Mme" ${f.company_director_title === 'Mme' ? 'selected' : ''}>Mme</option>
+                            <option value="dirigeant" ${f.company_director_title === 'dirigeant' ? 'selected' : ''}>Dirigeant</option>
                             <option value="dirigeante" ${f.company_director_title === 'dirigeante' ? 'selected' : ''}>Dirigeante</option>
                         </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Fonction</label>
+                        <input type="text" id="contact_role" value="${f.contact_role || 'dirigeant'}" placeholder="dirigeant, g\u00E9rant, directeur...">
                     </div>
                     <div class="form-group">
                         <label>E-mail client</label>
@@ -425,7 +464,8 @@ const FormationForm = {
             'formation_type', 'collaboration_mode', 'client_id', 'subcontractor_id',
             'start_date', 'end_date', 'custom_dates', 'training_location', 'number_of_days',
             'hours_per_learner', 'total_amount', 'status',
-            'company_name', 'company_address', 'company_postal_code', 'company_director_name', 'client_email',
+            'company_name', 'company_address', 'company_postal_code', 'company_director_name', 'contact_role', 'client_email',
+            'subcontractor_address', 'subcontractor_siret', 'subcontractor_nda', 'subcontractor_price',
             'target_audience', 'prerequisites', 'objectives', 'module_1', 'content_summary',
             'methods_tools', 'access_delays', 'evaluation_methodology', 'added_value'
         ];
@@ -505,6 +545,10 @@ const FormationForm = {
             client_name: selectedClient ? selectedClient.company_name : '',
             subcontractor_first_name: selectedSub ? selectedSub.first_name : '',
             subcontractor_last_name: selectedSub ? selectedSub.last_name : '',
+            subcontractor_address: document.getElementById('subcontractor_address')?.value || '',
+            subcontractor_siret: document.getElementById('subcontractor_siret')?.value || '',
+            subcontractor_nda: document.getElementById('subcontractor_nda')?.value || '',
+            subcontractor_price: document.getElementById('subcontractor_price')?.value || '600',
             start_date: document.getElementById('start_date').value,
             end_date: document.getElementById('end_date').value,
             custom_dates: document.getElementById('custom_dates').value.trim() || null,
@@ -518,6 +562,7 @@ const FormationForm = {
             company_postal_code: document.getElementById('company_postal_code').value,
             company_director_name: document.getElementById('company_director_name').value,
             company_director_title: document.getElementById('company_director_title').value,
+            contact_role: document.getElementById('contact_role')?.value || 'dirigeant',
             client_email: document.getElementById('client_email').value,
             target_audience: document.getElementById('target_audience').value,
             prerequisites: document.getElementById('prerequisites').value,
