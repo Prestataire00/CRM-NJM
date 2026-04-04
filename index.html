@@ -1152,6 +1152,15 @@
                     Clients
                 </a>
 
+                <a href="#subcontractors" class="nav-item" data-page="subcontractors">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z">
+                        </path>
+                    </svg>
+                    Sous-traitants
+                </a>
+
                 <a href="#veille" class="nav-item" data-page="veille">
                     <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -1587,6 +1596,32 @@
                             </tr>
                         </thead>
                         <tbody id="clients-table-body">
+                            <tr><td colspan="6" style="padding:40px; text-align:center; color:#999;">Chargement...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- SOUS-TRAITANTS PAGE -->
+            <div id="page-subcontractors" class="page-content">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                    <h2 style="font-size:1.5rem; font-weight:700; color:var(--gray-900);">Sous-traitants</h2>
+                    <button onclick="CRMApp.showAddSubcontractorModal()" style="padding:0.75rem 1.5rem; background:var(--primary-orange); color:white; border:none; border-radius:var(--radius-md); font-weight:600; cursor:pointer; font-size:0.9rem;">+ Nouveau sous-traitant</button>
+                </div>
+                <input type="search" id="subcontractors-search" placeholder="Rechercher par nom, email, entreprise..." oninput="CRMApp.filterSubcontractors()" style="width:100%; padding:0.75rem 1rem; border:1px solid var(--gray-300); border-radius:var(--radius-md); margin-bottom:1.5rem; font-family:inherit;">
+                <div style="background:white; border-radius:var(--radius-xl); box-shadow:var(--shadow-sm); overflow:hidden;">
+                    <table style="width:100%; border-collapse:collapse;">
+                        <thead>
+                            <tr style="background:var(--gray-50); border-bottom:2px solid var(--gray-200);">
+                                <th style="padding:12px 16px; text-align:left; font-size:0.8rem; font-weight:600; color:var(--gray-600); text-transform:uppercase;">Nom</th>
+                                <th style="padding:12px 16px; text-align:left; font-size:0.8rem; font-weight:600; color:var(--gray-600); text-transform:uppercase;">Email</th>
+                                <th style="padding:12px 16px; text-align:left; font-size:0.8rem; font-weight:600; color:var(--gray-600); text-transform:uppercase;">T&eacute;l&eacute;phone</th>
+                                <th style="padding:12px 16px; text-align:left; font-size:0.8rem; font-weight:600; color:var(--gray-600); text-transform:uppercase;">Adresse</th>
+                                <th style="padding:12px 16px; text-align:left; font-size:0.8rem; font-weight:600; color:var(--gray-600); text-transform:uppercase;">SIRET</th>
+                                <th style="padding:12px 16px; text-align:center; font-size:0.8rem; font-weight:600; color:var(--gray-600); text-transform:uppercase;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="subcontractors-table-body">
                             <tr><td colspan="6" style="padding:40px; text-align:center; color:#999;">Chargement...</td></tr>
                         </tbody>
                     </table>

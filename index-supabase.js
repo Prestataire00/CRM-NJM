@@ -299,6 +299,141 @@ const CRMApp = {
         }
     },
 
+    // ==================== SOUS-TRAITANTS ====================
+
+    subcontractorsAllData: [],
+
+    async loadSubcontractorsList() {
+        const result = await SupabaseData.getSubcontractors();
+        if (result.success) {
+            this.subcontractorsAllData = result.data;
+            this.renderSubcontractorsTable(result.data);
+        }
+    },
+
+    filterSubcontractors() {
+        const search = (document.getElementById('subcontractors-search')?.value || '').toLowerCase();
+        const filtered = this.subcontractorsAllData.filter(s =>
+            (s.first_name || '').toLowerCase().includes(search) ||
+            (s.last_name || '').toLowerCase().includes(search) ||
+            (s.email || '').toLowerCase().includes(search) ||
+            (s.company || '').toLowerCase().includes(search)
+        );
+        this.renderSubcontractorsTable(filtered);
+    },
+
+    renderSubcontractorsTable(subs) {
+        const tbody = document.getElementById('subcontractors-table-body');
+        if (!tbody) return;
+        if (subs.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="padding:40px;text-align:center;color:#999;">Aucun sous-traitant</td></tr>';
+            return;
+        }
+        tbody.innerHTML = subs.map(s => '<tr style="border-bottom:1px solid var(--gray-100);">' +
+            '<td style="padding:12px 16px;font-weight:600;">' + (s.first_name || '') + ' ' + (s.last_name || '') + '</td>' +
+            '<td style="padding:12px 16px;">' + (s.email || '') + '</td>' +
+            '<td style="padding:12px 16px;">' + (s.phone || '') + '</td>' +
+            '<td style="padding:12px 16px;">' + (s.address || '') + '</td>' +
+            '<td style="padding:12px 16px;">' + (s.siret || '') + '</td>' +
+            '<td style="padding:12px 16px;text-align:center;">' +
+                '<button onclick="CRMApp.showEditSubcontractorModal(' + s.id + ')" style="background:none;border:none;cursor:pointer;font-size:1rem;" title="Modifier">\u270F\uFE0F</button>' +
+                '<button onclick="CRMApp.confirmDeleteSubcontractor(' + s.id + ')" style="background:none;border:none;cursor:pointer;font-size:1rem;margin-left:8px;" title="Supprimer">\uD83D\uDDD1\uFE0F</button>' +
+            '</td>' +
+        '</tr>').join('');
+    },
+
+    showAddSubcontractorModal() { this._showSubcontractorModal(); },
+
+    showEditSubcontractorModal(id) {
+        const sub = this.subcontractorsAllData.find(s => s.id === id);
+        if (sub) this._showSubcontractorModal(sub);
+    },
+
+    _showSubcontractorModal(sub) {
+        const existing = document.getElementById('subcontractor-modal');
+        if (existing) existing.remove();
+
+        const isEdit = !!sub;
+        const s = sub || {};
+        const modal = document.createElement('div');
+        modal.id = 'subcontractor-modal';
+        modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:50000;';
+        modal.innerHTML = '<div style="background:white;padding:2rem;border-radius:var(--radius-xl);max-width:600px;width:95%;max-height:90vh;overflow-y:auto;">' +
+            '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;border-bottom:1px solid var(--gray-200);padding-bottom:1rem;">' +
+                '<h3 style="font-size:1.25rem;font-weight:700;">' + (isEdit ? 'Modifier le sous-traitant' : 'Nouveau sous-traitant') + '</h3>' +
+                '<button onclick="document.getElementById(\'subcontractor-modal\').remove()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;">&times;</button>' +
+            '</div>' +
+            '<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">' +
+                '<div><label style="display:block;font-weight:500;margin-bottom:0.25rem;">Pr\u00E9nom *</label><input type="text" id="sub-first-name" value="' + (s.first_name || '') + '" style="width:100%;padding:0.65rem;border:1px solid var(--gray-300);border-radius:var(--radius-md);"></div>' +
+                '<div><label style="display:block;font-weight:500;margin-bottom:0.25rem;">Nom *</label><input type="text" id="sub-last-name" value="' + (s.last_name || '') + '" style="width:100%;padding:0.65rem;border:1px solid var(--gray-300);border-radius:var(--radius-md);"></div>' +
+                '<div><label style="display:block;font-weight:500;margin-bottom:0.25rem;">Email</label><input type="email" id="sub-email" value="' + (s.email || '') + '" style="width:100%;padding:0.65rem;border:1px solid var(--gray-300);border-radius:var(--radius-md);"></div>' +
+                '<div><label style="display:block;font-weight:500;margin-bottom:0.25rem;">T\u00E9l\u00E9phone</label><input type="text" id="sub-phone" value="' + (s.phone || '') + '" style="width:100%;padding:0.65rem;border:1px solid var(--gray-300);border-radius:var(--radius-md);"></div>' +
+                '<div style="grid-column:span 2;"><label style="display:block;font-weight:500;margin-bottom:0.25rem;">Adresse</label><input type="text" id="sub-address" value="' + (s.address || '') + '" style="width:100%;padding:0.65rem;border:1px solid var(--gray-300);border-radius:var(--radius-md);"></div>' +
+                '<div><label style="display:block;font-weight:500;margin-bottom:0.25rem;">SIRET</label><input type="text" id="sub-siret" value="' + (s.siret || '') + '" style="width:100%;padding:0.65rem;border:1px solid var(--gray-300);border-radius:var(--radius-md);"></div>' +
+                '<div><label style="display:block;font-weight:500;margin-bottom:0.25rem;">N\u00B0 activit\u00E9 (NDA)</label><input type="text" id="sub-nda" value="' + (s.nda || '') + '" style="width:100%;padding:0.65rem;border:1px solid var(--gray-300);border-radius:var(--radius-md);"></div>' +
+                '<div><label style="display:block;font-weight:500;margin-bottom:0.25rem;">Entreprise</label><input type="text" id="sub-company" value="' + (s.company || '') + '" style="width:100%;padding:0.65rem;border:1px solid var(--gray-300);border-radius:var(--radius-md);"></div>' +
+                '<div><label style="display:block;font-weight:500;margin-bottom:0.25rem;">Notes</label><input type="text" id="sub-notes" value="' + (s.notes || '') + '" style="width:100%;padding:0.65rem;border:1px solid var(--gray-300);border-radius:var(--radius-md);"></div>' +
+            '</div>' +
+            '<div style="display:flex;gap:1rem;justify-content:flex-end;margin-top:1.5rem;">' +
+                '<button onclick="document.getElementById(\'subcontractor-modal\').remove()" style="padding:0.75rem 1.5rem;background:var(--gray-200);color:var(--gray-700);border:none;border-radius:var(--radius-md);font-weight:600;cursor:pointer;">Annuler</button>' +
+                '<button onclick="CRMApp.saveSubcontractor(' + (s.id || 'null') + ')" style="padding:0.75rem 1.5rem;background:var(--primary-orange);color:white;border:none;border-radius:var(--radius-md);font-weight:600;cursor:pointer;">' + (isEdit ? 'Mettre \u00E0 jour' : 'Cr\u00E9er') + '</button>' +
+            '</div>' +
+        '</div>';
+        modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+        document.body.appendChild(modal);
+    },
+
+    async saveSubcontractor(id) {
+        const data = {
+            first_name: document.getElementById('sub-first-name').value.trim(),
+            last_name: document.getElementById('sub-last-name').value.trim(),
+            email: document.getElementById('sub-email').value.trim(),
+            phone: document.getElementById('sub-phone').value.trim(),
+            address: document.getElementById('sub-address').value.trim(),
+            siret: document.getElementById('sub-siret').value.trim(),
+            nda: document.getElementById('sub-nda').value.trim(),
+            company: document.getElementById('sub-company').value.trim(),
+            notes: document.getElementById('sub-notes').value.trim(),
+        };
+        if (!data.first_name || !data.last_name) {
+            showToast('Pr\u00E9nom et nom sont obligatoires', 'error');
+            return;
+        }
+        let result;
+        if (id) {
+            result = await SupabaseData.updateSubcontractor(id, data);
+        } else {
+            result = await SupabaseData.addSubcontractor(data);
+        }
+        if (result.success) {
+            showToast(id ? 'Sous-traitant mis \u00E0 jour' : 'Sous-traitant cr\u00E9\u00E9', 'success');
+            document.getElementById('subcontractor-modal')?.remove();
+            this.loadSubcontractorsList();
+        } else {
+            showToast('Erreur: ' + result.message, 'error');
+        }
+    },
+
+    async confirmDeleteSubcontractor(id) {
+        const sub = this.subcontractorsAllData.find(s => s.id === id);
+        const name = sub ? (sub.first_name + ' ' + sub.last_name) : '';
+        const confirmed = await showConfirmDialog({
+            title: 'Supprimer le sous-traitant',
+            message: 'Voulez-vous vraiment supprimer "' + name + '" ?',
+            confirmText: 'Supprimer',
+            isDangerous: true
+        });
+        if (confirmed) {
+            const result = await SupabaseData.deleteSubcontractor(id);
+            if (result.success) {
+                showToast('Sous-traitant supprim\u00E9', 'success');
+                this.loadSubcontractorsList();
+            } else {
+                showToast('Erreur: ' + result.message, 'error');
+            }
+        }
+    },
+
     // ==================== FORMATEUR VIEW ====================
 
     async initFormateurView(user) {
@@ -1144,11 +1279,15 @@ const CRMApp = {
         if (pageName === 'clients') {
             setTimeout(() => this.loadClientsList(), 100);
         }
+        if (pageName === 'subcontractors') {
+            setTimeout(() => this.loadSubcontractorsList(), 100);
+        }
 
         const pageTitles = {
             'dashboard': 'Tableau de bord',
             'formations': 'Formation 2026',
             'clients': 'Clients',
+            'subcontractors': 'Sous-traitants',
             'veille': 'Veille',
             'bpf': 'BPF',
             'biblio-supports': 'Bibliothèque Supports',
