@@ -1986,45 +1986,6 @@ const CRMApp = {
         }
     },
 
-    async saveAcquis(formationId) {
-        try {
-            const { data: formation, error } = await supabaseClient
-                .from('formations')
-                .select('learners_data, objectives')
-                .eq('id', formationId)
-                .single();
-
-            if (error) throw error;
-
-            let learnersData = formation.learners_data || [];
-            if (typeof learnersData === 'string') {
-                try { learnersData = JSON.parse(learnersData); } catch(e) { learnersData = []; }
-            }
-
-            const objectives = (formation.objectives || '').split(/\n/).map(s => s.trim()).filter(s => s.length > 0);
-
-            learnersData.forEach((l, li) => {
-                l.acquis = objectives.map((_, oi) => {
-                    const radio = document.querySelector(`input[name="acquis-${li}-${oi}"]:checked`);
-                    return radio ? radio.value : '';
-                });
-            });
-
-            const result = await SupabaseData.updateFormation(formationId, {
-                learners_data: JSON.stringify(learnersData)
-            });
-
-            if (result.success) {
-                showToast('Résultats des acquis enregistrés !', 'success');
-            } else {
-                showToast('Erreur : ' + result.message, 'error');
-            }
-        } catch (error) {
-            console.error('Erreur saveAcquis:', error);
-            showToast('Erreur sauvegarde acquis: ' + error.message, 'error');
-        }
-    },
-
     /**
      * Ouvre un document en le régénérant à la volée depuis les données formation
      */
