@@ -303,7 +303,8 @@ const PdfGenerator = {
             y = this.drawTable(doc, y, headers, rows, colWidths);
             y += 5;
 
-            // Méthodologie, Le + apporté, Délais d'accès
+            // Méthodologie, Le + apporté, Délais d'accès (besoin ~25mm)
+            y = this._checkPageBreak(doc, y, 25);
             doc.setFontSize(9);
             doc.setTextColor(...this.COLORS.darkGray);
 
@@ -342,6 +343,27 @@ const PdfGenerator = {
             alert('Erreur: ' + error.message);
             return { success: false, message: error.message };
         }
+    },
+
+    // ==================== HELPERS COMMUNS ====================
+
+    /**
+     * Verifie si on a assez d'espace, sinon saut de page avec footer/header
+     * @param {number} needed - espace minimum requis en mm
+     * @returns {number} nouvelle position y
+     */
+    _checkPageBreak(doc, y, needed) {
+        const bottomMargin = 25;
+        if (y + needed > doc.internal.pageSize.height - bottomMargin) {
+            this.addNJMFooter(doc);
+            doc.addPage();
+            y = this.addNJMHeader(doc);
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(...this.COLORS.darkGray);
+            doc.setDrawColor(...this.COLORS.darkGray);
+        }
+        return y;
     },
 
     // ==================== CONVENTION DE FORMATION ====================
@@ -677,7 +699,8 @@ const PdfGenerator = {
             y = this._writeText(doc, margin, y, 'Si une contestation ou un différend ne peuvent être réglés à l\'amiable, le Tribunal de commerce du lieu de résidence du client sera seul compétent pour se prononcer sur le litige.', { maxWidth: maxW });
             y += 8;
 
-            // Fait à...
+            // Fait à... (besoin ~50mm pour signatures)
+            y = this._checkPageBreak(doc, y, 50);
             doc.text(`Fait en double exemplaire, à Rodez, le ${currentDate}`, 195, y, { align: 'right' });
             y += 10;
 
@@ -931,7 +954,8 @@ const PdfGenerator = {
             y = this._writeText(doc, margin, y, '-Le donneur d\'ordre crée et facture les profils Arc En Ciel DISC. Le sous-traitant débriefe les profils Arc En Ciel DISC.', { maxWidth: maxW });
             y += 6;
 
-            // Signatures
+            // Signatures (besoin ~60mm pour signature + cachet)
+            y = this._checkPageBreak(doc, y, 60);
             doc.text(`Fait \u00E0 Cassan, le ${signatureDate}`, margin, y); y += 10;
             doc.text('Le donneur d\'ordre,', margin, y);
             doc.text('Le sous-traitant,', 120, y); y += 5;
@@ -1364,6 +1388,7 @@ const PdfGenerator = {
                 objItems.forEach((obj, objIndex) => {
                     const lines = doc.splitTextToSize(obj, objColW - 5);
                     const rowH = Math.max(8, lines.length * 4 + 2);
+                    y = this._checkPageBreak(doc, y, rowH + 2);
 
                     // Texte objectif à gauche (sans bordure)
                     doc.setFont('helvetica', 'normal');
