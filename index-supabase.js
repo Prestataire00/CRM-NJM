@@ -5664,27 +5664,29 @@ const DOC_CONFIGS = {
     attendance_sheet: {
         title: 'Feuille de pr\u00E9sence',
         template: 'feuille_presence_template.docx',
-        dynamicLearners: true,
+        pdfOnly: true,
         fields: [
             { key: 'formation_name', label: 'Titre formation', type: 'input', required: true },
-            { key: 'date', label: 'Date', type: 'input', required: true },
             { key: 'training_location', label: 'Lieu', type: 'input', required: true },
+            { key: 'dates_list', label: 'Jours de formation (1 feuille par jour)', type: 'textarea' },
+            { key: 'learners_list', label: 'Apprenants', type: 'textarea' },
+            { key: 'hours_per_day', label: 'Heures / jour / apprenant', type: 'input' },
         ],
         prepareVars(f) {
+            const sheets = PdfGenerator.buildAttendanceSheets(f);
             const learnersData = PdfGenerator.parseLearners(f);
             const totalHours = parseFloat(f.hours_per_learner) || 0;
-            const numDays = parseInt(f.number_of_days) || 1;
+            const numDays = sheets.length || 1;
             const hoursPerDay = numDays > 0 ? Math.round(totalHours / numDays) : totalHours;
-            const startDate = f.start_date ? new Date(f.start_date).toLocaleDateString('fr-FR') : '';
-            const endDate = f.end_date ? new Date(f.end_date).toLocaleDateString('fr-FR') : '';
-            const date = f.custom_dates || (startDate === endDate ? startDate : `${startDate} au ${endDate}`) || '';
-            const vars = {
+            const datesList = sheets.map(s => s.date ? new Date(s.date).toLocaleDateString('fr-FR') : '?').join('\n');
+            const learnersList = learnersData.map(l => PdfGenerator.getLearnerName(l)).filter(n => n).join('\n');
+            return {
                 formation_name: f.formation_name || '',
-                date: date,
                 training_location: f.training_location || '',
-                _learners: learnersData.map(l => ({ name: PdfGenerator.getLearnerName(l), hours: l.hours || String(hoursPerDay) || '' })).filter(l => l.name),
+                dates_list: datesList || 'Aucune date d\u00E9finie',
+                learners_list: learnersList || 'Aucun apprenant',
+                hours_per_day: String(hoursPerDay) + 'h',
             };
-            return vars;
         },
     },
 
@@ -5882,6 +5884,13 @@ const DocumentPreview = {
                 statusDiv.innerHTML = '\u2705 <strong>Tout est pr\u00EAt !</strong> Vous pouvez t\u00E9l\u00E9charger le document.';
                 btnPdf.disabled = false; btnPdf.style.opacity = '1'; btnPdf.style.cursor = 'pointer';
                 btnDocx.disabled = false; btnDocx.style.opacity = '1'; btnDocx.style.cursor = 'pointer';
+            }
+
+            // Masquer DOCX si pdfOnly
+            if (config.pdfOnly) {
+                btnDocx.style.display = 'none';
+            } else {
+                btnDocx.style.display = '';
             }
 
             // Titre + ouvrir modal

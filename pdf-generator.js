@@ -961,6 +961,50 @@ const PdfGenerator = {
         }
     },
 
+    // ==================== HELPERS FEUILLE DE PRÉSENCE ====================
+
+    parseCustomDates(formation) {
+        if (formation.custom_dates) {
+            const parts = formation.custom_dates.split(/[,;]/).map(s => s.trim()).filter(Boolean);
+            const dates = parts.map(p => {
+                const match = p.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+                if (match) return `${match[3]}-${match[2].padStart(2, '0')}-${match[1].padStart(2, '0')}`;
+                return null;
+            }).filter(Boolean);
+            if (dates.length > 0) return dates;
+        }
+        const numDays = parseInt(formation.number_of_days) || 1;
+        if (formation.start_date) {
+            const start = new Date(formation.start_date);
+            return Array.from({ length: numDays }, (_, i) => {
+                const d = new Date(start);
+                d.setDate(d.getDate() + i);
+                return d.toISOString().split('T')[0];
+            });
+        }
+        return [''];
+    },
+
+    buildAttendanceSheets(formation) {
+        let sheets = formation.attendance_sheets || [];
+        if (typeof sheets === 'string') { try { sheets = JSON.parse(sheets); } catch (e) { sheets = []; } }
+        if (sheets.length > 0) return sheets;
+
+        const learners = this.parseLearners(formation);
+        const totalH = parseFloat(formation.hours_per_learner) || 0;
+        const dates = this.parseCustomDates(formation);
+        const hPerDay = dates.length > 0 ? Math.round(totalH / dates.length) : totalH;
+
+        return dates.map((d, i) => ({
+            day: i + 1,
+            date: d,
+            learners_hours: learners.map(l => ({
+                learner_name: this.getLearnerName(l),
+                hours: hPerDay
+            }))
+        }));
+    },
+
     // ==================== FEUILLE DE PRÉSENCE ====================
 
     async generateAttendanceSheet(formation) {
@@ -971,13 +1015,7 @@ const PdfGenerator = {
             const margin = 20;
             const pinkColor = this.COLORS.pink;
 
-            let attendanceSheets = [];
-            if (formation.attendance_sheets && Array.isArray(formation.attendance_sheets)) {
-                attendanceSheets = formation.attendance_sheets;
-            } else if (typeof formation.attendance_sheets === 'string') {
-                try { attendanceSheets = JSON.parse(formation.attendance_sheets); } catch (e) { }
-            }
-
+            const attendanceSheets = this.buildAttendanceSheets(formation);
             const learnersData = this.parseLearners(formation);
             const numDays = attendanceSheets.length || 1;
 
