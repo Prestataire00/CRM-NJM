@@ -917,7 +917,8 @@ const PdfGenerator = {
             doc.setFont('helvetica', 'bold');
             doc.text('Article 6 : Modalités financières', margin, y); y += 6;
             doc.setFont('helvetica', 'normal');
-            y = this._writeText(doc, margin, y, 'Le sous-traitant percevra une rémunération de 600 euros nets par journée de formation (7 heures) et remboursement des frais d\'hébergement, de restauration et de déplacement.', { maxWidth: maxW });
+            const subPrice = formation.subcontractor_price || formation.price || '600';
+            y = this._writeText(doc, margin, y, `Le sous-traitant percevra une r\u00E9mun\u00E9ration de ${subPrice} euros nets par journ\u00E9e de formation (7 heures) et remboursement des frais d'h\u00E9bergement, de restauration et de d\u00E9placement.`, { maxWidth: maxW });
             doc.text('Le paiement sera effectué à réception de la facture.', margin, y); y += 7;
 
             // Article 7

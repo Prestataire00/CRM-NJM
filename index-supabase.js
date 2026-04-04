@@ -5655,7 +5655,7 @@ const DOC_CONFIGS = {
                 formation_name: f.formation_name || '',
                 dates,
                 duration: String(f.hours_per_learner || ''),
-                price: '600',
+                price: f.subcontractor_price || '600',
                 signature_date: new Date().toLocaleDateString('fr-FR'),
             };
         },
@@ -6036,6 +6036,7 @@ const DocumentPreview = {
             if (vars.trainer_address) f.subcontractor_address = vars.trainer_address;
             if (vars.trainer_siret) f.subcontractor_siret = vars.trainer_siret;
             if (vars.trainer_nda) f.subcontractor_nda = vars.trainer_nda;
+            if (vars.price) f.subcontractor_price = vars.price;
             if (vars.signature_date) f.signature_date = vars.signature_date;
 
             // Injecter les acquis modifies dans les learners_data
