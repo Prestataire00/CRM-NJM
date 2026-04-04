@@ -43,19 +43,41 @@ function emptyLine(after = 100) {
     return new Paragraph({ spacing: { after } });
 }
 
-// Header NJM : logo a gauche + activites a droite
+// Header NJM : logo a gauche + activites a droite (tableau invisible)
 function njmHeader() {
+    const noBorder = { style: BorderStyle.NONE, size: 0 };
+    const noBorders = { top: noBorder, bottom: noBorder, left: noBorder, right: noBorder };
     return [
-        new Paragraph({
-            children: [
-                new ImageRun({ data: logoBuffer, transformation: { width: 140, height: 81 }, type: 'png' }),
+        new Table({
+            width: { size: 9500, type: WidthType.DXA },
+            borders: { top: noBorder, bottom: noBorder, left: noBorder, right: noBorder, insideHorizontal: noBorder, insideVertical: noBorder },
+            rows: [
+                new TableRow({
+                    children: [
+                        new TableCell({
+                            width: { size: 4000, type: WidthType.DXA },
+                            borders: noBorders,
+                            children: [
+                                new Paragraph({ children: [new ImageRun({ data: logoBuffer, transformation: { width: 140, height: 81 }, type: 'png' })] }),
+                            ],
+                        }),
+                        new TableCell({
+                            width: { size: 5500, type: WidthType.DXA },
+                            borders: noBorders,
+                            verticalAlign: VerticalAlign.TOP,
+                            children: [
+                                new Paragraph({ alignment: AlignmentType.RIGHT, children: [bold('MARKETING', { size: 13, color: ORANGE })] }),
+                                new Paragraph({ alignment: AlignmentType.RIGHT, children: [bold('WEB MARKETING', { size: 13, color: ORANGE })] }),
+                                new Paragraph({ alignment: AlignmentType.RIGHT, children: [bold('COMMERCIAL', { size: 13, color: ORANGE })] }),
+                                new Paragraph({ alignment: AlignmentType.RIGHT, children: [bold('COMMUNICATION', { size: 13, color: ORANGE })] }),
+                                new Paragraph({ alignment: AlignmentType.RIGHT, children: [bold('COACHING', { size: 13, color: ORANGE })] }),
+                            ],
+                        }),
+                    ],
+                }),
             ],
         }),
-        new Paragraph({ alignment: AlignmentType.RIGHT, spacing: { before: 0 }, children: [bold('MARKETING', { size: 13, color: ORANGE })] }),
-        new Paragraph({ alignment: AlignmentType.RIGHT, children: [bold('WEB MARKETING', { size: 13, color: ORANGE })] }),
-        new Paragraph({ alignment: AlignmentType.RIGHT, children: [bold('COMMERCIAL', { size: 13, color: ORANGE })] }),
-        new Paragraph({ alignment: AlignmentType.RIGHT, children: [bold('COMMUNICATION', { size: 13, color: ORANGE })] }),
-        new Paragraph({ alignment: AlignmentType.RIGHT, spacing: { after: 150 }, children: [bold('COACHING', { size: 13, color: ORANGE })] }),
+        emptyLine(80),
     ];
 }
 

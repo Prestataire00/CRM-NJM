@@ -6178,6 +6178,7 @@ const DocumentPreview = {
 
             const fileName = `${config.title} - ${this.currentFormationData.formation_name || 'Formation'} - ${this.currentFormationData.company_name || this.currentFormationData.client_name || 'Client'}`;
 
+            // Telecharger localement
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
@@ -6185,9 +6186,30 @@ const DocumentPreview = {
             a.click();
             URL.revokeObjectURL(url);
 
-            // Enregistrer dans le CRM
-            const result = { success: true, name: fileName };
-            await CRMApp._uploadAndSaveDoc(this.currentFormationId, result, this.currentType);
+            // Uploader dans Supabase Storage
+            try {
+                const storagePath = `formations/${this.currentFormationId}/${Date.now()}_${fileName.replace(/\s+/g, '_')}.docx`;
+                const { error: uploadErr } = await supabaseClient.storage
+                    .from('documents')
+                    .upload(storagePath, blob, { contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', upsert: true });
+
+                let docUrl = '';
+                if (!uploadErr) {
+                    const { data: urlData } = supabaseClient.storage.from('documents').getPublicUrl(storagePath);
+                    docUrl = urlData?.publicUrl || '';
+                }
+
+                await SupabaseData.addFormationDocument(this.currentFormationId, {
+                    name: fileName,
+                    type: this.currentType,
+                    document_url: docUrl || `generate://${this.currentType}/${this.currentFormationId}`,
+                    uploaded_at: new Date().toISOString()
+                });
+            } catch (storageErr) {
+                console.warn('Upload Storage echoue, fallback reference:', storageErr);
+                await CRMApp._uploadAndSaveDoc(this.currentFormationId, { success: true, name: fileName }, this.currentType);
+            }
+
             addNotification(this.currentType, `${config.title} g\u00E9n\u00E9r\u00E9(e) \u2014 ${this.currentFormationData.company_name || this.currentFormationData.client_name || ''}`);
             CRMApp.loadFormations();
 
