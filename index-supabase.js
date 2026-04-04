@@ -5548,24 +5548,24 @@ const DOC_CONFIGS = {
         title: 'Convention de formation',
         template: 'convention_template.docx',
         fields: [
-            { key: 'company_name', label: 'Nom du client', type: 'input' },
+            { key: 'company_name', label: 'Nom du client', type: 'input', required: true },
             { key: 'company_address', label: 'Adresse', type: 'input' },
             { key: 'company_postal_city', label: 'CP / Ville', type: 'input' },
             { key: 'contact_title', label: 'Civilit\u00E9', type: 'input' },
             { key: 'contact_name', label: 'Nom dirigeant', type: 'input' },
             { key: 'contact_role', label: 'Fonction', type: 'input' },
-            { key: 'formation_name', label: 'Titre formation', type: 'input' },
+            { key: 'formation_name', label: 'Titre formation', type: 'input', required: true },
             { key: 'trainer', label: 'Formateur', type: 'input' },
-            { key: 'dates', label: 'Dates', type: 'input' },
-            { key: 'duration', label: 'Dur\u00E9e (heures)', type: 'input' },
-            { key: 'training_location', label: 'Lieu', type: 'input' },
+            { key: 'dates', label: 'Dates', type: 'input', required: true },
+            { key: 'duration', label: 'Dur\u00E9e (heures)', type: 'input', required: true },
+            { key: 'training_location', label: 'Lieu', type: 'input', required: true },
             { key: 'learner_count', label: 'Effectif', type: 'input' },
-            { key: 'learners', label: 'Apprenants', type: 'textarea' },
-            { key: 'price', label: 'Montant (\u20AC)', type: 'input' },
-            { key: 'objectives', label: 'Objectifs', type: 'textarea' },
-            { key: 'content_summary', label: 'Contenus (r\u00E9sum\u00E9 court — Article 1)', type: 'input' },
-            { key: 'module_content', label: 'Contenus (d\u00E9tail — Article 2)', type: 'textarea' },
-            { key: 'methods', label: 'M\u00E9thodes', type: 'textarea' },
+            { key: 'learners', label: 'Apprenants', type: 'textarea', required: true },
+            { key: 'price', label: 'Montant (\u20AC)', type: 'input', required: true },
+            { key: 'objectives', label: 'Objectifs', type: 'textarea', required: true },
+            { key: 'content_summary', label: 'Contenus (r\u00E9sum\u00E9 court — Article 1)', type: 'input', required: true },
+            { key: 'module_content', label: 'Contenus (d\u00E9tail — Article 2)', type: 'textarea', required: true },
+            { key: 'methods', label: 'M\u00E9thodes', type: 'textarea', required: true },
             { key: 'signature_date', label: 'Date signature', type: 'input' },
         ],
         prepareVars(f) {
@@ -5602,13 +5602,13 @@ const DOC_CONFIGS = {
         title: 'Fiche p\u00E9dagogique',
         template: 'fiche_peda_template.docx',
         fields: [
-            { key: 'formation_name', label: 'Titre formation', type: 'input' },
+            { key: 'formation_name', label: 'Titre formation', type: 'input', required: true },
             { key: 'public', label: 'Public', type: 'input' },
             { key: 'prerequisites', label: 'Pr\u00E9 requis', type: 'input' },
-            { key: 'duration', label: 'Dur\u00E9e (heures)', type: 'input' },
-            { key: 'objectives', label: 'Objectifs', type: 'textarea' },
-            { key: 'content', label: 'Contenu', type: 'textarea' },
-            { key: 'methods', label: 'M\u00E9thodes et outils', type: 'textarea' },
+            { key: 'duration', label: 'Dur\u00E9e (heures)', type: 'input', required: true },
+            { key: 'objectives', label: 'Objectifs', type: 'textarea', required: true },
+            { key: 'content', label: 'Contenu', type: 'textarea', required: true },
+            { key: 'methods', label: 'M\u00E9thodes et outils', type: 'textarea', required: true },
             { key: 'evaluation', label: 'M\u00E9thodologie d\'\u00E9valuation', type: 'input' },
             { key: 'added_value', label: 'Le + apport\u00E9', type: 'input' },
             { key: 'access_delays', label: 'D\u00E9lais d\'acc\u00E8s', type: 'input' },
@@ -5633,14 +5633,14 @@ const DOC_CONFIGS = {
         title: 'Contrat de sous-traitance',
         template: 'contrat_sous_traitance_template.docx',
         fields: [
-            { key: 'trainer_name', label: 'Nom sous-traitant', type: 'input' },
+            { key: 'trainer_name', label: 'Nom sous-traitant', type: 'input', required: true },
             { key: 'trainer_address', label: 'Adresse sous-traitant', type: 'input' },
             { key: 'trainer_siret', label: 'SIRET sous-traitant', type: 'input' },
             { key: 'trainer_nda', label: 'N\u00B0 activit\u00E9 sous-traitant', type: 'input' },
-            { key: 'formation_name', label: 'Titre formation', type: 'input' },
-            { key: 'dates', label: 'Dates', type: 'input' },
-            { key: 'duration', label: 'Dur\u00E9e (heures)', type: 'input' },
-            { key: 'price', label: 'Prix/jour (\u20AC)', type: 'input' },
+            { key: 'formation_name', label: 'Titre formation', type: 'input', required: true },
+            { key: 'dates', label: 'Dates', type: 'input', required: true },
+            { key: 'duration', label: 'Dur\u00E9e (heures)', type: 'input', required: true },
+            { key: 'price', label: 'Prix/jour (\u20AC)', type: 'input', required: true },
             { key: 'signature_date', label: 'Date signature', type: 'input' },
         ],
         prepareVars(f) {
@@ -5666,9 +5666,9 @@ const DOC_CONFIGS = {
         template: 'feuille_presence_template.docx',
         dynamicLearners: true,
         fields: [
-            { key: 'formation_name', label: 'Titre formation', type: 'input' },
-            { key: 'date', label: 'Date', type: 'input' },
-            { key: 'training_location', label: 'Lieu', type: 'input' },
+            { key: 'formation_name', label: 'Titre formation', type: 'input', required: true },
+            { key: 'date', label: 'Date', type: 'input', required: true },
+            { key: 'training_location', label: 'Lieu', type: 'input', required: true },
         ],
         prepareVars(f) {
             const learnersData = PdfGenerator.parseLearners(f);
@@ -5690,13 +5690,13 @@ const DOC_CONFIGS = {
         template: 'attestation_template.docx',
         dynamicAcquis: true,
         fields: [
-            { key: 'learner_name', label: 'Nom apprenant', type: 'input' },
-            { key: 'company_name', label: 'Entreprise', type: 'input' },
-            { key: 'formation_name', label: 'Titre formation', type: 'input' },
+            { key: 'learner_name', label: 'Nom apprenant', type: 'input', required: true },
+            { key: 'company_name', label: 'Entreprise', type: 'input', required: true },
+            { key: 'formation_name', label: 'Titre formation', type: 'input', required: true },
             { key: 'objectives', label: 'Objectifs', type: 'textarea' },
             { key: 'training_location', label: 'Lieu', type: 'input' },
-            { key: 'dates', label: 'Dates', type: 'input' },
-            { key: 'duration', label: 'Dur\u00E9e (heures)', type: 'input' },
+            { key: 'dates', label: 'Dates', type: 'input', required: true },
+            { key: 'duration', label: 'Dur\u00E9e (heures)', type: 'input', required: true },
             { key: 'signature_date', label: 'Date signature', type: 'input' },
         ],
         prepareVars(f) {
@@ -5909,9 +5909,53 @@ const DocumentPreview = {
             document.getElementById('doc-preview-title').textContent = config.title;
             document.getElementById('documentPreviewModal').style.display = 'flex';
 
+            // Validation initiale + listeners temps reel
+            this.validate();
+            document.querySelectorAll('#doc-preview-fields .doc-preview-input').forEach(el => {
+                el.addEventListener('input', () => this.validate());
+            });
+
         } catch (err) {
             console.error('Erreur DocumentPreview.open:', err);
             showToast('Erreur: ' + err.message, 'error');
+        }
+    },
+
+    validate() {
+        const config = DOC_CONFIGS[this.currentType];
+        if (!config) return true;
+
+        const requiredFields = config.fields.filter(f => f.required);
+        const missing = [];
+
+        requiredFields.forEach(field => {
+            const el = document.querySelector(`#doc-preview-fields [data-key="${field.key}"]`);
+            const value = el ? (el.value || el.textContent || '').trim() : '';
+            if (!value) {
+                missing.push(field.label);
+                if (el && el.style) el.style.borderColor = '#EF4444';
+            } else {
+                if (el && el.style) el.style.borderColor = '';
+            }
+        });
+
+        const warningDiv = document.getElementById('doc-preview-warnings');
+        const btnPdf = document.getElementById('doc-preview-btn-pdf');
+        const btnDocx = document.getElementById('doc-preview-btn-docx');
+
+        if (missing.length > 0) {
+            if (warningDiv) {
+                warningDiv.style.display = 'block';
+                warningDiv.innerHTML = '<strong>\u26A0 Champs obligatoires \u00E0 compl\u00E9ter :</strong> ' + missing.join(', ');
+            }
+            if (btnPdf) { btnPdf.disabled = true; btnPdf.style.opacity = '0.5'; btnPdf.style.cursor = 'not-allowed'; }
+            if (btnDocx) { btnDocx.disabled = true; btnDocx.style.opacity = '0.5'; btnDocx.style.cursor = 'not-allowed'; }
+            return false;
+        } else {
+            if (warningDiv) warningDiv.style.display = 'none';
+            if (btnPdf) { btnPdf.disabled = false; btnPdf.style.opacity = '1'; btnPdf.style.cursor = 'pointer'; }
+            if (btnDocx) { btnDocx.disabled = false; btnDocx.style.opacity = '1'; btnDocx.style.cursor = 'pointer'; }
+            return true;
         }
     },
 
@@ -6004,11 +6048,14 @@ const DocumentPreview = {
 
     async downloadPdf() {
         try {
+            if (!this.validate()) return;
             if (typeof PdfGenerator === 'undefined') {
                 showToast('Service PDF non disponible', 'error');
                 return;
             }
 
+            // Auto-save en base avant generation
+            await this.saveToDb();
             showToast('G\u00E9n\u00E9ration du PDF...', 'info');
 
             // Construire un objet formation avec les valeurs du formulaire
@@ -6174,9 +6221,12 @@ const DocumentPreview = {
 
     async download() {
         try {
+            if (!this.validate()) return;
             const config = DOC_CONFIGS[this.currentType];
             if (!config) return;
 
+            // Auto-save en base avant generation
+            await this.saveToDb();
             showToast('G\u00E9n\u00E9ration du document...', 'info');
 
             // Charger PizZip

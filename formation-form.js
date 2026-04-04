@@ -575,6 +575,11 @@ const FormationForm = {
                 </div>
 
                 <div class="form-group form-group-full">
+                    <label>Contenus (r\u00E9sum\u00E9 court pour convention)</label>
+                    <input type="text" id="content_summary" value="${f.content_summary || ''}" placeholder="Ex: les outils, m\u00E9thodes, le savoir-\u00EAtre pour vendre">
+                </div>
+
+                <div class="form-group form-group-full">
                     <label>Méthode, moyens, outils</label>
                     <textarea id="methods_tools" rows="3">${f.methods_tools || ''}</textarea>
                 </div>
@@ -830,6 +835,7 @@ const FormationForm = {
             prerequisites: document.getElementById('prerequisites').value,
             objectives: document.getElementById('objectives').value,
             module_1: document.getElementById('module_1').value,
+            content_summary: document.getElementById('content_summary').value,
             methods_tools: document.getElementById('methods_tools').value,
             evaluation_methodology: document.getElementById('evaluation_methodology').value,
             added_value: document.getElementById('added_value').value,

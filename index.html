@@ -2325,6 +2325,8 @@
                         <button onclick="DocumentPreview.close()"
                             style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--gray-500);">&times;</button>
                     </div>
+                    <!-- Bandeau validation -->
+                    <div id="doc-preview-warnings" style="display:none; padding:0.75rem 1rem; background:#FEF2F2; border:1px solid #FECACA; border-radius:var(--radius-md); margin-bottom:0.75rem; color:#991B1B; font-size:0.85rem; flex-shrink:0;"></div>
                     <!-- Body : formulaire editable -->
                     <div id="doc-preview-fields" style="flex: 1; min-height: 0; overflow-y: auto; margin-bottom: 1rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
                         <!-- Genere dynamiquement par DocumentPreview.open() -->
@@ -2335,15 +2337,11 @@
                             style="padding: 0.75rem 1.5rem; background: var(--gray-200); color: var(--gray-700); border: none; border-radius: var(--radius-md); font-weight: 600; cursor: pointer;">
                             Fermer
                         </button>
-                        <button type="button" onclick="DocumentPreview.saveToDb()"
-                            style="padding: 0.75rem 1.5rem; background: var(--primary-green, #B8C944); color: white; border: none; border-radius: var(--radius-md); font-weight: 600; cursor: pointer;">
-                            Enregistrer
-                        </button>
-                        <button type="button" onclick="DocumentPreview.downloadPdf()"
+                        <button type="button" id="doc-preview-btn-pdf" onclick="DocumentPreview.downloadPdf()"
                             style="padding: 0.75rem 1.5rem; background: var(--primary-purple, #7B3F9E); color: white; border: none; border-radius: var(--radius-md); font-weight: 600; cursor: pointer;">
                             Telecharger PDF
                         </button>
-                        <button type="button" onclick="DocumentPreview.download()"
+                        <button type="button" id="doc-preview-btn-docx" onclick="DocumentPreview.download()"
                             style="padding: 0.75rem 1.5rem; background: var(--primary-orange, #E36A3A); color: white; border: none; border-radius: var(--radius-md); font-weight: 600; cursor: pointer;">
                             Telecharger .docx
                         </button>
