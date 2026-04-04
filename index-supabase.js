@@ -6188,7 +6188,7 @@ const DocumentPreview = {
                 mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
             });
 
-            const fileName = `${config.title} - ${this.currentFormationData.formation_name || 'Formation'} - ${this.currentFormationData.company_name || this.currentFormationData.client_name || 'Client'}`;
+            const fileName = `${config.title} - ${this.currentFormationData.formation_name || 'Formation'}`;
 
             // Telecharger localement
             const url = URL.createObjectURL(blob);

@@ -720,7 +720,7 @@ const PdfGenerator = {
 
             this.addNJMFooter(doc);
 
-            const fileName = `Convention - ${formation.company_name || formation.client_name || 'Client'} - ${formation.formation_name || 'Formation'}`;
+            const fileName = `Convention - ${formation.formation_name || 'Formation'}`;
             const pdfBlob = doc.output('blob');
             const pdfUrl = URL.createObjectURL(pdfBlob);
             const a = document.createElement('a'); a.href = pdfUrl; a.download = `${fileName}.pdf`; a.click(); URL.revokeObjectURL(pdfUrl);
@@ -972,7 +972,7 @@ const PdfGenerator = {
 
             this.addNJMFooter(doc);
 
-            const fileName = `Contrat sous-traitance - ${clientName || 'Client'} - ${formation.formation_name || 'Formation'}`;
+            const fileName = `Contrat sous-traitance - ${formation.formation_name || 'Formation'}`;
             const pdfBlob = doc.output('blob');
             const pdfUrl = URL.createObjectURL(pdfBlob);
             const a = document.createElement('a'); a.href = pdfUrl; a.download = `${fileName}.pdf`; a.click(); URL.revokeObjectURL(pdfUrl);
@@ -1440,7 +1440,7 @@ const PdfGenerator = {
                 this.addNJMFooter(doc);
             });
 
-            const fileName = `Certificat - ${formation.formation_name || 'Formation'} - ${formation.company_name || formation.client_name || 'Client'}`;
+            const fileName = `Certificat - ${formation.formation_name || 'Formation'}`;
             const pdfBlob = doc.output('blob');
             const pdfUrl = URL.createObjectURL(pdfBlob);
             const a = document.createElement('a'); a.href = pdfUrl; a.download = `${fileName}.pdf`; a.click(); URL.revokeObjectURL(pdfUrl);
