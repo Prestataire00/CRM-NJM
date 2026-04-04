@@ -224,11 +224,11 @@ const PdfGenerator = {
             const currentRowHeight = Math.max(rowHeight, maxLines * 4 + 4);
 
             // Vérifier si on dépasse la page
-            if (y + currentRowHeight > 270) {
-                doc.addPage();
-                this.addNJMHeader(doc);
+            const pageH = doc.internal.pageSize.height;
+            if (y + currentRowHeight > pageH - 25) {
                 this.addNJMFooter(doc);
-                y = 40;
+                doc.addPage();
+                y = this.addNJMHeader(doc);
             }
 
             // Bordure de la ligne
@@ -276,12 +276,10 @@ const PdfGenerator = {
             y += 10;
 
             // Public et Prérequis
-            doc.setFontSize(9);
-            doc.setFont('helvetica', 'bold');
-            doc.text(`Public : ${formation.target_audience || 'RAS'}`, 15, y);
-            y += 5;
-            doc.text(`Pré requis : ${formation.prerequisites || 'RAS'}`, 15, y);
-            y += 7;
+            y = this._writeText(doc, 15, y, `Public : ${formation.target_audience || 'RAS'}`, { maxWidth: 170, font: 'bold' });
+            y += 1;
+            y = this._writeText(doc, 15, y, `Pré requis : ${formation.prerequisites || 'RAS'}`, { maxWidth: 170, font: 'bold' });
+            y += 3;
 
             // Tableau principal (comme le modèle)
             const headers = [
@@ -309,26 +307,15 @@ const PdfGenerator = {
             doc.setTextColor(...this.COLORS.darkGray);
 
             // Méthodologie d'évaluation
-            doc.setFont('helvetica', 'bold');
-            const labelMethodo = "Méthodologie d'évaluation : ";
-            doc.text(labelMethodo, 15, y);
-            const wMethodo = doc.getTextWidth(labelMethodo);
-            doc.setFont('helvetica', 'normal');
-            doc.text(formation.evaluation_methodology || 'RAS', 15 + wMethodo, y);
-            y += 6;
+            y = this._writeText(doc, 15, y, `M\u00E9thodologie d'\u00E9valuation : ${formation.evaluation_methodology || 'RAS'}`, { maxWidth: 170 });
+            y += 1;
 
             // Le + apporté
-            doc.setFont('helvetica', 'bold');
-            const labelPlus = "Le + apporté : ";
-            doc.text(labelPlus, 15, y);
-            const wPlus = doc.getTextWidth(labelPlus);
-            doc.setFont('helvetica', 'normal');
-            doc.text(formation.added_value || 'RAS', 15 + wPlus, y);
-            y += 6;
+            y = this._writeText(doc, 15, y, `Le + apport\u00E9 : ${formation.added_value || 'RAS'}`, { maxWidth: 170 });
+            y += 1;
 
             // Délais d'accès
-            const delaisText = formation.access_delays || 'les dates disponibles le sont à partir du 6 mois';
-            doc.text(`Délais d'accès : ${delaisText}`, 15, y);
+            y = this._writeText(doc, 15, y, `D\u00E9lais d'acc\u00E8s : ${formation.access_delays || 'les dates disponibles le sont \u00E0 partir du 6 mois'}`, { maxWidth: 170 });
 
             this.addNJMFooter(doc);
 
@@ -883,7 +870,7 @@ const PdfGenerator = {
             doc.setFont('helvetica', 'bold');
             doc.text('Article 2 : Objet du contrat', margin, y); y += 6;
             doc.setFont('helvetica', 'normal');
-            doc.text(`La formation, objet du contrat, est la suivante : « ${formation.formation_name || ''} », pour ${clientName}`, margin, y, { maxWidth: maxW }); y += 5;
+            y = this._writeText(doc, margin, y, `La formation, objet du contrat, est la suivante : \u00AB ${formation.formation_name || ''} \u00BB, pour ${clientName}`, { maxWidth: maxW });
             doc.text(`Date(s) : ${dates}`, margin, y); y += 5;
             doc.text(`Heures :  ${totalHours}h`, margin, y); y += 7;
 
@@ -1298,7 +1285,8 @@ const PdfGenerator = {
                 y = this._writeText(doc, margin, y, 'En cas de cofinancement des fonds européens, la durée de conservation est étendue conformément aux obligations conventionnelles spécifiques.', { maxWidth: maxW });
                 y += 8;
 
-                // Fait à Rodez
+                // Fait à Rodez (besoin ~45mm pour signature + cachet)
+                y = this._checkPageBreak(doc, y, 45);
                 doc.text(`Fait à Rodez, ${lastDate}`, 195, y, { align: 'right' });
                 y += 12;
 
@@ -1454,7 +1442,8 @@ const PdfGenerator = {
                 });
                 y += 8;
 
-                // Signature : gauche/droite (fidèle au modèle)
+                // Signature : gauche/droite (besoin ~45mm)
+                y = this._checkPageBreak(doc, y, 45);
                 doc.setFontSize(9);
                 doc.text('La formatrice et directrice de', margin, y);
                 doc.text(`Fait à Rodez, le ${lastDate}`, 195, y, { align: 'right' });
