@@ -5977,25 +5977,45 @@ const DocumentPreview = {
             if (config.dynamicAcquis && vars._learners && vars._objectives) {
                 const section = document.createElement('div');
                 section.style.gridColumn = '1 / -1';
+                section.id = 'doc-preview-acquis';
                 section.style.cssText += 'border-top: 1px solid var(--gray-200); padding-top: 0.5rem; margin-top: 0.5rem;';
                 const title = document.createElement('div');
                 title.textContent = 'R\u00C9SULTATS DES ACQUIS';
-                title.style.cssText = 'font-size: 0.75rem; font-weight: 600; color: var(--gray-500); margin-bottom: 0.25rem; text-transform: uppercase; letter-spacing: 0.3px;';
+                title.style.cssText = 'font-size: 0.75rem; font-weight: 600; color: var(--gray-500); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.3px;';
                 section.appendChild(title);
-                vars._learners.forEach(learner => {
+                vars._learners.forEach((learner, li) => {
                     if (!learner.name) return;
                     const block = document.createElement('div');
-                    block.style.cssText = 'margin-bottom: 0.5rem; padding: 0.4rem; background: var(--gray-50); border-radius: var(--radius-sm);';
-                    const name = document.createElement('div');
-                    name.textContent = learner.name;
-                    name.style.cssText = 'font-weight: 600; font-size: 0.85rem; margin-bottom: 0.2rem;';
-                    block.appendChild(name);
+                    block.style.cssText = 'margin-bottom: 0.75rem; padding: 0.5rem; background: var(--gray-50); border-radius: var(--radius-sm);';
+                    block.classList.add('doc-acquis-learner');
+                    block.dataset.learnerIndex = li;
+                    const nameEl = document.createElement('div');
+                    nameEl.textContent = learner.name;
+                    nameEl.style.cssText = 'font-weight: 600; font-size: 0.85rem; margin-bottom: 0.4rem; color: var(--gray-800);';
+                    block.appendChild(nameEl);
                     vars._objectives.forEach((obj, oi) => {
-                        const val = learner.acquis[oi];
-                        const statusMap = { acquis: '\u2705 Acquis', en_cours: '\uD83D\uDD36 En cours', non_acquis: '\u274C Non acquis' };
                         const row = document.createElement('div');
-                        row.style.cssText = 'font-size: 0.8rem; color: var(--gray-600); padding: 0.1rem 0;';
-                        row.textContent = obj + ' \u2192 ' + (statusMap[val] || '\u2014 non \u00E9valu\u00E9');
+                        row.style.cssText = 'padding: 0.25rem 0; border-bottom: 1px solid var(--gray-100); display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap;';
+                        const objLabel = document.createElement('div');
+                        objLabel.textContent = obj;
+                        objLabel.style.cssText = 'font-size: 0.8rem; color: var(--gray-600); flex: 1; min-width: 150px;';
+                        row.appendChild(objLabel);
+                        const radios = document.createElement('div');
+                        radios.style.cssText = 'display: flex; gap: 0.75rem;';
+                        const currentVal = learner.acquis[oi] || '';
+                        ['acquis', 'en_cours', 'non_acquis'].forEach(val => {
+                            const lbl = document.createElement('label');
+                            lbl.style.cssText = 'font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 2px;';
+                            const radio = document.createElement('input');
+                            radio.type = 'radio';
+                            radio.name = 'doc-acquis-' + li + '-' + oi;
+                            radio.value = val;
+                            if (currentVal === val) radio.checked = true;
+                            lbl.appendChild(radio);
+                            lbl.appendChild(document.createTextNode(val === 'acquis' ? ' Acquis' : val === 'en_cours' ? ' En cours' : ' Non acquis'));
+                            radios.appendChild(lbl);
+                        });
+                        row.appendChild(radios);
                         block.appendChild(row);
                     });
                     section.appendChild(block);
@@ -6186,7 +6206,32 @@ const DocumentPreview = {
             }
 
             showToast('G\u00E9n\u00E9ration du PDF...', 'info');
-            const f = this.currentFormationData;
+            const f = { ...this.currentFormationData };
+
+            // Injecter les acquis coches dans les learners_data
+            const acquisBlocks = document.querySelectorAll('#doc-preview-acquis .doc-acquis-learner');
+            if (acquisBlocks.length > 0) {
+                const learnersData = PdfGenerator.parseLearners(f);
+                acquisBlocks.forEach((block, li) => {
+                    if (!learnersData[li]) return;
+                    const acquis = [];
+                    let oi = 0;
+                    while (true) {
+                        const radio = document.querySelector('input[name="doc-acquis-' + li + '-' + oi + '"]:checked');
+                        if (!radio && oi > 0) break;
+                        acquis.push(radio ? radio.value : '');
+                        oi++;
+                        if (oi > 50) break;
+                    }
+                    learnersData[li].acquis = acquis;
+                });
+                f.learners_data = learnersData;
+
+                // Sauvegarder les acquis en base
+                try {
+                    await SupabaseData.updateFormation(this.currentFormationId, { learners_data: learnersData });
+                } catch (e) { console.warn('Sauvegarde acquis:', e); }
+            }
 
             const generators = {
                 convention: 'generateConvention',
