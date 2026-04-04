@@ -609,21 +609,27 @@ const PdfGenerator = {
             doc.setFont('helvetica', 'normal');
             doc.text('Objectifs :', margin, y); y += 4;
             (formation.objectives || 'RAS').split('\n').filter(l => l.trim()).forEach(line => {
-                y = this._writeText(doc, margin + 3, y, `-   ${line.trim()}`, { maxWidth: maxW - 3 });
+                const t = line.trim();
+                const prefix = t.startsWith('-') ? '   ' : '-   ';
+                y = this._writeText(doc, margin + 3, y, `${prefix}${t}`, { maxWidth: maxW - 3 });
             });
             y += 2;
 
             doc.setFont('helvetica', 'normal');
             doc.text('Contenus :', margin, y); y += 4;
             (formation.module_1 || 'RAS').split('\n').filter(l => l.trim()).forEach(line => {
-                y = this._writeText(doc, margin + 3, y, `-   ${line.trim()}`, { maxWidth: maxW - 3 });
+                const t = line.trim();
+                const prefix = t.startsWith('-') ? '   ' : '-   ';
+                y = this._writeText(doc, margin + 3, y, `${prefix}${t}`, { maxWidth: maxW - 3 });
             });
             y += 2;
 
             doc.setFont('helvetica', 'normal');
-            doc.text('Modalités :', margin, y); y += 4;
+            doc.text('Modalit\u00E9s :', margin, y); y += 4;
             (formation.methods_tools || 'RAS').split('\n').filter(l => l.trim()).forEach(line => {
-                y = this._writeText(doc, margin + 3, y, `-   ${line.trim()}`, { maxWidth: maxW - 3 });
+                const t = line.trim();
+                const prefix = t.startsWith('-') ? '   ' : '-   ';
+                y = this._writeText(doc, margin + 3, y, `${prefix}${t}`, { maxWidth: maxW - 3 });
             });
             y += 2;
 
