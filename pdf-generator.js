@@ -1100,7 +1100,28 @@ const PdfGenerator = {
                 // Lignes apprenants (6 lignes minimum)
                 const maxLearners = Math.max(learnersData.length, 6);
                 for (let i = 0; i < maxLearners; i++) {
+                    // Check saut de page — si declenche, redessiner le header tableau
+                    const prevY = y;
+                    y = this._checkPageBreak(doc, y, rowHeight);
+                    if (y !== prevY) {
+                        // Redessiner le header du tableau sur la nouvelle page
+                        doc.setDrawColor(...pinkColor);
+                        doc.setLineWidth(0.4);
+                        doc.rect(startX, y, totalWidth, headerHeight);
+                        let hxPos = startX;
+                        headers.forEach((header, hi) => {
+                            if (hi > 0) doc.line(hxPos, y, hxPos, y + headerHeight);
+                            doc.setFontSize(8);
+                            doc.setFont('helvetica', 'bold');
+                            doc.setTextColor(...this.COLORS.darkGray);
+                            const hLines = doc.splitTextToSize(header, colWidths[hi] - 4);
+                            doc.text(hLines, hxPos + 2, y + 4);
+                            hxPos += colWidths[hi];
+                        });
+                        y += headerHeight;
+                    }
                     doc.setDrawColor(...pinkColor);
+                    doc.setLineWidth(0.4);
                     doc.rect(startX, y, totalWidth, rowHeight);
 
                     let learnerName = '';
@@ -1132,7 +1153,8 @@ const PdfGenerator = {
                     y += rowHeight;
                 }
 
-                // Zone signature formatrice (dans le tableau, avec colonnes)
+                // Zone signature formatrice (besoin ~35mm)
+                y = this._checkPageBreak(doc, y, 35);
                 const sigHeight = 30;
                 doc.setDrawColor(...pinkColor);
                 doc.rect(startX, y, totalWidth, sigHeight);
@@ -1350,7 +1372,18 @@ const PdfGenerator = {
                 doc.text('Rappel des objectifs pédagogiques', margin + 5, y); y += 5;
                 doc.text('A l\'issue de la formation, le stagiaire sera en capacité d\' :', margin + 5, y); y += 5;
                 const objLines = doc.splitTextToSize(formation.objectives || 'RAS', maxW - 10);
-                objLines.forEach(line => { doc.text(line, margin + 5, y); y += 4.5; });
+                objLines.forEach(line => {
+                    if (y > doc.internal.pageSize.height - 25) {
+                        this.addNJMFooter(doc);
+                        doc.addPage();
+                        y = this.addNJMHeader(doc);
+                        doc.setFontSize(9);
+                        doc.setFont('helvetica', 'normal');
+                        doc.setTextColor(...this.COLORS.darkGray);
+                    }
+                    doc.text(line, margin + 5, y);
+                    y += 4.5;
+                });
                 y += 3;
 
                 // Lieu/dates
