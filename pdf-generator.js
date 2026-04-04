@@ -306,15 +306,26 @@ const PdfGenerator = {
             doc.setFontSize(9);
             doc.setTextColor(...this.COLORS.darkGray);
 
-            // Méthodologie d'évaluation
-            y = this._writeText(doc, 15, y, `M\u00E9thodologie d'\u00E9valuation : ${formation.evaluation_methodology || 'RAS'}`, { maxWidth: 170 });
+            // Méthodologie d'évaluation (label bold + valeur normal)
+            doc.setFont('helvetica', 'bold');
+            const lblMethodo = 'M\u00E9thodologie d\'\u00E9valuation : ';
+            doc.text(lblMethodo, 15, y);
+            const wMethodo = doc.getTextWidth(lblMethodo);
+            doc.setFont('helvetica', 'normal');
+            y = this._writeText(doc, 15 + wMethodo, y, formation.evaluation_methodology || 'RAS', { maxWidth: 170 - wMethodo });
             y += 1;
 
             // Le + apporté
-            y = this._writeText(doc, 15, y, `Le + apport\u00E9 : ${formation.added_value || 'RAS'}`, { maxWidth: 170 });
+            doc.setFont('helvetica', 'bold');
+            const lblPlus = 'Le + apport\u00E9 : ';
+            doc.text(lblPlus, 15, y);
+            const wPlus = doc.getTextWidth(lblPlus);
+            doc.setFont('helvetica', 'normal');
+            y = this._writeText(doc, 15 + wPlus, y, formation.added_value || 'RAS', { maxWidth: 170 - wPlus });
             y += 1;
 
             // Délais d'accès
+            doc.setFont('helvetica', 'normal');
             y = this._writeText(doc, 15, y, `D\u00E9lais d'acc\u00E8s : ${formation.access_delays || 'les dates disponibles le sont \u00E0 partir du 6 mois'}`, { maxWidth: 170 });
 
             this.addNJMFooter(doc);
@@ -539,7 +550,7 @@ const PdfGenerator = {
             doc.text(formation.company_postal_code || '', indent, y); y += 6;
 
             doc.setFont('helvetica', 'normal');
-            doc.text(`Représenté par ${formation.company_director_name || ''}  agissant en qualité de ${formation.company_director_title || 'dirigeant(e)'}`, margin, y); y += 6;
+            doc.text(`Repr\u00E9sent\u00E9 par ${formation.contact_title || 'M.'} ${formation.company_director_name || formation.contact_name || ''} agissant en qualit\u00E9 de ${formation.contact_role || 'dirigeant'}`, margin, y); y += 6;
             doc.text('Ci-après désigné "le Client",', margin, y); y += 8;
 
             // Texte légal
@@ -1359,18 +1370,21 @@ const PdfGenerator = {
                 doc.circle(margin + 1.5, y - 1, 1, 'F');
                 doc.text('Rappel des objectifs pédagogiques', margin + 5, y); y += 5;
                 doc.text('A l\'issue de la formation, le stagiaire sera en capacité d\' :', margin + 5, y); y += 5;
-                const objLines = doc.splitTextToSize(formation.objectives || 'RAS', maxW - 10);
-                objLines.forEach(line => {
-                    if (y > doc.internal.pageSize.height - 25) {
-                        this.addNJMFooter(doc);
-                        doc.addPage();
-                        y = this.addNJMHeader(doc);
-                        doc.setFontSize(9);
-                        doc.setFont('helvetica', 'normal');
-                        doc.setTextColor(...this.COLORS.darkGray);
-                    }
-                    doc.text(line, margin + 5, y);
-                    y += 4.5;
+                const objText = formation.objectives || 'RAS';
+                objText.split('\n').filter(l => l.trim().length > 0).forEach(objLine => {
+                    const wrapped = doc.splitTextToSize(objLine.trim(), maxW - 10);
+                    wrapped.forEach(line => {
+                        if (y > doc.internal.pageSize.height - 25) {
+                            this.addNJMFooter(doc);
+                            doc.addPage();
+                            y = this.addNJMHeader(doc);
+                            doc.setFontSize(9);
+                            doc.setFont('helvetica', 'normal');
+                            doc.setTextColor(...this.COLORS.darkGray);
+                        }
+                        doc.text(line, margin + 5, y);
+                        y += 4.5;
+                    });
                 });
                 y += 3;
 
