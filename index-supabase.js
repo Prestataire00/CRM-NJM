@@ -5985,8 +5985,11 @@ const DocumentPreview = {
 
     goToEdit() {
         const formationId = this.currentFormationId;
+        const docType = this.currentType;
         this.close();
         if (formationId && typeof FormationForm !== 'undefined') {
+            // Stocker le contexte pour revenir a la modal apres save
+            FormationForm._returnToDocPreview = { formationId, docType };
             FormationForm.show(formationId);
         }
     },

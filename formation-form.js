@@ -615,6 +615,13 @@ const FormationForm = {
             }
             this.close();
             if (typeof CRMApp !== 'undefined' && CRMApp.loadFormations) CRMApp.loadFormations();
+
+            // Revenir a la modal document si on venait de "Modifier les infos"
+            if (this._returnToDocPreview) {
+                const { formationId, docType } = this._returnToDocPreview;
+                this._returnToDocPreview = null;
+                setTimeout(() => DocumentPreview.open(formationId, docType), 500);
+            }
         } catch (error) {
             console.error('Erreur sauvegarde:', error);
             showToast('Erreur: ' + error.message, 'error');
