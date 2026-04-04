@@ -1648,36 +1648,6 @@ const CRMApp = {
                     </div>
                 </div>
 
-                <!-- Résultats des acquis -->
-                ${learnersData.length > 0 && formation.objectives ? `
-                <div class="workflow-section">
-                    <h3 style="display:flex;align-items:center;justify-content:space-between;">
-                        <span>📊 Résultats des acquis</span>
-                        <button onclick="CRMApp.saveAcquis(${formationId})" style="padding:0.35rem 0.85rem;background:var(--primary-green);color:white;border:none;border-radius:var(--radius-md);font-size:0.8rem;font-weight:600;cursor:pointer;">Enregistrer</button>
-                    </h3>
-                    ${(() => {
-                        const objectives = (formation.objectives || '').split(/\n/).map(s => s.trim()).filter(s => s.length > 0);
-                        if (objectives.length === 0) return '';
-                        return learnersData.map((l, li) => {
-                            const name = ((l.first_name || '') + ' ' + (l.last_name || '')).trim();
-                            const acquis = l.acquis || [];
-                            return '<div style="margin-bottom:1.5rem;">' +
-                                '<h4 style="font-size:0.9rem;font-weight:600;color:var(--gray-700);margin-bottom:0.5rem;">' + name + '</h4>' +
-                                objectives.map((obj, oi) =>
-                                    '<div style="padding:0.5rem 0;border-bottom:1px solid var(--gray-100);">' +
-                                        '<div style="font-size:0.85rem;color:var(--gray-600);margin-bottom:4px;">' + obj + '</div>' +
-                                        '<div style="display:flex;gap:1rem;">' +
-                                            '<label style="font-size:0.8rem;cursor:pointer;"><input type="radio" name="acquis-' + li + '-' + oi + '" value="acquis" ' + (acquis[oi] === 'acquis' ? 'checked' : '') + '> Acquis</label>' +
-                                            '<label style="font-size:0.8rem;cursor:pointer;"><input type="radio" name="acquis-' + li + '-' + oi + '" value="en_cours" ' + (acquis[oi] === 'en_cours' ? 'checked' : '') + '> En cours</label>' +
-                                            '<label style="font-size:0.8rem;cursor:pointer;"><input type="radio" name="acquis-' + li + '-' + oi + '" value="non_acquis" ' + (acquis[oi] === 'non_acquis' ? 'checked' : '') + '> Non acquis</label>' +
-                                        '</div>' +
-                                    '</div>'
-                                ).join('') +
-                            '</div>';
-                        }).join('');
-                    })()}
-                </div>
-                ` : ''}
             `;
 
             // Charger les supports assignés
