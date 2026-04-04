@@ -211,12 +211,6 @@ async function generateConvention() {
                     articleTitle('Article 4- D\u00E9dit ou abandon :'),
                     alinea('a', 'En cas de r\u00E9siliation de la pr\u00E9sente convention par le client \u00E0 moins de 10 jours francs avant le d\u00E9but d\'une des actions mentionn\u00E9es \u00E0 l\'annexe, l\'organisme de formation retiendra sur le co\u00FBt total 10 % de la somme, au titre de d\u00E9dommagement.'),
                     alinea('b', 'En cas de r\u00E9alisation partielle de l\'action du fait du client, seule sera factur\u00E9e au client la partie effectivement r\u00E9alis\u00E9e de l\'action, selon le prorata suivant : nombre d\'heures r\u00E9alis\u00E9es/nombre d\'heures pr\u00E9vues. En outre, l\'organisme de formation retiendra sur le co\u00FBt correspondant \u00E0 la partie non-r\u00E9alis\u00E9e un pourcentage de 10 %, au titre de d\u00E9dommagement.'),
-                ],
-            },
-            {
-                properties: { ...pageProps(), type: SectionType.NEXT_PAGE },
-                footers: { default: njmFooter() },
-                children: [
                     alinea('c', 'Les montants vers\u00E9s par le client au titre de d\u00E9dommagement ne pourront pas \u00EAtre imput\u00E9s par le client sur son obligation d\u00E9finie \u00E0 l\'article L6331-1 du code du travail ni faire l\'objet d\'une demande de remboursement ou de prise en charge par un OPCO.'),
                     alinea('d', 'En cas de modification unilat\u00E9rale par l\'organisme de formation de l\'un des \u00E9l\u00E9ments fix\u00E9s \u00E0 l\'article 1, le client se r\u00E9serve le droit de mettre fin \u00E0 la pr\u00E9sente convention. Le d\u00E9lai d\'annulation \u00E9tant toutefois limit\u00E9 \u00E0 30 jours francs avant la date pr\u00E9vue de commencement de l\'une des actions mentionn\u00E9es \u00E0 la pr\u00E9sente convention, il sera, dans ce cas, proc\u00E9d\u00E9 \u00E0 une r\u00E9sorption anticip\u00E9e de la convention.'),
                     emptyLine(40),
