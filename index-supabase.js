@@ -5773,147 +5773,117 @@ const DocumentPreview = {
             // Preparer les valeurs par defaut
             const vars = config.prepareVars(data);
 
-            // Generer le formulaire
+            // Generer l'apercu en lecture seule
             const container = document.getElementById('doc-preview-fields');
             container.innerHTML = '';
 
+            const missing = [];
             config.fields.forEach(field => {
-                const wrapper = document.createElement('div');
-                if (field.type === 'textarea') {
-                    wrapper.style.gridColumn = '1 / -1';
-                }
+                const value = vars[field.key] || '';
+                const isEmpty = !value.trim();
+                if (field.required && isEmpty) missing.push(field.label);
 
-                const label = document.createElement('label');
-                label.textContent = field.label;
-                label.style.cssText = 'display: block; font-size: 0.8rem; font-weight: 600; color: var(--gray-600); margin-bottom: 0.25rem;';
+                const wrapper = document.createElement('div');
+                if (field.type === 'textarea') wrapper.style.gridColumn = '1 / -1';
+
+                const label = document.createElement('div');
+                label.textContent = field.label + (field.required ? ' *' : '');
+                label.style.cssText = 'font-size: 0.75rem; font-weight: 600; color: var(--gray-500); margin-bottom: 0.15rem; text-transform: uppercase; letter-spacing: 0.3px;';
                 wrapper.appendChild(label);
 
-                if (field.type === 'readonly') {
-                    const div = document.createElement('div');
-                    div.style.cssText = 'padding: 0.5rem; background: var(--gray-100); border-radius: var(--radius-md); font-size: 0.85rem; color: var(--gray-500); white-space: pre-wrap; max-height: 80px; overflow-y: auto;';
-                    div.textContent = vars[field.key] || '';
-                    div.dataset.key = field.key;
-                    div.classList.add('doc-preview-readonly');
-                    wrapper.appendChild(div);
-                } else if (field.type === 'textarea') {
-                    const ta = document.createElement('textarea');
-                    ta.value = vars[field.key] || '';
-                    ta.dataset.key = field.key;
-                    ta.classList.add('doc-preview-input');
-                    ta.style.cssText = 'width: 100%; padding: 0.5rem; border: 1px solid var(--gray-300); border-radius: var(--radius-md); font-size: 0.85rem; min-height: 60px; resize: vertical;';
-                    wrapper.appendChild(ta);
+                const val = document.createElement('div');
+                val.dataset.key = field.key;
+                if (isEmpty) {
+                    val.textContent = '\u2014 non renseign\u00E9';
+                    val.style.cssText = 'padding: 0.4rem 0.5rem; font-size: 0.85rem; color: #EF4444; font-style: italic; background: #FEF2F2; border-radius: var(--radius-sm);';
                 } else {
-                    const input = document.createElement('input');
-                    input.type = 'text';
-                    input.value = vars[field.key] || '';
-                    input.dataset.key = field.key;
-                    input.classList.add('doc-preview-input');
-                    input.style.cssText = 'width: 100%; padding: 0.5rem; border: 1px solid var(--gray-300); border-radius: var(--radius-md); font-size: 0.85rem;';
-                    wrapper.appendChild(input);
+                    val.textContent = value;
+                    val.style.cssText = 'padding: 0.4rem 0.5rem; font-size: 0.85rem; color: var(--gray-800); background: var(--gray-50); border-radius: var(--radius-sm); white-space: pre-wrap; max-height: 100px; overflow-y: auto;';
                 }
-
+                wrapper.appendChild(val);
                 container.appendChild(wrapper);
             });
 
-            // Apprenants dynamiques (feuille de presence)
-            if (config.dynamicLearners) {
-                const learnersSection = document.createElement('div');
-                learnersSection.style.gridColumn = '1 / -1';
-                learnersSection.id = 'doc-preview-learners';
-
-                const learnersTitle = document.createElement('div');
-                learnersTitle.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;';
-                learnersTitle.innerHTML = '<label style="font-size: 0.8rem; font-weight: 600; color: var(--gray-600);">Apprenants</label>';
-                const addBtn = document.createElement('button');
-                addBtn.type = 'button';
-                addBtn.textContent = '+ Ajouter un apprenant';
-                addBtn.style.cssText = 'padding: 0.3rem 0.75rem; background: var(--primary-orange, #E36A3A); color: white; border: none; border-radius: var(--radius-md); font-size: 0.8rem; font-weight: 600; cursor: pointer;';
-                addBtn.onclick = () => DocumentPreview.addLearnerRow();
-                learnersTitle.appendChild(addBtn);
-                learnersSection.appendChild(learnersTitle);
-
-                const learnersList = document.createElement('div');
-                learnersList.id = 'doc-preview-learners-list';
-                learnersList.style.cssText = 'display: flex; flex-direction: column; gap: 0.4rem;';
-                learnersSection.appendChild(learnersList);
-
-                container.appendChild(learnersSection);
-
-                // Ajouter les apprenants existants (minimum 1)
-                const existingLearners = vars._learners || [];
-                const count = Math.max(existingLearners.length, 1);
-                for (let i = 0; i < count; i++) {
-                    const l = existingLearners[i];
-                    this.addLearnerRow(l ? l.name : '', l ? l.hours : '');
+            // Apprenants (lecture seule)
+            if (config.dynamicLearners && vars._learners) {
+                const section = document.createElement('div');
+                section.style.gridColumn = '1 / -1';
+                const title = document.createElement('div');
+                title.textContent = 'APPRENANTS';
+                title.style.cssText = 'font-size: 0.75rem; font-weight: 600; color: var(--gray-500); margin-bottom: 0.25rem; text-transform: uppercase; letter-spacing: 0.3px;';
+                section.appendChild(title);
+                if (vars._learners.length === 0) {
+                    const empty = document.createElement('div');
+                    empty.textContent = '\u2014 aucun apprenant';
+                    empty.style.cssText = 'color: #EF4444; font-style: italic; font-size: 0.85rem; background: #FEF2F2; padding: 0.4rem 0.5rem; border-radius: var(--radius-sm);';
+                    section.appendChild(empty);
+                    missing.push('Apprenants');
+                } else {
+                    vars._learners.forEach(l => {
+                        const row = document.createElement('div');
+                        row.style.cssText = 'padding: 0.3rem 0.5rem; font-size: 0.85rem; color: var(--gray-800); background: var(--gray-50); border-radius: var(--radius-sm); margin-bottom: 0.2rem;';
+                        row.textContent = l.name + (l.hours ? ` \u2014 ${l.hours}h` : '');
+                        section.appendChild(row);
+                    });
                 }
+                container.appendChild(section);
             }
 
-            // Acquis dynamiques (certificat)
+            // Acquis (lecture seule pour certificat)
             if (config.dynamicAcquis && vars._learners && vars._objectives) {
-                const acquisSection = document.createElement('div');
-                acquisSection.style.gridColumn = '1 / -1';
-                acquisSection.id = 'doc-preview-acquis';
-
-                const acquisTitle = document.createElement('label');
-                acquisTitle.textContent = 'R\u00E9sultats des acquis par apprenant';
-                acquisTitle.style.cssText = 'display: block; font-size: 0.9rem; font-weight: 700; color: var(--gray-700); margin-bottom: 0.5rem; border-top: 1px solid var(--gray-200); padding-top: 0.75rem;';
-                acquisSection.appendChild(acquisTitle);
-
-                vars._learners.forEach((learner, li) => {
+                const section = document.createElement('div');
+                section.style.gridColumn = '1 / -1';
+                section.style.cssText += 'border-top: 1px solid var(--gray-200); padding-top: 0.5rem; margin-top: 0.5rem;';
+                const title = document.createElement('div');
+                title.textContent = 'R\u00C9SULTATS DES ACQUIS';
+                title.style.cssText = 'font-size: 0.75rem; font-weight: 600; color: var(--gray-500); margin-bottom: 0.25rem; text-transform: uppercase; letter-spacing: 0.3px;';
+                section.appendChild(title);
+                vars._learners.forEach(learner => {
                     if (!learner.name) return;
-                    const learnerBlock = document.createElement('div');
-                    learnerBlock.style.cssText = 'margin-bottom: 1rem; padding: 0.5rem; background: var(--gray-50); border-radius: var(--radius-md);';
-                    learnerBlock.dataset.learnerIndex = li;
-                    learnerBlock.classList.add('doc-acquis-learner');
-
-                    const nameLabel = document.createElement('div');
-                    nameLabel.textContent = learner.name;
-                    nameLabel.style.cssText = 'font-weight: 600; font-size: 0.85rem; margin-bottom: 0.4rem; color: var(--gray-800);';
-                    learnerBlock.appendChild(nameLabel);
-
+                    const block = document.createElement('div');
+                    block.style.cssText = 'margin-bottom: 0.5rem; padding: 0.4rem; background: var(--gray-50); border-radius: var(--radius-sm);';
+                    const name = document.createElement('div');
+                    name.textContent = learner.name;
+                    name.style.cssText = 'font-weight: 600; font-size: 0.85rem; margin-bottom: 0.2rem;';
+                    block.appendChild(name);
                     vars._objectives.forEach((obj, oi) => {
-                        const objRow = document.createElement('div');
-                        objRow.style.cssText = 'padding: 0.3rem 0; border-bottom: 1px solid var(--gray-100); display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap;';
-
-                        const objLabel = document.createElement('div');
-                        objLabel.textContent = obj;
-                        objLabel.style.cssText = 'font-size: 0.8rem; color: var(--gray-600); flex: 1; min-width: 150px;';
-                        objRow.appendChild(objLabel);
-
-                        const radios = document.createElement('div');
-                        radios.style.cssText = 'display: flex; gap: 0.75rem;';
-                        const currentVal = learner.acquis[oi] || '';
-                        ['acquis', 'en_cours', 'non_acquis'].forEach(val => {
-                            const lbl = document.createElement('label');
-                            lbl.style.cssText = 'font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 2px;';
-                            const radio = document.createElement('input');
-                            radio.type = 'radio';
-                            radio.name = `doc-acquis-${li}-${oi}`;
-                            radio.value = val;
-                            if (currentVal === val) radio.checked = true;
-                            lbl.appendChild(radio);
-                            lbl.appendChild(document.createTextNode(val === 'acquis' ? ' Acquis' : val === 'en_cours' ? ' En cours' : ' Non acquis'));
-                            radios.appendChild(lbl);
-                        });
-                        objRow.appendChild(radios);
-                        learnerBlock.appendChild(objRow);
+                        const val = learner.acquis[oi];
+                        const statusMap = { acquis: '\u2705 Acquis', en_cours: '\uD83D\uDD36 En cours', non_acquis: '\u274C Non acquis' };
+                        const row = document.createElement('div');
+                        row.style.cssText = 'font-size: 0.8rem; color: var(--gray-600); padding: 0.1rem 0;';
+                        row.textContent = obj + ' \u2192 ' + (statusMap[val] || '\u2014 non \u00E9valu\u00E9');
+                        block.appendChild(row);
                     });
-
-                    acquisSection.appendChild(learnerBlock);
+                    section.appendChild(block);
                 });
+                container.appendChild(section);
+            }
 
-                container.appendChild(acquisSection);
+            // Bandeau status
+            const statusDiv = document.getElementById('doc-preview-status');
+            const btnPdf = document.getElementById('doc-preview-btn-pdf');
+            const btnDocx = document.getElementById('doc-preview-btn-docx');
+            if (missing.length > 0) {
+                statusDiv.style.display = 'block';
+                statusDiv.style.background = '#FEF2F2';
+                statusDiv.style.border = '1px solid #FECACA';
+                statusDiv.style.color = '#991B1B';
+                statusDiv.innerHTML = '<strong>\u26A0 Champs obligatoires manquants :</strong> ' + missing.join(', ') + '<br><em>Cliquez "Modifier les infos" pour les compl\u00E9ter.</em>';
+                btnPdf.disabled = true; btnPdf.style.opacity = '0.5'; btnPdf.style.cursor = 'not-allowed';
+                btnDocx.disabled = true; btnDocx.style.opacity = '0.5'; btnDocx.style.cursor = 'not-allowed';
+            } else {
+                statusDiv.style.display = 'block';
+                statusDiv.style.background = '#F0FDF4';
+                statusDiv.style.border = '1px solid #BBF7D0';
+                statusDiv.style.color = '#166534';
+                statusDiv.innerHTML = '\u2705 <strong>Tout est pr\u00EAt !</strong> Vous pouvez t\u00E9l\u00E9charger le document.';
+                btnPdf.disabled = false; btnPdf.style.opacity = '1'; btnPdf.style.cursor = 'pointer';
+                btnDocx.disabled = false; btnDocx.style.opacity = '1'; btnDocx.style.cursor = 'pointer';
             }
 
             // Titre + ouvrir modal
             document.getElementById('doc-preview-title').textContent = config.title;
             document.getElementById('documentPreviewModal').style.display = 'flex';
-
-            // Validation initiale + listeners temps reel
-            this.validate();
-            document.querySelectorAll('#doc-preview-fields .doc-preview-input').forEach(el => {
-                el.addEventListener('input', () => this.validate());
-            });
 
         } catch (err) {
             console.error('Erreur DocumentPreview.open:', err);
@@ -6001,6 +5971,14 @@ const DocumentPreview = {
         this.currentFormationId = null;
     },
 
+    goToEdit() {
+        const formationId = this.currentFormationId;
+        this.close();
+        if (formationId && typeof FormationForm !== 'undefined') {
+            FormationForm.show(formationId);
+        }
+    },
+
     getFormValues() {
         const values = {};
         // Editable inputs
@@ -6048,79 +6026,14 @@ const DocumentPreview = {
 
     async downloadPdf() {
         try {
-            if (!this.validate()) return;
             if (typeof PdfGenerator === 'undefined') {
                 showToast('Service PDF non disponible', 'error');
                 return;
             }
 
-            // Auto-save en base avant generation
-            await this.saveToDb();
             showToast('G\u00E9n\u00E9ration du PDF...', 'info');
+            const f = this.currentFormationData;
 
-            // Construire un objet formation avec les valeurs du formulaire
-            const vars = this.getFormValues();
-            const f = { ...this.currentFormationData };
-
-            // Mapper les valeurs du formulaire vers les champs formation
-            if (vars.company_name) f.company_name = vars.company_name;
-            if (vars.company_address) { f.company_address = vars.company_address; f.client_address = vars.company_address; }
-            if (vars.company_postal_city) { f.company_postal_code = vars.company_postal_city; f.client_postal_city = vars.company_postal_city; }
-            if (vars.contact_name) { f.company_director_name = vars.contact_name; f.contact_name = vars.contact_name; }
-            if (vars.contact_title) { f.company_director_title = vars.contact_title; f.contact_title = vars.contact_title; }
-            if (vars.contact_role) f.contact_role = vars.contact_role;
-            if (vars.formation_name) f.formation_name = vars.formation_name;
-            if (vars.objectives) f.objectives = vars.objectives;
-            if (vars.content_summary) f.content_summary = vars.content_summary;
-            if (vars.module_content) f.module_1 = vars.module_content;
-            if (vars.content) f.module_1 = vars.content;
-            if (vars.methods) f.methods_tools = vars.methods;
-            if (vars.training_location) f.training_location = vars.training_location;
-            if (vars.duration) f.hours_per_learner = vars.duration;
-            if (vars.dates) f.custom_dates = vars.dates;
-            if (vars.price) { f.total_amount = vars.price; f.price = vars.price; }
-            if (vars.total_amount) { f.total_amount = vars.total_amount; f.price = vars.total_amount; }
-            // Sous-traitant
-            if (vars.trainer_name) {
-                const parts = vars.trainer_name.split(' ');
-                f.subcontractor_first_name = parts[0] || '';
-                f.subcontractor_last_name = parts.slice(1).join(' ') || '';
-            }
-            if (vars.trainer_address) f.subcontractor_address = vars.trainer_address;
-            if (vars.trainer_siret) f.subcontractor_siret = vars.trainer_siret;
-            if (vars.trainer_nda) f.subcontractor_nda = vars.trainer_nda;
-            if (vars.price) f.subcontractor_price = vars.price;
-            if (vars.signature_date) f.signature_date = vars.signature_date;
-
-            // Injecter les acquis modifies dans les learners_data
-            if (vars._acquis) {
-                let learnersData = PdfGenerator.parseLearners(f);
-                vars._acquis.forEach((acq, li) => {
-                    if (learnersData[li]) {
-                        learnersData[li].acquis = acq;
-                    }
-                });
-                f.learners_data = learnersData;
-            }
-
-            // Injecter les apprenants dynamiques (feuille de presence)
-            const learnerKeys = Object.keys(vars).filter(k => k.match(/^learner_\d+$/) && vars[k]);
-            if (learnerKeys.length > 0) {
-                const newLearners = learnerKeys.map(k => {
-                    const idx = k.replace('learner_', '');
-                    const parts = vars[k].split(' ');
-                    return {
-                        first_name: parts[0] || '',
-                        last_name: parts.slice(1).join(' ') || '',
-                        hours: (vars[`hours_${idx}`] || '').replace('h', ''),
-                    };
-                }).filter(l => l.first_name || l.last_name);
-                if (newLearners.length > 0) {
-                    f.learners_data = newLearners;
-                }
-            }
-
-            // Appeler le bon generateur PDF selon le type
             const generators = {
                 convention: 'generateConvention',
                 fiche_pedagogique: 'generatePedagogicalSheet',
@@ -6221,12 +6134,9 @@ const DocumentPreview = {
 
     async download() {
         try {
-            if (!this.validate()) return;
             const config = DOC_CONFIGS[this.currentType];
             if (!config) return;
 
-            // Auto-save en base avant generation
-            await this.saveToDb();
             showToast('G\u00E9n\u00E9ration du document...', 'info');
 
             // Charger PizZip
@@ -6249,12 +6159,11 @@ const DocumentPreview = {
             const zip = new window.PizZip(arrayBuffer);
             let xml = zip.file('word/document.xml').asText();
 
-            // Remplacer les variables
-            const vars = this.getFormValues();
+            // Preparer les variables depuis la formation
+            const vars = config.prepareVars(this.currentFormationData);
             Object.entries(vars).forEach(([key, value]) => {
-                if (key.startsWith('_')) return; // skip internal vars
-                // Convertir les \n en retours a la ligne OOXML
-                let safeValue = (value || '').replace(/\n/g, '</w:t><w:br/><w:t>');
+                if (key.startsWith('_')) return;
+                let safeValue = String(value || '').replace(/\n/g, '</w:t><w:br/><w:t>');
                 xml = xml.split(`{{${key}}}`).join(safeValue);
             });
 
