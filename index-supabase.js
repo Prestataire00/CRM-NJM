@@ -5675,9 +5675,12 @@ const DOC_CONFIGS = {
             const totalHours = parseFloat(f.hours_per_learner) || 0;
             const numDays = parseInt(f.number_of_days) || 1;
             const hoursPerDay = numDays > 0 ? Math.round(totalHours / numDays) : totalHours;
+            const startDate = f.start_date ? new Date(f.start_date).toLocaleDateString('fr-FR') : '';
+            const endDate = f.end_date ? new Date(f.end_date).toLocaleDateString('fr-FR') : '';
+            const date = f.custom_dates || (startDate === endDate ? startDate : `${startDate} au ${endDate}`) || '';
             const vars = {
                 formation_name: f.formation_name || '',
-                date: f.start_date ? new Date(f.start_date).toLocaleDateString('fr-FR') : '',
+                date: date,
                 training_location: f.training_location || '',
                 _learners: learnersData.map(l => ({ name: PdfGenerator.getLearnerName(l), hours: l.hours || String(hoursPerDay) || '' })).filter(l => l.name),
             };
