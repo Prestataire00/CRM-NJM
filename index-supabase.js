@@ -1518,11 +1518,26 @@ const CRMApp = {
                 'completed': 'completed', 'cancelled': 'cancelled'
             };
 
+            // Verifier si le compte client existe
+            let hasClientAccount = false;
+            if (formation.client_email) {
+                const profileCheck = await SupabaseData.getProfileByEmail(formation.client_email);
+                hasClientAccount = profileCheck.success && profileCheck.data;
+            }
+
             // Workflow items
             const workflow = [
-                { label: 'Fiche pédagogique', done: hasDoc('fiche_pedagogique'), actionLabel: hasDoc('fiche_pedagogique') ? 'Ouvrir' : 'Creer', actionClass: hasDoc('fiche_pedagogique') ? 'open' : 'generate', action: hasDoc('fiche_pedagogique') ? `CRMApp.openDocument(${formationId}, 'fiche_pedagogique')` : `CRMApp.createPedagogicalSheet(${formationId})` },
+                { label: 'Fiche p\u00E9dagogique', done: hasDoc('fiche_pedagogique'), actionLabel: hasDoc('fiche_pedagogique') ? 'Ouvrir' : 'Creer', actionClass: hasDoc('fiche_pedagogique') ? 'open' : 'generate', action: hasDoc('fiche_pedagogique') ? `CRMApp.openDocument(${formationId}, 'fiche_pedagogique')` : `CRMApp.createPedagogicalSheet(${formationId})` },
                 { label: 'Convention', done: hasDoc('convention'), actionLabel: hasDoc('convention') ? 'Ouvrir' : 'Creer', actionClass: hasDoc('convention') ? 'open' : 'generate', action: hasDoc('convention') ? `CRMApp.openDocument(${formationId}, 'convention')` : `CRMApp.createConvention(${formationId})` },
-                { label: 'Inviter le client (acces)', done: false, actionLabel: 'Envoyer', actionClass: 'send', action: `CRMApp.inviterClient(${formationId})` },
+                {
+                    label: 'Acc\u00E8s client',
+                    done: hasClientAccount,
+                    actionLabel: hasClientAccount ? 'Inviter' : 'Cr\u00E9er l\'acc\u00E8s',
+                    actionClass: hasClientAccount ? 'send' : 'generate',
+                    action: hasClientAccount ? `CRMApp.inviterClient(${formationId})` : `CRMApp.createClientAccess(${formationId})`,
+                    secondActionLabel: hasClientAccount ? null : null,
+                    secondAction: hasClientAccount ? null : null,
+                },
                 { label: 'Convocation', done: hasConvocation, actionLabel: hasConvocation ? 'Renvoyer' : 'Envoyer', actionClass: 'send', action: `CRMApp.sendConvocation(${formationId})` },
                 { label: 'Feuille de présence', done: hasDoc('attendance_sheet'), actionLabel: hasDoc('attendance_sheet') ? 'Ouvrir' : 'Creer', actionClass: hasDoc('attendance_sheet') ? 'open' : 'generate', action: hasDoc('attendance_sheet') ? `CRMApp.openDocument(${formationId}, 'attendance_sheet')` : `CRMApp.createAttendanceSheet(${formationId})` },
                 { label: 'Mail fin de formation', done: false, actionLabel: 'Envoyer', actionClass: 'send', action: `CRMApp.sendMailFinFormation(${formationId})` },
@@ -2142,6 +2157,66 @@ const CRMApp = {
         } catch (error) {
             console.error('Erreur envoi BPF:', error);
             showToast("Erreur lors de l'envoi vers le BPF", 'error');
+        }
+    },
+
+    async createClientAccess(formationId) {
+        try {
+            const { data: formation, error } = await supabaseClient
+                .from('formations').select('*').eq('id', formationId).single();
+            if (error) throw error;
+
+            const clientEmail = formation.client_email;
+            if (!clientEmail) {
+                showToast('Email client non renseign\u00E9. Modifiez la fiche pour ajouter un email.', 'error');
+                return;
+            }
+
+            // Verifier si le compte existe deja
+            const profileCheck = await SupabaseData.getProfileByEmail(clientEmail);
+            if (profileCheck.success && profileCheck.data) {
+                showToast('Le compte client existe d\u00E9j\u00E0. Utilisez "Inviter" pour envoyer les identifiants.', 'info');
+                this.showFormationDetail(formationId);
+                return;
+            }
+
+            // Generer un mot de passe
+            const password = Math.random().toString(36).slice(-8) + 'A1!';
+            const clientName = formation.company_director_name || formation.company_name || '';
+
+            const confirmed = await showConfirmDialog({
+                title: 'Cr\u00E9er un acc\u00E8s client',
+                message: `Cr\u00E9er un compte pour :\n\nEmail : ${clientEmail}\nNom : ${clientName}\nMot de passe : ${password}\n\nLe client pourra acc\u00E9der \u00E0 son espace formation.`,
+                confirmText: 'Cr\u00E9er le compte',
+            });
+            if (!confirmed) return;
+
+            showToast('Cr\u00E9ation du compte...', 'info');
+
+            // Creer le compte via SupabaseAuth
+            const currentUser = (await supabaseClient.auth.getUser()).data.user;
+            const result = await SupabaseAuth.registerUser(currentUser.id, {
+                email: clientEmail,
+                password: password,
+                name: clientName,
+                role: 'client',
+                mustChangePassword: false
+            });
+
+            if (result && result.success) {
+                // Lier au client si client_id existe
+                if (formation.client_id && result.userId) {
+                    await SupabaseData.linkUserToClient(result.userId, formation.client_id);
+                }
+                showToast('Compte client cr\u00E9\u00E9 ! Vous pouvez maintenant envoyer l\'invitation.', 'success');
+                addNotification('acces', `Acc\u00E8s client cr\u00E9\u00E9 pour ${clientEmail}`);
+                this.showFormationDetail(formationId);
+            } else {
+                showToast('Erreur: ' + (result?.message || 'Erreur inconnue'), 'error');
+            }
+        } catch (err) {
+            console.error('Erreur createClientAccess:', err);
+            showToast('Erreur: ' + err.message, 'error');
         }
     },
 
