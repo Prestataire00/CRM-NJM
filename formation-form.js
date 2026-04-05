@@ -498,7 +498,8 @@ const FormationForm = {
             { id: 'collaboration_mode', label: 'Mode de collaboration', tab: 'general' },
             { id: 'client_id', label: 'Client', tab: 'general' },
             { id: 'start_date', label: 'Date de d\u00E9but', tab: 'general' },
-            { id: 'end_date', label: 'Date de fin', tab: 'general' }
+            { id: 'end_date', label: 'Date de fin', tab: 'general' },
+            { id: 'hours_per_learner', label: 'Heures par apprenant', tab: 'general' },
         ];
         for (const field of required) {
             const el = document.getElementById(field.id);
@@ -532,6 +533,9 @@ const FormationForm = {
             showToast('Veuillez s\u00E9lectionner un sous-traitant', 'error');
             return;
         }
+
+        // Filtrer les apprenants vides (sans nom ni prenom)
+        this.learnersData = this.learnersData.filter(l => (l.first_name || '').trim() || (l.last_name || '').trim());
 
         const selectedClient = this.clientsData.find(c => c.id === clientId);
         const selectedSub = this.subcontractorsData.find(s => s.id === subcontractorId);

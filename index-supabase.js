@@ -90,6 +90,7 @@ const CRMApp = {
     // ==================== ACTIVITÉ RÉCENTE ====================
 
     async loadRecentActivity() {
+        try {
         const { data } = await supabaseClient
             .from('notifications')
             .select('*')
@@ -123,6 +124,7 @@ const CRMApp = {
                 </div>
             </li>`;
         }).join('');
+        } catch (e) { console.warn('Activit\u00E9 r\u00E9cente non disponible:', e); }
     },
 
     timeAgo(date) {
@@ -271,8 +273,26 @@ const CRMApp = {
             result = await SupabaseData.addClient(data);
         }
         if (result.success) {
-            showToast(id ? 'Client mis à jour !' : 'Client créé !', 'success');
-            addNotification('client', id ? `Client modifié — ${data.company_name}` : `Client créé — ${data.company_name}`);
+            // Cascade : mettre a jour les formations liees
+            if (id) {
+                try {
+                    const { data: formations } = await supabaseClient.from('formations').select('id').eq('client_id', id);
+                    if (formations && formations.length > 0) {
+                        for (const f of formations) {
+                            await supabaseClient.from('formations').update({
+                                company_name: data.company_name,
+                                client_name: data.company_name,
+                                company_address: data.address,
+                                company_postal_code: [data.postal_code, data.city].filter(Boolean).join(' '),
+                                company_director_name: data.contact_name,
+                                client_email: data.email,
+                            }).eq('id', f.id);
+                        }
+                    }
+                } catch (e) { console.warn('Cascade client:', e); }
+            }
+            showToast(id ? 'Client mis \u00E0 jour !' : 'Client cr\u00E9\u00E9 !', 'success');
+            addNotification('client', id ? `Client modifi\u00E9 \u2014 ${data.company_name}` : `Client cr\u00E9\u00E9 \u2014 ${data.company_name}`);
             document.getElementById('client-modal').remove();
             this.loadClientsList();
         } else {
@@ -281,6 +301,12 @@ const CRMApp = {
     },
 
     async confirmDeleteClient(id) {
+        // Verifier si des formations sont liees
+        const { data: linkedFormations } = await supabaseClient.from('formations').select('id').eq('client_id', id);
+        if (linkedFormations && linkedFormations.length > 0) {
+            showToast(`Impossible de supprimer : ${linkedFormations.length} formation(s) li\u00E9e(s) \u00E0 ce client.`, 'error');
+            return;
+        }
         const client = this.clientsAllData.find(c => c.id === id);
         const confirmed = await showConfirmDialog({
             title: 'Supprimer le client',
@@ -406,6 +432,23 @@ const CRMApp = {
             result = await SupabaseData.addSubcontractor(data);
         }
         if (result.success) {
+            // Cascade : mettre a jour les formations liees
+            if (id) {
+                try {
+                    const { data: formations } = await supabaseClient.from('formations').select('id').eq('subcontractor_id', id);
+                    if (formations && formations.length > 0) {
+                        for (const f of formations) {
+                            await supabaseClient.from('formations').update({
+                                subcontractor_first_name: data.first_name,
+                                subcontractor_last_name: data.last_name,
+                                subcontractor_address: data.address,
+                                subcontractor_siret: data.siret,
+                                subcontractor_nda: data.nda,
+                            }).eq('id', f.id);
+                        }
+                    }
+                } catch (e) { console.warn('Cascade sous-traitant:', e); }
+            }
             showToast(id ? 'Sous-traitant mis \u00E0 jour' : 'Sous-traitant cr\u00E9\u00E9', 'success');
             document.getElementById('subcontractor-modal')?.remove();
             this.loadSubcontractorsList();
@@ -415,6 +458,12 @@ const CRMApp = {
     },
 
     async confirmDeleteSubcontractor(id) {
+        // Verifier si des formations sont liees
+        const { data: linkedFormations } = await supabaseClient.from('formations').select('id').eq('subcontractor_id', id);
+        if (linkedFormations && linkedFormations.length > 0) {
+            showToast(`Impossible de supprimer : ${linkedFormations.length} formation(s) li\u00E9e(s) \u00E0 ce sous-traitant.`, 'error');
+            return;
+        }
         const sub = this.subcontractorsAllData.find(s => s.id === id);
         const name = sub ? (sub.first_name + ' ' + sub.last_name) : '';
         const confirmed = await showConfirmDialog({
@@ -6205,11 +6254,15 @@ const DocumentPreview = {
     },
 
     async downloadPdf() {
+        const btnPdf = document.getElementById('doc-preview-btn-pdf');
+        const btnDocx = document.getElementById('doc-preview-btn-docx');
         try {
             if (typeof PdfGenerator === 'undefined') {
                 showToast('Service PDF non disponible', 'error');
                 return;
             }
+            if (btnPdf) { btnPdf.disabled = true; btnPdf.textContent = '\u23F3 G\u00E9n\u00E9ration...'; }
+            if (btnDocx) { btnDocx.disabled = true; }
 
             showToast('G\u00E9n\u00E9ration du PDF...', 'info');
             const f = { ...this.currentFormationData };
@@ -6264,6 +6317,9 @@ const DocumentPreview = {
         } catch (err) {
             console.error('Erreur DocumentPreview.downloadPdf:', err);
             showToast('Erreur: ' + err.message, 'error');
+        } finally {
+            if (btnPdf) { btnPdf.disabled = false; btnPdf.textContent = 'Telecharger PDF'; }
+            if (btnDocx) { btnDocx.disabled = false; }
         }
     },
 
@@ -6338,9 +6394,13 @@ const DocumentPreview = {
     },
 
     async download() {
+        const btnPdf = document.getElementById('doc-preview-btn-pdf');
+        const btnDocx = document.getElementById('doc-preview-btn-docx');
         try {
             const config = DOC_CONFIGS[this.currentType];
             if (!config) return;
+            if (btnPdf) { btnPdf.disabled = true; }
+            if (btnDocx) { btnDocx.disabled = true; btnDocx.textContent = '\u23F3 G\u00E9n\u00E9ration...'; }
 
             showToast('G\u00E9n\u00E9ration du document...', 'info');
 
@@ -6424,6 +6484,9 @@ const DocumentPreview = {
         } catch (err) {
             console.error('Erreur DocumentPreview.download:', err);
             showToast('Erreur: ' + err.message, 'error');
+        } finally {
+            if (btnPdf) { btnPdf.disabled = false; }
+            if (btnDocx) { btnDocx.disabled = false; btnDocx.textContent = 'Telecharger .docx'; }
         }
     },
 };
