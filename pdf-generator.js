@@ -309,7 +309,7 @@ const PdfGenerator = {
                 'Méthodes, moyens et outils\npédagogiques'
             ];
 
-            const colWidths = [20, 40, 65, 55];
+            const colWidths = [15, 35, 80, 50];
 
             const rows = [[
                 `${formation.hours_per_learner || 0}h\n\n${formation.number_of_days || 0} ${(formation.number_of_days || 0) <= 1 ? 'jour' : 'jours'}`,
