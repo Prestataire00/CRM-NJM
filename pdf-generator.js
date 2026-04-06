@@ -184,72 +184,92 @@ const PdfGenerator = {
     /**
      * Dessine un tableau avec bordures orange (comme le modèle)
      */
-    drawTable(doc, startY, headers, rows, colWidths) {
-        const startX = 15;
-        const rowHeight = 8;
-        const cellPadding = 1.5;
+    _drawTableHeader(doc, startX, y, headers, colWidths, cellPadding) {
         const totalWidth = colWidths.reduce((a, b) => a + b, 0);
-
+        const rowHeight = 8;
         doc.setDrawColor(...this.COLORS.tableOrange);
         doc.setLineWidth(0.4);
-
-        // En-tête du tableau
         doc.setFillColor(255, 248, 240);
-        doc.rect(startX, startY, totalWidth, rowHeight * 2, 'FD');
-
-        // Lignes verticales d'en-tête
+        doc.rect(startX, y, totalWidth, rowHeight * 2, 'FD');
         let xPos = startX;
         headers.forEach((header, i) => {
-            if (i > 0) {
-                doc.line(xPos, startY, xPos, startY + rowHeight * 2);
-            }
+            if (i > 0) doc.line(xPos, y, xPos, y + rowHeight * 2);
             doc.setFontSize(7.5);
             doc.setFont('helvetica', 'bold');
             doc.setTextColor(...this.COLORS.darkGray);
             const lines = doc.splitTextToSize(header, colWidths[i] - cellPadding * 2);
-            doc.text(lines, xPos + cellPadding, startY + 4, { maxWidth: colWidths[i] - cellPadding * 2 });
+            doc.text(lines, xPos + cellPadding, y + 4, { maxWidth: colWidths[i] - cellPadding * 2 });
             xPos += colWidths[i];
         });
+        return y + rowHeight * 2;
+    },
 
-        let y = startY + rowHeight * 2;
+    drawTable(doc, startY, headers, rows, colWidths) {
+        const startX = 15;
+        const cellPadding = 1.5;
+        const lineH = 4;
+        const totalWidth = colWidths.reduce((a, b) => a + b, 0);
+        const pageH = doc.internal.pageSize.height;
+        const bottomMargin = 25;
+        const maxContentY = pageH - bottomMargin;
 
-        // Lignes du tableau
+        // Header du tableau
+        let y = this._drawTableHeader(doc, startX, startY, headers, colWidths, cellPadding);
+
+        // Pour chaque ligne du tableau
         rows.forEach(row => {
-            // Calculer la hauteur de la ligne
-            let maxLines = 1;
-            row.forEach((cell, i) => {
-                const lines = doc.splitTextToSize(String(cell || ''), colWidths[i] - cellPadding * 2);
-                maxLines = Math.max(maxLines, lines.length);
-            });
-            const currentRowHeight = Math.max(rowHeight, maxLines * 4 + 4);
+            // Preparer les lignes wrappees par cellule
+            const cellLines = row.map((cell, i) =>
+                doc.splitTextToSize(String(cell || ''), colWidths[i] - cellPadding * 2)
+            );
+            const maxLineCount = Math.max(...cellLines.map(l => l.length), 1);
 
-            // Vérifier si on dépasse la page
-            const pageH = doc.internal.pageSize.height;
-            if (y + currentRowHeight > pageH - 25) {
-                this.addNJMFooter(doc);
-                doc.addPage();
-                y = this.addNJMHeader(doc);
-            }
+            // Ecrire le contenu ligne par ligne avec gestion de saut de page
+            doc.setFontSize(7);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(...this.COLORS.darkGray);
 
-            // Bordure de la ligne
-            doc.setDrawColor(...this.COLORS.tableOrange);
-            doc.rect(startX, y, totalWidth, currentRowHeight);
+            let lineIndex = 0;
 
-            // Contenu des cellules
-            xPos = startX;
-            row.forEach((cell, i) => {
-                if (i > 0) {
-                    doc.line(xPos, y, xPos, y + currentRowHeight);
+            while (lineIndex < maxLineCount) {
+                // Combien de lignes de texte tiennent sur cette page ?
+                const availableH = maxContentY - y;
+                const linesPerPage = Math.max(1, Math.floor(availableH / lineH));
+                const endLine = Math.min(lineIndex + linesPerPage, maxLineCount);
+
+                // Dessiner le bloc de contenu
+                const blockH = Math.max(8, (endLine - lineIndex) * lineH + 4);
+
+                // Bordures du bloc
+                doc.setDrawColor(...this.COLORS.tableOrange);
+                doc.setLineWidth(0.4);
+                doc.rect(startX, y, totalWidth, blockH);
+                let xPos = startX;
+                colWidths.forEach((w, ci) => {
+                    if (ci > 0) doc.line(xPos, y, xPos, y + blockH);
+                    // Ecrire les lignes de cette cellule pour ce bloc
+                    const lines = cellLines[ci];
+                    doc.setFontSize(7);
+                    doc.setFont('helvetica', 'normal');
+                    doc.setTextColor(...this.COLORS.darkGray);
+                    for (let li = lineIndex; li < endLine && li < lines.length; li++) {
+                        doc.text(lines[li], xPos + cellPadding, y + 4 + (li - lineIndex) * lineH);
+                    }
+                    xPos += w;
+                });
+
+                y += blockH;
+                lineIndex = endLine;
+
+                // Si on a encore des lignes et qu'on est en bas de page, saut
+                if (lineIndex < maxLineCount) {
+                    this.addNJMFooter(doc);
+                    doc.addPage();
+                    y = this.addNJMHeader(doc);
+                    // Redessiner le header du tableau sur la nouvelle page
+                    y = this._drawTableHeader(doc, startX, y, headers, colWidths, cellPadding);
                 }
-                doc.setFontSize(7);
-                doc.setFont('helvetica', 'normal');
-                doc.setTextColor(...this.COLORS.darkGray);
-                const lines = doc.splitTextToSize(String(cell || ''), colWidths[i] - cellPadding * 2);
-                doc.text(lines, xPos + cellPadding, y + 4, { maxWidth: colWidths[i] - cellPadding * 2 });
-                xPos += colWidths[i];
-            });
-
-            y += currentRowHeight;
+            }
         });
 
         return y;
