@@ -594,16 +594,19 @@ const PdfGenerator = {
 
             y += 6;
 
-            // Article 2
+            // Article 2 (besoin ~20mm minimum pour titre + premier contenu)
+            y = this._checkPageBreak(doc, y, 20);
             doc.setFontSize(9);
             doc.setFont('helvetica', 'bold');
             doc.setTextColor(...this.COLORS.darkGray);
+            doc.setDrawColor(...this.COLORS.darkGray);
             doc.text('Article 2- Description de la formation:', margin, y);
             const a2w = doc.getTextWidth('Article 2- Description de la formation:');
-            doc.setDrawColor(...this.COLORS.darkGray);
             doc.line(margin, y + 0.5, margin + a2w, y + 0.5);
             y += 5;
 
+            // Objectifs (besoin ~15mm pour sous-titre + au moins 1 ligne)
+            y = this._checkPageBreak(doc, y, 15);
             doc.setFont('helvetica', 'normal');
             doc.text('Objectifs :', margin, y); y += 4;
             (formation.objectives || 'RAS').split('\n').filter(l => l.trim()).forEach(line => {
@@ -613,6 +616,8 @@ const PdfGenerator = {
             });
             y += 2;
 
+            // Contenus (besoin ~15mm)
+            y = this._checkPageBreak(doc, y, 15);
             doc.setFont('helvetica', 'normal');
             doc.text('Contenus :', margin, y); y += 4;
             (formation.module_1 || 'RAS').split('\n').filter(l => l.trim()).forEach(line => {
@@ -622,6 +627,8 @@ const PdfGenerator = {
             });
             y += 2;
 
+            // Modalites (besoin ~15mm)
+            y = this._checkPageBreak(doc, y, 15);
             doc.setFont('helvetica', 'normal');
             doc.text('Modalit\u00E9s :', margin, y); y += 4;
             (formation.methods_tools || 'RAS').split('\n').filter(l => l.trim()).forEach(line => {
@@ -631,11 +638,14 @@ const PdfGenerator = {
             });
             y += 2;
 
+            // Mode d'evaluation (besoin ~15mm)
+            y = this._checkPageBreak(doc, y, 15);
             doc.setFont('helvetica', 'normal');
             doc.text('Mode d\'évaluation des acquis :', margin, y); y += 4;
             doc.text('-   Questionnaire individuel en ligne en fin de formation', margin + 3, y); y += 8;
 
-            // Article 3
+            // Article 3 (besoin ~20mm)
+            y = this._checkPageBreak(doc, y, 20);
             doc.setFont('helvetica', 'bold');
             doc.setTextColor(...this.COLORS.darkGray);
             doc.setDrawColor(...this.COLORS.darkGray);
@@ -660,7 +670,8 @@ const PdfGenerator = {
             y = this._writeText(doc, margin + 8, y, 'c) Modalités de règlement : la facture est réglable à l\'issue de la formation par chèque à l\'ordre de la SAS NJM Conseil.', { maxWidth: maxW - 8 });
             y += 4;
 
-            // Article 4
+            // Article 4 (besoin ~20mm)
+            y = this._checkPageBreak(doc, y, 20);
             doc.setFont('helvetica', 'bold');
             doc.setTextColor(...this.COLORS.darkGray);
             doc.setDrawColor(...this.COLORS.darkGray);
@@ -679,7 +690,8 @@ const PdfGenerator = {
             y = this._writeText(doc, margin + 8, y, 'd) En cas de modification unilatérale par l\'organisme de formation de l\'un des éléments fixés à l\'article 1, le client se réserve le droit de mettre fin à la présente convention. Le délai d\'annulation étant toutefois limité à 30 jours francs avant la date prévue de commencement de l\'une des actions mentionnées à la présente convention, il sera, dans ce cas, procédé à une résorption anticipée de la convention.', { maxWidth: maxW - 8 });
             y += 4;
 
-            // Article 5
+            // Article 5 (besoin ~20mm)
+            y = this._checkPageBreak(doc, y, 20);
             doc.setFont('helvetica', 'bold');
             doc.setTextColor(...this.COLORS.darkGray);
             doc.setDrawColor(...this.COLORS.darkGray);
@@ -691,7 +703,8 @@ const PdfGenerator = {
             y = this._writeText(doc, margin, y, 'La présente convention prend effet à compter de la date de signature de la présente convention pour s\'achever à la fin de la période de formation objet de la présente convention.', { maxWidth: maxW });
             y += 4;
 
-            // Article 6
+            // Article 6 (besoin ~20mm)
+            y = this._checkPageBreak(doc, y, 20);
             doc.setFont('helvetica', 'bold');
             doc.setTextColor(...this.COLORS.darkGray);
             doc.setDrawColor(...this.COLORS.darkGray);
