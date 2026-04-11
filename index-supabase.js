@@ -1844,7 +1844,7 @@ const CRMApp = {
 
             if (error) throw error;
 
-            const to = formation.contact_email || formation.client_email;
+            const to = formation.client_email;
             if (!to) {
                 showToast('Aucun email de contact pour cette formation', 'error');
                 return;
@@ -2311,7 +2311,9 @@ const CRMApp = {
             }
 
             // Workflow items
+            const hasPrealable = formation.prealable_recu === true;
             const workflow = [
+                { label: 'Préalable', done: hasPrealable, actionLabel: hasPrealable ? 'Reçu ✓' : 'Remplir', actionClass: hasPrealable ? 'open' : 'generate', action: hasPrealable ? '' : `CRMApp.showPrealableAdminForm(${formationId})` },
                 { label: 'Fiche p\u00E9dagogique', done: hasDoc('fiche_pedagogique'), actionLabel: hasDoc('fiche_pedagogique') ? 'Ouvrir' : 'Creer', actionClass: hasDoc('fiche_pedagogique') ? 'open' : 'generate', action: hasDoc('fiche_pedagogique') ? `CRMApp.openDocument(${formationId}, 'fiche_pedagogique')` : `CRMApp.createPedagogicalSheet(${formationId})` },
                 { label: 'Convention', done: hasDoc('convention'), actionLabel: hasDoc('convention') ? 'Ouvrir' : 'Creer', actionClass: hasDoc('convention') ? 'open' : 'generate', action: hasDoc('convention') ? `CRMApp.openDocument(${formationId}, 'convention')` : `CRMApp.createConvention(${formationId})` },
                 {
@@ -3167,15 +3169,260 @@ Nathalie Joulie-Morand`;
         }
     },
 
+    async showPrealableAdminForm(formationId) {
+        try {
+            const { data: formation, error } = await supabaseClient
+                .from('formations').select('*').eq('id', formationId).single();
+            if (error) throw error;
+
+            // Initialiser les données
+            let learners = formation.learners_data || [];
+            if (typeof learners === 'string') {
+                try { learners = JSON.parse(learners); } catch (e) { learners = []; }
+            }
+            if (learners.length === 0) {
+                learners = [{ id: Date.now(), first_name: '', last_name: '', email: '', birth_year: '', position_title: '', phone: '', entity: '' }];
+            }
+
+            this._adminPrealableLearners = learners.map(l => ({ ...l }));
+            this._adminPrealableFormationType = formation.prealable_formation_type || '';
+            this._adminPrealableOpcoName = formation.opco_name || '';
+            this._adminPrealableOpcoSubrogation = formation.opco_subrogation;
+
+            const known = this.PREALABLE_FORMATION_TYPES;
+            const isAutre = this._adminPrealableFormationType && !known.includes(this._adminPrealableFormationType);
+            this._adminPrealableFormationTypeAutre = isAutre ? this._adminPrealableFormationType : '';
+            this._adminPrealableFormationId = formationId;
+
+            const existing = document.getElementById('admin-prealable-modal');
+            if (existing) existing.remove();
+
+            const inputStyle = 'padding:0.45rem 0.6rem;border:1px solid var(--gray-300);border-radius:var(--radius-md);font-size:0.85rem;width:100%;box-sizing:border-box;';
+            const labelStyle = 'font-size:0.75rem;font-weight:600;color:var(--gray-600);padding:0.5rem 0.5rem 0.25rem;white-space:nowrap;';
+
+            const modal = document.createElement('div');
+            modal.id = 'admin-prealable-modal';
+            modal.className = 'modal-overlay';
+            modal.innerHTML = `
+                <div style="background:white;border-radius:var(--radius-xl);padding:2rem;max-width:900px;width:95%;max-height:90vh;overflow-y:auto;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+                        <h2 style="font-size:1.25rem;font-weight:700;color:var(--gray-900);margin:0;">Remplir le préalable — ${formation.company_name || formation.client_name || 'Client'}</h2>
+                        <button onclick="document.getElementById('admin-prealable-modal').remove()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--gray-400);">&times;</button>
+                    </div>
+                    <div id="admin-prealable-content"></div>
+                    <div style="display:flex;justify-content:flex-end;gap:0.75rem;margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--gray-200);">
+                        <button onclick="document.getElementById('admin-prealable-modal').remove()" style="padding:0.6rem 1.25rem;background:var(--gray-100);color:var(--gray-700);border:1px solid var(--gray-300);border-radius:var(--radius-md);font-weight:500;cursor:pointer;">Annuler</button>
+                        <button onclick="CRMApp.submitPrealableAdmin()" id="admin-prealable-submit" style="padding:0.6rem 1.5rem;background:var(--primary-purple);color:white;border:none;border-radius:var(--radius-md);font-weight:600;cursor:pointer;">Enregistrer le préalable</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            setTimeout(() => modal.classList.add('show'), 10);
+
+            this._renderAdminPrealableForm();
+        } catch (err) {
+            console.error('Erreur showPrealableAdminForm:', err);
+            showToast('Erreur: ' + err.message, 'error');
+        }
+    },
+
+    _renderAdminPrealableForm() {
+        const container = document.getElementById('admin-prealable-content');
+        if (!container) return;
+
+        const inputStyle = 'padding:0.45rem 0.6rem;border:1px solid var(--gray-300);border-radius:var(--radius-md);font-size:0.85rem;width:100%;box-sizing:border-box;';
+        const labelStyle = 'font-size:0.75rem;font-weight:600;color:var(--gray-600);padding:0.5rem 0.5rem 0.25rem;white-space:nowrap;';
+        const formationTypes = this.PREALABLE_FORMATION_TYPES;
+        const selectedType = this._adminPrealableFormationType;
+        const isAutre = selectedType && !formationTypes.includes(selectedType);
+
+        container.innerHTML = `
+            <!-- SECTION 1 — Formation -->
+            <div style="background:var(--gray-50);border:1px solid var(--gray-200);border-radius:var(--radius-xl);padding:1.5rem;margin-bottom:1.5rem;">
+                <h4 style="font-size:1rem;font-weight:700;color:var(--gray-900);margin:0 0 1rem 0;">1. Formation</h4>
+                <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(180px, 1fr));gap:0.5rem;">
+                    ${formationTypes.map(type => `
+                        <label style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem 0.75rem;background:${selectedType === type ? '#eff6ff' : 'white'};border:1px solid ${selectedType === type ? '#3b82f6' : 'var(--gray-200)'};border-radius:var(--radius-md);cursor:pointer;font-size:0.875rem;">
+                            <input type="radio" name="admin-pf-type" value="${type}" ${selectedType === type ? 'checked' : ''} onchange="CRMApp._setAdminPrealableType(this.value)" style="margin:0;">
+                            ${type}
+                        </label>
+                    `).join('')}
+                    <label style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem 0.75rem;background:${isAutre ? '#eff6ff' : 'white'};border:1px solid ${isAutre ? '#3b82f6' : 'var(--gray-200)'};border-radius:var(--radius-md);cursor:pointer;font-size:0.875rem;">
+                        <input type="radio" name="admin-pf-type" value="__autre__" ${isAutre ? 'checked' : ''} onchange="CRMApp._setAdminPrealableType('__autre__')" style="margin:0;">
+                        Autre
+                    </label>
+                </div>
+                <div id="admin-pf-autre-container" style="margin-top:0.75rem;${isAutre ? '' : 'display:none;'}">
+                    <input type="text" id="admin-pf-autre-input" placeholder="Précisez le type de formation" value="${this._adminPrealableFormationTypeAutre || ''}" onchange="CRMApp._adminPrealableFormationTypeAutre = this.value" style="${inputStyle} max-width:350px;">
+                </div>
+            </div>
+
+            <!-- SECTION 2 — Apprenants -->
+            <div style="background:var(--gray-50);border:1px solid var(--gray-200);border-radius:var(--radius-xl);padding:1.5rem;margin-bottom:1.5rem;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+                    <h4 style="font-size:1rem;font-weight:700;color:var(--gray-900);margin:0;">2. Apprenants</h4>
+                    <span style="font-size:0.8rem;color:var(--gray-500);">${this._adminPrealableLearners.length}/12</span>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table style="width:100%;border-collapse:collapse;min-width:800px;">
+                        <thead>
+                            <tr style="background:white;">
+                                <th style="${labelStyle}">#</th>
+                                <th style="${labelStyle}">Prénom *</th>
+                                <th style="${labelStyle}">NOM *</th>
+                                <th style="${labelStyle}">Année naissance</th>
+                                <th style="${labelStyle}">Poste</th>
+                                <th style="${labelStyle}">N° téléphone</th>
+                                <th style="${labelStyle}">Adresse mail</th>
+                                <th style="${labelStyle}">Entité</th>
+                                <th style="${labelStyle}"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${this._adminPrealableLearners.map((l, i) => `
+                                <tr style="border-top:1px solid var(--gray-200);">
+                                    <td style="padding:0.4rem 0.5rem;text-align:center;color:var(--gray-500);font-weight:600;font-size:0.85rem;">${i + 1}</td>
+                                    <td style="padding:0.4rem 0.25rem;"><input type="text" value="${l.first_name || ''}" onchange="CRMApp._adminPrealableLearners[${i}].first_name=this.value" style="${inputStyle}"></td>
+                                    <td style="padding:0.4rem 0.25rem;"><input type="text" value="${l.last_name || ''}" onchange="CRMApp._adminPrealableLearners[${i}].last_name=this.value" style="${inputStyle} text-transform:uppercase;"></td>
+                                    <td style="padding:0.4rem 0.25rem;"><input type="text" value="${l.birth_year || ''}" placeholder="1985" maxlength="4" onchange="CRMApp._adminPrealableLearners[${i}].birth_year=this.value" style="${inputStyle} max-width:80px;"></td>
+                                    <td style="padding:0.4rem 0.25rem;"><input type="text" value="${l.position_title || ''}" onchange="CRMApp._adminPrealableLearners[${i}].position_title=this.value" style="${inputStyle}"></td>
+                                    <td style="padding:0.4rem 0.25rem;"><input type="tel" value="${l.phone || ''}" onchange="CRMApp._adminPrealableLearners[${i}].phone=this.value" style="${inputStyle} max-width:130px;"></td>
+                                    <td style="padding:0.4rem 0.25rem;"><input type="email" value="${l.email || ''}" onchange="CRMApp._adminPrealableLearners[${i}].email=this.value" style="${inputStyle}"></td>
+                                    <td style="padding:0.4rem 0.25rem;"><input type="text" value="${l.entity || ''}" onchange="CRMApp._adminPrealableLearners[${i}].entity=this.value" style="${inputStyle}"></td>
+                                    <td style="padding:0.4rem 0.25rem;text-align:center;">
+                                        ${this._adminPrealableLearners.length > 1 ? `<button onclick="CRMApp._removeAdminPrealableLearner(${i})" style="background:none;border:none;color:var(--gray-400);cursor:pointer;font-size:1.1rem;">✕</button>` : ''}
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+                <p style="font-size:0.75rem;color:var(--gray-500);margin:0.75rem 0 0;font-style:italic;">Entité : raison sociale, n° SIRET et adresse.</p>
+                ${this._adminPrealableLearners.length < 12 ? `
+                    <button onclick="CRMApp._addAdminPrealableLearner()" style="margin-top:0.75rem;padding:0.45rem 1rem;background:white;color:var(--gray-700);border:1px solid var(--gray-300);border-radius:var(--radius-md);font-size:0.85rem;cursor:pointer;">+ Ajouter un apprenant</button>
+                ` : ''}
+            </div>
+
+            <!-- SECTION 3 — OPCO -->
+            <div style="background:var(--gray-50);border:1px solid var(--gray-200);border-radius:var(--radius-xl);padding:1.5rem;">
+                <h4 style="font-size:1rem;font-weight:700;color:var(--gray-900);margin:0 0 1rem 0;">3. OPCO</h4>
+                <div style="display:flex;gap:1.5rem;align-items:flex-end;flex-wrap:wrap;">
+                    <div style="flex:1;min-width:200px;">
+                        <label style="display:block;font-size:0.8rem;font-weight:600;color:var(--gray-600);margin-bottom:0.35rem;">Nom de l'OPCO</label>
+                        <input type="text" id="admin-pf-opco-name" value="${this._adminPrealableOpcoName || ''}" onchange="CRMApp._adminPrealableOpcoName=this.value" style="${inputStyle} max-width:300px;">
+                    </div>
+                    <div style="display:flex;gap:1rem;">
+                        <label style="display:flex;align-items:center;gap:0.4rem;padding:0.5rem 0.75rem;background:${this._adminPrealableOpcoSubrogation === true ? '#eff6ff' : 'white'};border:1px solid ${this._adminPrealableOpcoSubrogation === true ? '#3b82f6' : 'var(--gray-200)'};border-radius:var(--radius-md);cursor:pointer;font-size:0.875rem;">
+                            <input type="radio" name="admin-pf-subrogation" value="true" ${this._adminPrealableOpcoSubrogation === true ? 'checked' : ''} onchange="CRMApp._adminPrealableOpcoSubrogation=true" style="margin:0;">
+                            Avec subrogation
+                        </label>
+                        <label style="display:flex;align-items:center;gap:0.4rem;padding:0.5rem 0.75rem;background:${this._adminPrealableOpcoSubrogation === false ? '#eff6ff' : 'white'};border:1px solid ${this._adminPrealableOpcoSubrogation === false ? '#3b82f6' : 'var(--gray-200)'};border-radius:var(--radius-md);cursor:pointer;font-size:0.875rem;">
+                            <input type="radio" name="admin-pf-subrogation" value="false" ${this._adminPrealableOpcoSubrogation === false ? 'checked' : ''} onchange="CRMApp._adminPrealableOpcoSubrogation=false" style="margin:0;">
+                            Sans subrogation
+                        </label>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
+    _setAdminPrealableType(value) {
+        if (value === '__autre__') {
+            this._adminPrealableFormationType = this._adminPrealableFormationTypeAutre || '';
+            const c = document.getElementById('admin-pf-autre-container');
+            if (c) c.style.display = '';
+            const inp = document.getElementById('admin-pf-autre-input');
+            if (inp) inp.focus();
+        } else {
+            this._adminPrealableFormationType = value;
+            this._adminPrealableFormationTypeAutre = '';
+            const c = document.getElementById('admin-pf-autre-container');
+            if (c) c.style.display = 'none';
+        }
+    },
+
+    _addAdminPrealableLearner() {
+        if (this._adminPrealableLearners.length >= 12) { showToast('Maximum 12 apprenants', 'warning'); return; }
+        this._adminPrealableLearners.push({ id: Date.now(), first_name: '', last_name: '', email: '', birth_year: '', position_title: '', phone: '', entity: '' });
+        this._renderAdminPrealableForm();
+    },
+
+    _removeAdminPrealableLearner(index) {
+        this._adminPrealableLearners.splice(index, 1);
+        this._renderAdminPrealableForm();
+    },
+
+    async submitPrealableAdmin() {
+        const isAutreRadio = document.querySelector('input[name="admin-pf-type"][value="__autre__"]');
+        let formationType = this._adminPrealableFormationType;
+        if (isAutreRadio && isAutreRadio.checked) {
+            formationType = (this._adminPrealableFormationTypeAutre || '').trim();
+        }
+
+        if (!formationType) {
+            showToast('Veuillez sélectionner un type de formation', 'error');
+            return;
+        }
+
+        const valid = this._adminPrealableLearners.filter(l =>
+            (l.first_name || '').trim() || (l.last_name || '').trim()
+        );
+        if (valid.length === 0) {
+            showToast('Veuillez renseigner au moins un apprenant', 'error');
+            return;
+        }
+
+        const learnersData = valid.map((l, i) => ({
+            id: l.id || Date.now() + i,
+            first_name: (l.first_name || '').trim(),
+            last_name: (l.last_name || '').trim(),
+            birth_year: (l.birth_year || '').trim(),
+            position_title: (l.position_title || '').trim(),
+            phone: (l.phone || '').trim(),
+            email: (l.email || '').trim(),
+            entity: (l.entity || '').trim(),
+            position: i + 1
+        }));
+
+        const submitBtn = document.getElementById('admin-prealable-submit');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Enregistrement...';
+
+        try {
+            const result = await SupabaseData.updateFormation(this._adminPrealableFormationId, {
+                learners_data: learnersData,
+                prealable_recu: true,
+                prealable_formation_type: formationType,
+                opco_name: (this._adminPrealableOpcoName || '').trim() || null,
+                opco_subrogation: this._adminPrealableOpcoSubrogation === true,
+                number_of_learners: learnersData.length
+            });
+
+            if (!result.success) throw new Error(result.message);
+
+            showToast('Préalable renseigné manuellement', 'success');
+            const modal = document.getElementById('admin-prealable-modal');
+            if (modal) modal.remove();
+
+            // Recharger la fiche formation
+            this.showFormationDetail(this._adminPrealableFormationId);
+        } catch (err) {
+            console.error('Erreur submitPrealableAdmin:', err);
+            showToast('Erreur: ' + err.message, 'error');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Enregistrer le préalable';
+        }
+    },
+
     async sendMailLibre(formationId) {
         try {
             const { data: formation, error } = await supabaseClient
-                .from('formations').select('client_email, contact_email').eq('id', formationId).single();
+                .from('formations').select('client_email').eq('id', formationId).single();
             if (error) throw error;
 
             GenericEmail.show({
                 title: 'Envoyer un mail',
-                to: formation.contact_email || formation.client_email || '',
+                to: formation.client_email || '',
                 subject: '',
                 body: '',
                 formationId: formationId

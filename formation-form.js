@@ -499,6 +499,18 @@ const FormationForm = {
             }
         }
         this.onCollaborationModeChange(f.collaboration_mode);
+
+        // Si les champs pédagogiques sont vides et qu'un template existe, pré-remplir
+        if (f.formation_name && this.FORMATION_TEMPLATES[f.formation_name]) {
+            const template = this.FORMATION_TEMPLATES[f.formation_name];
+            const pedaFields = ['target_audience', 'prerequisites', 'objectives', 'module_1', 'content_summary', 'methods_tools', 'evaluation_methodology', 'added_value', 'access_delays', 'hours_per_learner', 'number_of_days'];
+            pedaFields.forEach(id => {
+                const el = document.getElementById(id);
+                if (el && !el.value.trim() && template[id] !== undefined) {
+                    el.value = template[id];
+                }
+            });
+        }
     },
 
     // ==================== SAVE ====================
