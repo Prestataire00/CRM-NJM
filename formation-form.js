@@ -35,15 +35,18 @@ const FormationForm = {
             access_delays: 'les dates disponibles le sont \u00E0 partir du 6 mois'
         },
         'Manager commercial': {
-            target_audience: 'managers commerciaux, directeurs commerciaux, responsables de vente',
-            prerequisites: 'aucun pr\u00E9requis sp\u00E9cifique',
-            objectives: 'Apprendre les techniques de ventes',
-            module_1: 'les outils, m\u00E9thodes, le savoir-\u00EAtre pour vendre',
-            content_summary: 'les outils, m\u00E9thodes, le savoir-\u00EAtre pour vendre',
-            methods_tools: 'simulations, m\u00E9thode Arc En Ciel, outils de coaching, plan d\'actions progressif, outils de CNV',
-            evaluation_methodology: 'par un questionnaire individuel en ligne, en fin de formation.',
-            added_value: 'Apprendre les techniques de ventes',
-            access_delays: 'les dates disponibles le sont \u00E0 partir du 6 mois'
+            formation_name: 'Manager et piloter une \u00E9quipe commerciale',
+            target_audience: 'responsable commercial en poste ou en future prise de poste',
+            prerequisites: 'aucun',
+            hours_per_learner: 14,
+            number_of_days: 2,
+            objectives: '-\u00EAtre capable de communiquer autour d\'une vision ou d\'un projet commercial\n-\u00EAtre capable de manager et d\u00E9velopper l\'\u00E9quipe commerciale',
+            module_1: '1-Communiquer\n-communiquer la vision et la mission commerciale dans un style adapt\u00E9 \u00E0 son interlocuteur pour en assurer la compr\u00E9hension et l\'application.\n-appr\u00E9hender et appliquer des techniques de management inclusives prenant en compte la personnalit\u00E9, le niveau et l\'engagement de chacun\n-g\u00E9n\u00E9rer la coh\u00E9sion d\'\u00E9quipe, avec entraide et \u00E9quit\u00E9\n-r\u00E9soudre les conflits potentiels en adoptant une posture de facilitateur/m\u00E9diateur et en utilisant les techniques de n\u00E9gociation.\n-pr\u00E9parer et animer les r\u00E9unions commerciales\n-op\u00E9rer un feed back r\u00E9gulier aupr\u00E8s du dirigeant\n\n2-Manager\n-les 5 missions d\'un manager\n-construire les tableaux de bord pour manager l\'activit\u00E9 en utilisant les outils de l\'entreprise : CRM, ERP outils de Data.\n-concevoir le plan d\'actions commercial autour de 2 axes : prospection et fid\u00E9lisation\n-d\u00E9cliner les objectifs commerciaux de l\'entit\u00E9 en objectifs collectifs et/ou individuels pour mener \u00E0 bien le plan d\'action commercial.\n-contr\u00F4ler l\'activit\u00E9 et la relation client de chaque commercial\n-suivre les indicateurs de performances individuelles et collectives\n-utiliser les techniques de motivation individuelle et collective, dans le respect des comp\u00E9tences et sp\u00E9cificit\u00E9s individuelles des membres de l\'\u00E9quipe afin d\'atteindre les objectifs\n-maintenir et d\u00E9velopper les comp\u00E9tences au sein de l\'\u00E9quipe en utilisant le levier de la formation pour garantir la comp\u00E9titivit\u00E9 de l\'entreprise et l\'employabilit\u00E9 des \u00E9quipes.\n-mener les EAE et Entretiens Professionnels des commerciaux\n-recruter et accompagner les nouveaux commerciaux : on-boarding et mont\u00E9e en comp\u00E9tence\n-alimenter les commerciaux en connaissances : benchmarking, technicit\u00E9, fournisseurs, march\u00E9...\n-organiser, participer, animer et mesurer les \u00E9v\u00E8nements commerciaux (salons, portes ouvertes...)',
+            content_summary: 'les outils, m\u00E9thodes et le savoir-\u00EAtre pour manager et piloter une \u00E9quipe commerciale',
+            methods_tools: '-m\u00E9thode AEC Disc\n-outils de coaching\n-\u00E9tat des lieux du service et des routines\n-alternance de jeux de r\u00F4le et simulations\n-apports et facilitation du formateur\n-le parcours est bas\u00E9 sur une alternance de s\u00E9quences th\u00E9oriques et pratiques, avec retour d\'exp\u00E9rience\n-exemples d\'indicateurs commerciaux',
+            evaluation_methodology: 'questionnaire individuel en ligne en fin de formation',
+            added_value: 'formation totalement sur-mesure, employant des outils de coaching',
+            access_delays: 'les dates disponibles le sont \u00E0 partir du 1er Juillet 2026'
         }
     },
 
@@ -99,12 +102,17 @@ const FormationForm = {
         // Pre-remplir depuis template si existant
         const template = this.FORMATION_TEMPLATES[value];
         if (!template) return;
-        const fields = ['target_audience', 'prerequisites', 'objectives', 'module_1', 'content_summary', 'methods_tools', 'evaluation_methodology', 'added_value', 'access_delays'];
+        const fields = ['target_audience', 'prerequisites', 'objectives', 'module_1', 'content_summary', 'methods_tools', 'evaluation_methodology', 'added_value', 'access_delays', 'hours_per_learner', 'number_of_days'];
         let filled = 0;
         fields.forEach(id => {
             const el = document.getElementById(id);
-            if (el && !el.value.trim()) { el.value = template[id] || ''; filled++; }
+            if (el && !el.value.trim() && template[id] !== undefined) { el.value = template[id]; filled++; }
         });
+        // Pre-remplir le nom de formation personnalise si le template en fournit un
+        if (template.formation_name) {
+            const customInput = document.getElementById('formation_name_custom');
+            if (customInput && !customInput.value.trim()) customInput.value = template.formation_name;
+        }
         if (filled > 0) showToast(`${filled} champ(s) pr\u00E9-rempli(s) pour "${value}"`, 'info');
     },
 
