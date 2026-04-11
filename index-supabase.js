@@ -550,7 +550,8 @@ const CRMApp = {
             const statusColors = {
                 'completed': { bg: '#d1fae5', color: '#065f46', text: 'Terminée' },
                 'in_progress': { bg: '#fef3c7', color: '#92400e', text: 'En cours' },
-                'planned': { bg: '#dbeafe', color: '#1e40af', text: 'Planifiée' }
+                'planned': { bg: '#dbeafe', color: '#1e40af', text: 'Planifiée' },
+                'awaiting_prealable': { bg: '#f3e8ff', color: '#6b21a8', text: '⏳ Préalable en attente' }
             };
             const status = statusColors[f.status] || statusColors['planned'];
 
@@ -790,8 +791,8 @@ const CRMApp = {
                             <div style="background: var(--gray-50); padding: 1rem; border-radius: var(--radius-md);">
                                 <div style="font-size: 0.75rem; color: var(--gray-500); margin-bottom: 0.25rem;">Statut</div>
                                 <div>
-                                    <span style="padding: 0.25rem 0.75rem; background: ${formation.status === 'completed' ? '#d1fae5' : formation.status === 'in_progress' ? '#fef3c7' : '#dbeafe'}; color: ${formation.status === 'completed' ? '#065f46' : formation.status === 'in_progress' ? '#92400e' : '#1e40af'}; border-radius: 9999px; font-size: 0.875rem; font-weight: 500;">
-                                        ${formation.status === 'completed' ? 'Terminée' : formation.status === 'in_progress' ? 'En cours' : 'Planifiée'}
+                                    <span style="padding: 0.25rem 0.75rem; background: ${formation.status === 'completed' ? '#d1fae5' : formation.status === 'in_progress' ? '#fef3c7' : formation.status === 'awaiting_prealable' ? '#f3e8ff' : '#dbeafe'}; color: ${formation.status === 'completed' ? '#065f46' : formation.status === 'in_progress' ? '#92400e' : formation.status === 'awaiting_prealable' ? '#6b21a8' : '#1e40af'}; border-radius: 9999px; font-size: 0.875rem; font-weight: 500;">
+                                        ${formation.status === 'completed' ? 'Terminée' : formation.status === 'in_progress' ? 'En cours' : formation.status === 'awaiting_prealable' ? '⏳ Préalable en attente' : 'Planifiée'}
                                     </span>
                                 </div>
                             </div>
@@ -1818,7 +1819,11 @@ const CRMApp = {
                         <button onclick="CRMApp.sendPrealableReminder(${f.id})" style="padding:0.5rem 1rem;background:var(--primary-blue);color:white;border:none;border-radius:var(--radius-md);font-size:0.85rem;font-weight:500;cursor:pointer;">
                             Relancer le client
                         </button>
-                        ` : ''}
+                        ` : `
+                        <button onclick="FormationForm.show(${f.id})" style="padding:0.5rem 1rem;background:var(--primary-purple);color:white;border:none;border-radius:var(--radius-md);font-size:0.85rem;font-weight:600;cursor:pointer;">
+                            ✏️ Compléter la formation
+                        </button>
+                        `}
                         <button onclick="CRMApp.viewFormation(${f.id})" style="padding:0.5rem 1rem;background:var(--gray-100);color:var(--gray-700);border:1px solid var(--gray-300);border-radius:var(--radius-md);font-size:0.85rem;font-weight:500;cursor:pointer;">
                             Voir la formation
                         </button>
@@ -1846,8 +1851,12 @@ const CRMApp = {
             }
 
             const formationName = formation.formation_name || formation.title || 'votre formation';
-            const subject = `Rappel — Merci de renseigner vos apprenants`;
-            const body = `Bonjour,\n\nNous vous rappelons qu'il est nécessaire de renseigner les apprenants participant à la formation "${formationName}" avant son démarrage.\n\nVeuillez vous connecter à votre espace client pour compléter le questionnaire préalable.\n\nCordialement,\nNJM Conseil`;
+
+            // Charger le template depuis la base (fallback hardcodé)
+            const tpl = await SupabaseData.getEmailTemplate('prealable_reminder');
+            const vars = { '{{formation}}': formationName };
+            const subject = tpl ? Object.keys(vars).reduce((s, k) => s.replaceAll(k, vars[k]), tpl.subject) : `Rappel — Merci de renseigner vos apprenants`;
+            const body = tpl ? Object.keys(vars).reduce((s, k) => s.replaceAll(k, vars[k]), tpl.body) : `Bonjour,\n\nNous vous rappelons qu'il est nécessaire de renseigner les apprenants participant à la formation "${formationName}" avant son démarrage.\n\nVeuillez vous connecter à votre espace client pour compléter le questionnaire préalable.\n\nCordialement,\nNJM Conseil`;
 
             const result = await EmailService.sendEmail(to, subject, body, []);
 
@@ -1883,12 +1892,218 @@ const CRMApp = {
     },
 
     async addFormation() {
-        // Utiliser le nouveau formulaire complet avec onglets
-        if (typeof FormationForm !== 'undefined') {
-            FormationForm.show();
-        } else {
-            console.error('FormationForm non chargé');
-            showToast('Le formulaire de formation n\'est pas disponible', 'error');
+        this.showQuickFormationForm();
+    },
+
+    async showQuickFormationForm() {
+        // Charger clients et sous-traitants
+        const [clientsResult, subsResult] = await Promise.all([
+            SupabaseData.getClients(),
+            SupabaseData.getSubcontractors()
+        ]);
+        const clients = clientsResult.success ? clientsResult.data || [] : [];
+        const subs = subsResult.success ? subsResult.data || [] : [];
+
+        const clientOpts = clients.map(c => `<option value="${c.id}">${c.company_name}</option>`).join('');
+        const subOpts = subs.map(s => `<option value="${s.id}">${s.first_name} ${s.last_name}</option>`).join('');
+
+        const existing = document.getElementById('quick-formation-modal');
+        if (existing) existing.remove();
+
+        const inputStyle = 'width:100%;padding:0.6rem 0.75rem;border:1px solid var(--gray-300);border-radius:var(--radius-md);font-size:0.9rem;font-family:inherit;';
+        const labelStyle = 'display:block;font-size:0.8rem;font-weight:600;color:var(--gray-700);margin-bottom:0.35rem;';
+
+        const modal = document.createElement('div');
+        modal.id = 'quick-formation-modal';
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div style="background:white;border-radius:var(--radius-xl);padding:2rem;max-width:560px;width:90%;max-height:90vh;overflow-y:auto;position:relative;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+                    <h2 style="font-size:1.25rem;font-weight:700;color:var(--gray-900);margin:0;">Nouvelle formation</h2>
+                    <button onclick="document.getElementById('quick-formation-modal').remove()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--gray-400);">&times;</button>
+                </div>
+
+                <div style="display:grid;gap:1rem;">
+                    <div>
+                        <label style="${labelStyle}">Client *</label>
+                        <select id="qf-client" style="${inputStyle}" required>
+                            <option value="">Sélectionnez un client...</option>
+                            ${clientOpts}
+                        </select>
+                    </div>
+                    <div>
+                        <label style="${labelStyle}">Type de formation *</label>
+                        <select id="qf-formation-type" style="${inputStyle}" required>
+                            <option value="">Sélectionnez...</option>
+                            <option value="Techniques de vente">Techniques de vente</option>
+                            <option value="Management">Management</option>
+                            <option value="Manager commercial">Manager commercial</option>
+                            <option value="__custom__">Autre</option>
+                        </select>
+                        <input type="text" id="qf-formation-custom" placeholder="Nom de la formation..." style="${inputStyle} margin-top:0.5rem;display:none;">
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                        <div>
+                            <label style="${labelStyle}">Date début *</label>
+                            <input type="date" id="qf-start-date" style="${inputStyle}" required>
+                        </div>
+                        <div>
+                            <label style="${labelStyle}">Date fin *</label>
+                            <input type="date" id="qf-end-date" style="${inputStyle}" required>
+                        </div>
+                    </div>
+                    <div>
+                        <label style="${labelStyle}">Lieu</label>
+                        <input type="text" id="qf-location" style="${inputStyle}" placeholder="ex: Paris, locaux client...">
+                    </div>
+                    <div>
+                        <label style="${labelStyle}">Mode *</label>
+                        <select id="qf-mode" style="${inputStyle}" onchange="document.getElementById('qf-sub-section').style.display = this.value === 'sous-traitant' ? 'block' : 'none'">
+                            <option value="direct">Direct</option>
+                            <option value="sous-traitant">Sous-traitant</option>
+                        </select>
+                    </div>
+                    <div id="qf-sub-section" style="display:none;">
+                        <label style="${labelStyle}">Formateur (sous-traitant) *</label>
+                        <select id="qf-subcontractor" style="${inputStyle}">
+                            <option value="">Sélectionnez...</option>
+                            ${subOpts}
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display:flex;justify-content:flex-end;gap:0.75rem;margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--gray-200);">
+                    <button onclick="document.getElementById('quick-formation-modal').remove()" style="padding:0.6rem 1.25rem;background:var(--gray-100);color:var(--gray-700);border:1px solid var(--gray-300);border-radius:var(--radius-md);font-weight:500;cursor:pointer;">
+                        Annuler
+                    </button>
+                    <button onclick="CRMApp.submitQuickFormation()" id="qf-submit-btn" style="padding:0.6rem 1.25rem;background:var(--primary-purple);color:white;border:none;border-radius:var(--radius-md);font-weight:600;cursor:pointer;">
+                        Créer et envoyer le préalable
+                    </button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        setTimeout(() => modal.classList.add('show'), 10);
+
+        // Toggle champ "Autre"
+        document.getElementById('qf-formation-type').addEventListener('change', function() {
+            document.getElementById('qf-formation-custom').style.display = this.value === '__custom__' ? 'block' : 'none';
+        });
+    },
+
+    async submitQuickFormation() {
+        const clientId = parseInt(document.getElementById('qf-client').value);
+        const formationTypeSelect = document.getElementById('qf-formation-type').value;
+        const startDate = document.getElementById('qf-start-date').value;
+        const endDate = document.getElementById('qf-end-date').value;
+
+        // Validation
+        if (!clientId) { showToast('Veuillez sélectionner un client', 'error'); return; }
+        if (!formationTypeSelect) { showToast('Veuillez sélectionner un type de formation', 'error'); return; }
+        if (!startDate || !endDate) { showToast('Veuillez renseigner les dates', 'error'); return; }
+
+        const formationName = formationTypeSelect === '__custom__'
+            ? (document.getElementById('qf-formation-custom').value.trim() || 'Formation')
+            : formationTypeSelect;
+
+        const mode = document.getElementById('qf-mode').value;
+        const subcontractorId = mode === 'sous-traitant'
+            ? parseInt(document.getElementById('qf-subcontractor').value) || null
+            : null;
+
+        if (mode === 'sous-traitant' && !subcontractorId) {
+            showToast('Veuillez sélectionner un formateur', 'error');
+            return;
+        }
+
+        const location = document.getElementById('qf-location').value.trim();
+
+        // Récupérer les infos client pour auto-remplir
+        const clientsResult = await SupabaseData.getClients();
+        const clients = clientsResult.success ? clientsResult.data : [];
+        const selectedClient = clients.find(c => c.id === clientId);
+
+        // Récupérer le sous-traitant si applicable
+        let subData = {};
+        if (subcontractorId) {
+            const subsResult = await SupabaseData.getSubcontractors();
+            const sub = (subsResult.data || []).find(s => s.id === subcontractorId);
+            if (sub) {
+                subData = {
+                    subcontractor_first_name: sub.first_name,
+                    subcontractor_last_name: sub.last_name,
+                    subcontractor_address: sub.address || '',
+                    subcontractor_siret: sub.siret || '',
+                    subcontractor_nda: sub.nda || ''
+                };
+            }
+        }
+
+        const submitBtn = document.getElementById('qf-submit-btn');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Création en cours...';
+
+        try {
+            const currentUser = (await supabaseClient.auth.getUser()).data.user;
+
+            const formData = {
+                formation_name: formationName,
+                formation_type: 'entreprises',
+                collaboration_mode: mode,
+                client_id: clientId,
+                subcontractor_id: subcontractorId,
+                client_name: selectedClient ? selectedClient.company_name : '',
+                company_name: selectedClient ? selectedClient.company_name : '',
+                company_address: selectedClient ? selectedClient.address : '',
+                company_postal_code: selectedClient ? [selectedClient.postal_code, selectedClient.city].filter(Boolean).join(' ') : '',
+                company_director_name: selectedClient ? selectedClient.contact_name : '',
+                client_email: selectedClient ? selectedClient.email : '',
+                start_date: startDate,
+                end_date: endDate,
+                training_location: location,
+                status: 'awaiting_prealable',
+                title: formationName,
+                created_by: currentUser.id,
+                ...subData
+            };
+
+            const { data: created, error } = await supabaseClient
+                .from('formations')
+                .insert([formData])
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            addNotification('formation', `Formation créée — ${formationName}`);
+
+            // Créer l'accès client + envoyer le mail automatiquement
+            let accessMsg = '';
+            if (selectedClient && selectedClient.email) {
+                const accessResult = await this.createClientAccessSilent(created.id);
+                if (accessResult.success) {
+                    accessMsg = ` — préalable envoyé à ${accessResult.email}`;
+                } else {
+                    accessMsg = ` — accès client non créé : ${accessResult.message}`;
+                }
+            }
+
+            // Fermer la modal
+            const modal = document.getElementById('quick-formation-modal');
+            if (modal) modal.remove();
+
+            showToast(`Formation créée${accessMsg}`, 'success', 5000);
+
+            // Naviguer vers "Avant formation"
+            this.showPage('avant-formation');
+            document.querySelectorAll('.nav-item').forEach(nav => {
+                nav.classList.toggle('active', nav.getAttribute('data-page') === 'avant-formation');
+            });
+        } catch (err) {
+            console.error('Erreur création formation:', err);
+            showToast('Erreur : ' + err.message, 'error');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Créer et envoyer le préalable';
         }
     },
 
@@ -1918,8 +2133,8 @@ const CRMApp = {
                 <td style="padding: 1rem;">${f.client_name || f.title || 'Sans nom'}</td>
                 <td style="padding: 1rem;">${f.formation_name || f.description || 'N/A'}</td>
                 <td style="padding: 1rem;">
-                    <span style="padding: 0.25rem 0.75rem; background: ${f.status === 'completed' ? '#d1fae5' : '#fef3c7'}; color: ${f.status === 'completed' ? '#065f46' : '#92400e'}; border-radius: 9999px; font-size: 0.875rem; font-weight: 500;">
-                        ${f.status === 'completed' ? 'Terminée' : f.status === 'in_progress' ? 'En cours' : 'Planifiée'}
+                    <span style="padding: 0.25rem 0.75rem; background: ${f.status === 'completed' ? '#d1fae5' : f.status === 'in_progress' ? '#fef3c7' : f.status === 'awaiting_prealable' ? '#f3e8ff' : '#dbeafe'}; color: ${f.status === 'completed' ? '#065f46' : f.status === 'in_progress' ? '#92400e' : f.status === 'awaiting_prealable' ? '#6b21a8' : '#1e40af'}; border-radius: 9999px; font-size: 0.875rem; font-weight: 500;">
+                        ${f.status === 'completed' ? 'Terminée' : f.status === 'in_progress' ? 'En cours' : f.status === 'awaiting_prealable' ? '⏳ Préalable en attente' : 'Planifiée'}
                     </span>
                 </td>
                 <td style="padding: 1rem; text-align: center;">
@@ -2041,7 +2256,7 @@ const CRMApp = {
             let matchesStatus = !statusFilter;
 
             if (statusFilter) {
-                const statusMap = { 'planned': 'planifi', 'in_progress': 'en cours', 'completed': 'termin' };
+                const statusMap = { 'planned': 'planifi', 'in_progress': 'en cours', 'completed': 'termin', 'awaiting_prealable': 'pr\u00E9alable' };
                 matchesStatus = statusText.includes(statusMap[statusFilter] || statusFilter);
             }
 
@@ -2084,7 +2299,8 @@ const CRMApp = {
 
             const statusColors = {
                 'planned': 'planned', 'in_progress': 'in_progress',
-                'completed': 'completed', 'cancelled': 'cancelled'
+                'completed': 'completed', 'cancelled': 'cancelled',
+                'awaiting_prealable': 'awaiting_prealable'
             };
 
             // Verifier si le compte client existe
@@ -2147,6 +2363,7 @@ const CRMApp = {
                     </div>
                     <div style="display: flex; align-items: center; gap: 1rem;">
                         <select class="status-badge-select ${statusColors[formation.status] || 'planned'}" onchange="CRMApp.updateFormationStatus(${formationId}, this.value)" id="detail-status-select">
+                            <option value="awaiting_prealable" ${formation.status === 'awaiting_prealable' ? 'selected' : ''}>⏳ Préalable en attente</option>
                             <option value="planned" ${formation.status === 'planned' ? 'selected' : ''}>Planifiée</option>
                             <option value="in_progress" ${formation.status === 'in_progress' ? 'selected' : ''}>En cours</option>
                             <option value="completed" ${formation.status === 'completed' ? 'selected' : ''}>Terminée</option>
@@ -2218,6 +2435,9 @@ const CRMApp = {
                             <button onclick="CRMApp.relanceConvention(${formationId})" style="padding: 0.35rem 0.75rem; background: #fef3c7; border: 1px solid #fcd34d; border-radius: var(--radius-md); cursor: pointer; font-size: 0.8rem;">Relancer convention</button>
                             <button onclick="CRMApp.relanceQuestionnaires(${formationId})" style="padding: 0.35rem 0.75rem; background: #fee2e2; border: 1px solid #fca5a5; border-radius: var(--radius-md); cursor: pointer; font-size: 0.8rem;">Relancer questionnaires</button>
                         </div>
+                        <button onclick="CRMApp.sendMailLibre(${formationId})" style="width:100%;margin-top:0.75rem;padding:0.5rem 1rem;background:var(--primary-pink);color:white;border:none;border-radius:var(--radius-md);cursor:pointer;font-weight:500;font-size:0.85rem;">
+                            ✉️ Envoyer un mail
+                        </button>
                     </div>
                 </div>
 
@@ -2448,11 +2668,16 @@ const CRMApp = {
             const companyName = formation.company_name || formation.client_name || '';
             const formationName = formation.formation_name || '';
 
+            const tpl = await SupabaseData.getEmailTemplate('contrat_sous_traitance');
+            const vars = { '{{formation}}': formationName, '{{client}}': companyName, '{{formateur}}': subName };
+            const tplSubject = tpl ? Object.keys(vars).reduce((s, k) => s.replaceAll(k, vars[k]), tpl.subject) : `Contrat de sous-traitance \u2014 ${formationName} \u2014 ${companyName}`;
+            const tplBody = tpl ? Object.keys(vars).reduce((s, k) => s.replaceAll(k, vars[k]), tpl.body) : `Bonjour ${subName},\n\nVeuillez trouver ci-joint ou dans votre espace formateur le contrat de sous-traitance pour la formation "${formationName}" (client : ${companyName}).\n\nJe vous invite \u00E0 vous connecter \u00E0 votre espace formateur pour consulter l'ensemble des documents relatifs \u00E0 cette mission.\n\nCordialement,\nNathalie JOULIE MORAND\nNJM Conseil`;
+
             GenericEmail.show({
                 title: 'Envoyer le contrat de sous-traitance',
                 to: subEmail,
-                subject: `Contrat de sous-traitance \u2014 ${formationName} \u2014 ${companyName}`,
-                body: `Bonjour ${subName},\n\nVeuillez trouver ci-joint ou dans votre espace formateur le contrat de sous-traitance pour la formation "${formationName}" (client : ${companyName}).\n\nJe vous invite \u00E0 vous connecter \u00E0 votre espace formateur pour consulter l'ensemble des documents relatifs \u00E0 cette mission.\n\nCordialement,\nNathalie JOULIE MORAND\nNJM Conseil`,
+                subject: tplSubject,
+                body: tplBody,
                 formationId: id,
             });
         } catch (err) {
@@ -2789,6 +3014,74 @@ const CRMApp = {
         }
     },
 
+    async createClientAccessSilent(formationId) {
+        try {
+            const { data: formation, error } = await supabaseClient
+                .from('formations').select('*').eq('id', formationId).single();
+            if (error) throw error;
+
+            const clientEmail = formation.client_email;
+            if (!clientEmail) {
+                return { success: false, message: 'Email client non renseigné' };
+            }
+
+            // Charger le template
+            const tpl = await SupabaseData.getEmailTemplate('acces_client');
+            const siteUrl = window.location.origin;
+            const directorName = formation.company_director_name || '';
+            const formationName = formation.formation_name || 'Formation';
+
+            // Vérifier si le compte existe déjà
+            const profileCheck = await SupabaseData.getProfileByEmail(clientEmail);
+            if (profileCheck.success && profileCheck.data) {
+                // Compte existe — envoyer directement le mail d'invitation
+                let clientPassword = profileCheck.data.initial_password || '[mot de passe déjà communiqué]';
+                const vars = { '{{formation}}': formationName, '{{dirigeant}}': directorName, '{{email}}': clientEmail, '{{password}}': clientPassword, '{{url}}': siteUrl };
+                const subject = tpl ? Object.keys(vars).reduce((s, k) => s.replaceAll(k, vars[k]), tpl.subject) : `Votre espace formation NJM Conseil — ${formationName}`;
+                const body = tpl ? Object.keys(vars).reduce((s, k) => s.replaceAll(k, vars[k]), tpl.body) : `Bonjour${directorName ? ' ' + directorName : ''},\n\nVotre espace formation est prêt.\n\nAccès : ${siteUrl}\nIdentifiant : ${clientEmail}\nMot de passe : ${clientPassword}\n\nMerci de compléter le questionnaire préalable depuis l'onglet "Préalable" de votre espace.\n\nCordialement,\nNathalie Joulie-Morand`;
+
+                await EmailService.sendEmail(clientEmail, subject, body, []);
+                return { success: true, exists: true, email: clientEmail };
+            }
+
+            // Créer le compte
+            const password = Math.random().toString(36).slice(-8) + 'A1!';
+            const clientName = formation.company_director_name || formation.company_name || '';
+
+            const currentUser = (await supabaseClient.auth.getUser()).data.user;
+            const result = await SupabaseAuth.registerUser(currentUser.id, {
+                email: clientEmail,
+                password: password,
+                name: clientName,
+                role: 'client',
+                mustChangePassword: false
+            });
+
+            if (!result || !result.success) {
+                return { success: false, message: result?.message || 'Erreur création compte' };
+            }
+
+            // Lier au client
+            if (formation.client_id && result.userId) {
+                await SupabaseData.linkUserToClient(result.userId, formation.client_id);
+            }
+
+            addNotification('acces', `Accès client créé pour ${clientEmail}`);
+
+            // Envoyer le mail d'invitation via template
+            const vars = { '{{formation}}': formationName, '{{dirigeant}}': directorName, '{{email}}': clientEmail, '{{password}}': password, '{{url}}': siteUrl };
+            const subject = tpl ? Object.keys(vars).reduce((s, k) => s.replaceAll(k, vars[k]), tpl.subject) : `Votre espace formation NJM Conseil — ${formationName}`;
+            const body = tpl ? Object.keys(vars).reduce((s, k) => s.replaceAll(k, vars[k]), tpl.body) : `Bonjour${directorName ? ' ' + directorName : ''},\n\nJ'ai créé pour vous un espace confidentiel où vous retrouverez tous les documents relatifs à la formation.\n\nAccès : ${siteUrl}\nIdentifiant : ${clientEmail}\nMot de passe : ${password}\n\nMerci de compléter le questionnaire préalable depuis l'onglet "Préalable" de votre espace.\n\nCordialement,\nNathalie Joulie-Morand`;
+
+            await EmailService.sendEmail(clientEmail, subject, body, []);
+
+            return { success: true, exists: false, email: clientEmail, password: password };
+        } catch (err) {
+            console.error('Erreur createClientAccessSilent:', err);
+            return { success: false, message: err.message };
+        }
+    },
+
     async inviterClient(formationId) {
         try {
             const { data: formation, error } = await supabaseClient
@@ -2874,6 +3167,25 @@ Nathalie Joulie-Morand`;
         }
     },
 
+    async sendMailLibre(formationId) {
+        try {
+            const { data: formation, error } = await supabaseClient
+                .from('formations').select('client_email, contact_email').eq('id', formationId).single();
+            if (error) throw error;
+
+            GenericEmail.show({
+                title: 'Envoyer un mail',
+                to: formation.contact_email || formation.client_email || '',
+                subject: '',
+                body: '',
+                formationId: formationId
+            });
+        } catch (err) {
+            console.error('Erreur sendMailLibre:', err);
+            showToast('Erreur: ' + err.message, 'error');
+        }
+    },
+
     async relanceConvention(formationId) {
         try {
             const { data: formation, error } = await supabaseClient
@@ -2892,19 +3204,12 @@ Nathalie Joulie-Morand`;
 
             const directorName = formation.company_director_name || '';
             const companyName = formation.company_name || '';
-            const subject = `Convention de formation - ${formation.formation_name || 'Formation'} - ${companyName}`;
-            const body = `Bonjour${directorName ? ' ' + directorName : ''},
+            const formationName = formation.formation_name || 'Formation';
 
-Vous allez bien ?
-
-Je me permets de revenir vers vous au sujet de la formation à venir.
-Sauf erreur de ma part, je n'ai pas reçu la convention signée. Pouvez-vous me la transmettre au plus tôt ?
-
-Désolée pour ce côté administratif mais la démarche qualité Qualiopi exige ce document signé des deux parties.
-
-En vous remerciant par avance.
-
-Nathalie Joulie-Morand`;
+            const tpl = await SupabaseData.getEmailTemplate('relance_convention');
+            const vars = { '{{formation}}': formationName, '{{client}}': companyName, '{{dirigeant}}': directorName };
+            const subject = tpl ? Object.keys(vars).reduce((s, k) => s.replaceAll(k, vars[k]), tpl.subject) : `Convention de formation - ${formationName} - ${companyName}`;
+            const body = tpl ? Object.keys(vars).reduce((s, k) => s.replaceAll(k, vars[k]), tpl.body) : `Bonjour${directorName ? ' ' + directorName : ''},\n\nVous allez bien ?\n\nJe me permets de revenir vers vous au sujet de la formation à venir.\nSauf erreur de ma part, je n'ai pas reçu la convention signée. Pouvez-vous me la transmettre au plus tôt ?\n\nDésolée pour ce côté administratif mais la démarche qualité Qualiopi exige ce document signé des deux parties.\n\nEn vous remerciant par avance.\n\nNathalie Joulie-Morand`;
 
             GenericEmail.show({
                 title: '📩 Relance convention',
@@ -2943,35 +3248,13 @@ Nathalie Joulie-Morand`;
             }
 
             const siteUrl = window.location.origin;
-            const subject = `Suite formation "${formation.formation_name || 'Formation'}" - Documents et questionnaires`;
-            const body = `Bonjour,
+            const formationName = formation.formation_name || 'Formation';
 
-Tout va bien pour vous? J'espère que l'équipe est satisfaite de la formation.
-
-Je transmets ici plusieurs éléments relatifs à la démarche qualité de la formation.
-C'est important que ce soit complété par chaque personne qui a suivi la formation :
--un questionnaire de satisfaction :
-
--un questionnaire d'évaluation des acquis :
-
-Par ailleurs, je vous transmets à nouveau le lien et le mot de passe de votre espace confidentiel NJM Conseil.
-Lien : ${siteUrl}
-Mot de passe : ${clientPassword}
-Vous y trouverez tous les documents pour l'OPCO : feuilles de présence, certificats de fin de formation.
-Vous pourrez aussi y récupérer :
--pour vous : le bilan de la formation
--pour les apprenants : le support pédagogique, les grilles d'évaluation
-
-Autre chose, ce serait sympa de prendre 1 minute pour déposer un avis sincère sur Google. Cela me donnera plus de visibilité sur le net. Merci d'aller sur:
-https://g.page/r/CTDsPUbHjCnREB0/review
-
-Désolée, cela fait de la paperasse mais c'est indispensable par rapport à la prise en charge de la formation.
-
-Merci encore à vous et à toute l'équipe pour la gentillesse de votre accueil.
-
-Cordialement
-
-Nathalie JOULIÉ MORAND`;
+            const tpl = await SupabaseData.getEmailTemplate('fin_formation');
+            const vars = { '{{formation}}': formationName, '{{url}}': siteUrl, '{{password}}': clientPassword };
+            const fallbackBody = `Bonjour,\n\nTout va bien pour vous? J'espère que l'équipe est satisfaite de la formation.\n\nJe transmets ici plusieurs éléments relatifs à la démarche qualité de la formation.\nC'est important que ce soit complété par chaque personne qui a suivi la formation :\n-un questionnaire de satisfaction :\n\n-un questionnaire d'évaluation des acquis :\n\nPar ailleurs, je vous transmets à nouveau le lien et le mot de passe de votre espace confidentiel NJM Conseil.\nLien : ${siteUrl}\nMot de passe : ${clientPassword}\nVous y trouverez tous les documents pour l'OPCO : feuilles de présence, certificats de fin de formation.\nVous pourrez aussi y récupérer :\n-pour vous : le bilan de la formation\n-pour les apprenants : le support pédagogique, les grilles d'évaluation\n\nAutre chose, ce serait sympa de prendre 1 minute pour déposer un avis sincère sur Google. Cela me donnera plus de visibilité sur le net. Merci d'aller sur:\nhttps://g.page/r/CTDsPUbHjCnREB0/review\n\nDésolée, cela fait de la paperasse mais c'est indispensable par rapport à la prise en charge de la formation.\n\nMerci encore à vous et à toute l'équipe pour la gentillesse de votre accueil.\n\nCordialement\n\nNathalie JOULIÉ MORAND`;
+            const subject = tpl ? Object.keys(vars).reduce((s, k) => s.replaceAll(k, vars[k]), tpl.subject) : `Suite formation "${formationName}" - Documents et questionnaires`;
+            const body = tpl ? Object.keys(vars).reduce((s, k) => s.replaceAll(k, vars[k]), tpl.body) : fallbackBody;
 
             GenericEmail.show({
                 title: '📧 Mail fin de formation',
@@ -3311,6 +3594,9 @@ Nathalie Joulie-Morand`;
         const cachetResult = await SupabaseData.getSetting('cachet');
         const cachet = (cachetResult.success && cachetResult.data) ? cachetResult.data : localStorage.getItem('njm_cachet');
         if (cachet) { const el = document.getElementById('param-cachet-preview'); if (el) el.src = cachet; }
+
+        // Charger les templates d'emails
+        this.loadEmailTemplates();
     },
 
     async saveParametres() {
@@ -3332,6 +3618,127 @@ Nathalie Joulie-Morand`;
             showToast('Paramètres sauvegardés localement (erreur Supabase)', 'warning');
         }
     },
+
+    // ==================== EMAIL TEMPLATES ====================
+
+    async loadEmailTemplates() {
+        const container = document.getElementById('email-templates-list');
+        if (!container) return;
+
+        const result = await SupabaseData.getEmailTemplates();
+        if (!result.success || result.data.length === 0) {
+            container.innerHTML = '<p style="color:var(--gray-500);text-align:center;padding:1rem;">Aucun template trouvé. Exécutez la migration SQL pour initialiser les templates.</p>';
+            return;
+        }
+
+        container.innerHTML = result.data.map(t => `
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:0.75rem 0;border-bottom:1px solid var(--gray-100);">
+                <div>
+                    <div style="font-weight:600;color:var(--gray-900);font-size:0.9rem;">${t.name}</div>
+                    <div style="font-size:0.8rem;color:var(--gray-500);margin-top:0.15rem;">Objet : ${t.subject}</div>
+                </div>
+                <button onclick="CRMApp.editEmailTemplate('${t.id}')" style="padding:0.4rem 0.75rem;background:var(--gray-100);color:var(--gray-700);border:1px solid var(--gray-300);border-radius:var(--radius-md);font-size:0.8rem;cursor:pointer;white-space:nowrap;">
+                    Modifier
+                </button>
+            </div>
+        `).join('');
+    },
+
+    async editEmailTemplate(templateId) {
+        const template = await SupabaseData.getEmailTemplate(templateId);
+        if (!template) {
+            showToast('Template introuvable', 'error');
+            return;
+        }
+
+        const existing = document.getElementById('email-template-modal');
+        if (existing) existing.remove();
+
+        const variables = template.variables ? template.variables.split(',').map(v => v.trim()).filter(Boolean) : [];
+        const variablesHtml = variables.length > 0 ? `
+            <div style="margin-bottom:1rem;">
+                <label style="display:block;font-size:0.8rem;font-weight:600;color:var(--gray-700);margin-bottom:0.5rem;">Variables disponibles (cliquer pour insérer)</label>
+                <div style="display:flex;flex-wrap:wrap;gap:0.4rem;">
+                    ${variables.map(v => `
+                        <button type="button" onclick="CRMApp.insertTemplateVariable('${v}')"
+                            style="padding:0.25rem 0.6rem;background:#eff6ff;color:#1e40af;border:1px solid #93c5fd;border-radius:var(--radius-md);font-size:0.8rem;cursor:pointer;font-family:monospace;">
+                            ${v}
+                        </button>
+                    `).join('')}
+                </div>
+            </div>
+        ` : '';
+
+        const inputStyle = 'width:100%;padding:0.6rem 0.75rem;border:1px solid var(--gray-300);border-radius:var(--radius-md);font-size:0.9rem;font-family:inherit;box-sizing:border-box;';
+
+        const modal = document.createElement('div');
+        modal.id = 'email-template-modal';
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div style="background:white;border-radius:var(--radius-xl);padding:2rem;max-width:650px;width:90%;max-height:90vh;overflow-y:auto;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+                    <h2 style="font-size:1.15rem;font-weight:700;color:var(--gray-900);margin:0;">Modifier : ${template.name}</h2>
+                    <button onclick="document.getElementById('email-template-modal').remove()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--gray-400);">&times;</button>
+                </div>
+
+                <div style="margin-bottom:1rem;">
+                    <label style="display:block;font-size:0.8rem;font-weight:600;color:var(--gray-700);margin-bottom:0.35rem;">Objet du mail</label>
+                    <input type="text" id="tpl-edit-subject" value="${template.subject.replace(/"/g, '&quot;')}" style="${inputStyle}">
+                </div>
+
+                ${variablesHtml}
+
+                <div style="margin-bottom:1rem;">
+                    <label style="display:block;font-size:0.8rem;font-weight:600;color:var(--gray-700);margin-bottom:0.35rem;">Corps du message</label>
+                    <textarea id="tpl-edit-body" rows="16" style="${inputStyle} resize:vertical;">${template.body}</textarea>
+                </div>
+
+                <div style="display:flex;justify-content:flex-end;gap:0.75rem;padding-top:1rem;border-top:1px solid var(--gray-200);">
+                    <button onclick="document.getElementById('email-template-modal').remove()" style="padding:0.6rem 1.25rem;background:var(--gray-100);color:var(--gray-700);border:1px solid var(--gray-300);border-radius:var(--radius-md);font-weight:500;cursor:pointer;">
+                        Annuler
+                    </button>
+                    <button onclick="CRMApp.saveEmailTemplate('${template.id}')" style="padding:0.6rem 1.25rem;background:var(--primary-purple);color:white;border:none;border-radius:var(--radius-md);font-weight:600;cursor:pointer;">
+                        Enregistrer
+                    </button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        setTimeout(() => modal.classList.add('show'), 10);
+    },
+
+    insertTemplateVariable(variable) {
+        const textarea = document.getElementById('tpl-edit-body');
+        if (!textarea) return;
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const text = textarea.value;
+        textarea.value = text.substring(0, start) + variable + text.substring(end);
+        textarea.selectionStart = textarea.selectionEnd = start + variable.length;
+        textarea.focus();
+    },
+
+    async saveEmailTemplate(templateId) {
+        const subject = document.getElementById('tpl-edit-subject').value.trim();
+        const body = document.getElementById('tpl-edit-body').value;
+
+        if (!subject) {
+            showToast('L\'objet ne peut pas être vide', 'error');
+            return;
+        }
+
+        const result = await SupabaseData.updateEmailTemplate(templateId, { subject, body });
+        if (result.success) {
+            showToast('Template enregistré !', 'success');
+            const modal = document.getElementById('email-template-modal');
+            if (modal) modal.remove();
+            this.loadEmailTemplates();
+        } else {
+            showToast('Erreur : ' + result.message, 'error');
+        }
+    },
+
+    // ==================== END EMAIL TEMPLATES ====================
 
     changeLogo(event) {
         const file = event.target.files[0];

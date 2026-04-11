@@ -1537,6 +1537,53 @@ const SupabaseData = {
             console.error('Error getting user client ids:', error);
             return { success: false, clientIds: [] };
         }
+    },
+
+    // ==================== EMAIL TEMPLATES ====================
+
+    async getEmailTemplates() {
+        try {
+            const { data, error } = await supabaseClient
+                .from('email_templates')
+                .select('*')
+                .order('name');
+            if (error) throw error;
+            return { success: true, data: data || [] };
+        } catch (error) {
+            console.error('Error getting email templates:', error);
+            return { success: false, data: [], message: error.message };
+        }
+    },
+
+    async getEmailTemplate(id) {
+        try {
+            const { data, error } = await supabaseClient
+                .from('email_templates')
+                .select('*')
+                .eq('id', id)
+                .single();
+            if (error) throw error;
+            return data;
+        } catch (error) {
+            console.error('Error getting email template:', id, error);
+            return null;
+        }
+    },
+
+    async updateEmailTemplate(id, updates) {
+        try {
+            const { data, error } = await supabaseClient
+                .from('email_templates')
+                .update({ ...updates, updated_at: new Date().toISOString() })
+                .eq('id', id)
+                .select()
+                .single();
+            if (error) throw error;
+            return { success: true, data };
+        } catch (error) {
+            console.error('Error updating email template:', error);
+            return { success: false, message: error.message };
+        }
     }
 };
 

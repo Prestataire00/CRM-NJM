@@ -307,6 +307,7 @@ const FormationForm = {
                 <div class="form-group">
                     <label>Statut</label>
                     <select id="status">
+                        <option value="awaiting_prealable" ${f.status === 'awaiting_prealable' ? 'selected' : ''}>⏳ Pr\u00E9alable en attente</option>
                         <option value="planned" ${f.status === 'planned' ? 'selected' : ''}>Planifi\u00E9e</option>
                         <option value="in_progress" ${f.status === 'in_progress' ? 'selected' : ''}>En cours</option>
                         <option value="completed" ${f.status === 'completed' ? 'selected' : ''}>Termin\u00E9e</option>

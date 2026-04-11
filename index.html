@@ -852,6 +852,7 @@
         .status-badge-select.in_progress { background: #dbeafe; color: #1e40af; border-color: #93c5fd; }
         .status-badge-select.completed { background: #d1fae5; color: #065f46; border-color: #6ee7b7; }
         .status-badge-select.cancelled { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+        .status-badge-select.awaiting_prealable { background: #f3e8ff; color: #6b21a8; border-color: #c084fc; }
 
         .workflow-section {
             background: white;
@@ -1410,6 +1411,15 @@
                             </div>
                         </div>
                     </div>
+                    <!-- Templates d'emails -->
+                    <div style="background: white; border-radius: var(--radius-xl); padding: 2rem; box-shadow: var(--shadow-sm);">
+                        <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--gray-900); margin-bottom: 0.5rem;">Templates d'emails</h3>
+                        <p style="color: var(--gray-600); font-size: 0.85rem; margin-bottom: 1.5rem;">Modifiez le contenu des emails envoyés automatiquement par le CRM.</p>
+                        <div id="email-templates-list">
+                            <p style="color:var(--gray-500);text-align:center;padding:1rem;">Chargement...</p>
+                        </div>
+                    </div>
+
                     <div style="display:flex; justify-content:flex-end; gap:1rem; padding-bottom: 2rem;">
                         <button onclick="CRMApp.saveParametres()" style="padding:0.875rem 2.5rem; background:var(--primary-green); color:white; border:none; border-radius:var(--radius-md); font-weight:600; cursor:pointer; font-size:1rem;">
                             Enregistrer les paramètres
@@ -1552,6 +1562,7 @@
                     <input type="search" id="formations-search" placeholder="Rechercher un client ou une formation..." oninput="CRMApp.filterFormations()">
                     <select id="formations-status-filter" onchange="CRMApp.filterFormations()">
                         <option value="">Tous les statuts</option>
+                        <option value="awaiting_prealable">Préalable en attente</option>
                         <option value="planned">Planifiée</option>
                         <option value="in_progress">En cours</option>
                         <option value="completed">Terminée</option>
