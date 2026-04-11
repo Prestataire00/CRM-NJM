@@ -1171,6 +1171,9 @@ const CRMApp = {
 
         // Charger les supports assignés à cette formation pour le client
         this.loadClientFormationSupports(formation);
+
+        // Onglet Préalable (saisie des apprenants par le client)
+        this.renderClientPrealableTab(formation);
     },
 
     async loadClientFormationSupports(formation) {
@@ -1287,6 +1290,396 @@ const CRMApp = {
         }
     },
 
+    // ==================== PREALABLE CLIENT ====================
+
+    PREALABLE_FORMATION_TYPES: [
+        'Techniques de vente', 'Management', 'Manager commercial', 'Commercial',
+        'Parcours client', 'Méthode AEC Disc', 'Recrutement', 'Communication'
+    ],
+
+    renderClientPrealableTab(formation) {
+        const container = document.getElementById('client-formation-questionnaires');
+        if (!container) return;
+
+        const recu = formation.prealable_recu === true;
+
+        if (recu && !this.clientPrealableEditing) {
+            this._renderPrealableReadonly(container, formation);
+        } else {
+            this._renderPrealableForm(container, formation);
+        }
+    },
+
+    _renderPrealableReadonly(container, formation) {
+        let learners = formation.learners_data || [];
+        if (typeof learners === 'string') {
+            try { learners = JSON.parse(learners); } catch (e) { learners = []; }
+        }
+
+        const formationType = formation.prealable_formation_type || '—';
+        const opcoName = formation.opco_name || '—';
+        const opcoSubrogation = formation.opco_subrogation === true ? 'Avec subrogation' : formation.opco_subrogation === false && formation.opco_name ? 'Sans subrogation' : '—';
+
+        const thStyle = 'text-align:left;padding:0.5rem 0.75rem;font-size:0.75rem;color:var(--gray-600);font-weight:600;white-space:nowrap;';
+        const tdStyle = 'padding:0.5rem 0.75rem;font-size:0.85rem;color:var(--gray-900);';
+
+        container.innerHTML = `
+            <div style="background:#d1fae5;border:1px solid #6ee7b7;border-radius:var(--radius-xl);padding:2rem;margin-bottom:1.5rem;">
+                <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1.5rem;">
+                    <span style="font-size:1.5rem;">✅</span>
+                    <h3 style="color:#065f46;font-weight:700;margin:0;">Préalable envoyé</h3>
+                </div>
+
+                <!-- Section Formation -->
+                <div style="background:white;border-radius:var(--radius-md);padding:1rem;margin-bottom:1rem;">
+                    <div style="font-size:0.75rem;font-weight:600;color:var(--gray-500);text-transform:uppercase;margin-bottom:0.5rem;">Formation</div>
+                    <div style="font-weight:500;color:var(--gray-900);">${formationType}</div>
+                </div>
+
+                <!-- Section Apprenants -->
+                <div style="background:white;border-radius:var(--radius-md);overflow:hidden;margin-bottom:1rem;">
+                    <div style="padding:0.75rem 1rem;font-size:0.75rem;font-weight:600;color:var(--gray-500);text-transform:uppercase;border-bottom:1px solid var(--gray-100);">Apprenants (${learners.length})</div>
+                    <div style="overflow-x:auto;">
+                        <table style="width:100%;border-collapse:collapse;">
+                            <thead>
+                                <tr style="background:var(--gray-50);">
+                                    <th style="${thStyle}">Prénom</th>
+                                    <th style="${thStyle}">Nom</th>
+                                    <th style="${thStyle}">Année</th>
+                                    <th style="${thStyle}">Poste</th>
+                                    <th style="${thStyle}">Tél</th>
+                                    <th style="${thStyle}">Email</th>
+                                    <th style="${thStyle}">Entité</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${learners.map(l => `
+                                    <tr style="border-top:1px solid var(--gray-100);">
+                                        <td style="${tdStyle}">${l.first_name || ''}</td>
+                                        <td style="${tdStyle}">${l.last_name || ''}</td>
+                                        <td style="${tdStyle}">${l.birth_year || '—'}</td>
+                                        <td style="${tdStyle}">${l.position_title || '—'}</td>
+                                        <td style="${tdStyle}">${l.phone || '—'}</td>
+                                        <td style="${tdStyle}">${l.email || '—'}</td>
+                                        <td style="${tdStyle}">${l.entity || '—'}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Section OPCO -->
+                <div style="background:white;border-radius:var(--radius-md);padding:1rem;margin-bottom:1rem;">
+                    <div style="font-size:0.75rem;font-weight:600;color:var(--gray-500);text-transform:uppercase;margin-bottom:0.5rem;">OPCO</div>
+                    <div style="display:flex;gap:2rem;">
+                        <div><span style="color:var(--gray-500);font-size:0.85rem;">Nom :</span> <span style="font-weight:500;color:var(--gray-900);">${opcoName}</span></div>
+                        <div><span style="color:var(--gray-500);font-size:0.85rem;">Subrogation :</span> <span style="font-weight:500;color:var(--gray-900);">${opcoSubrogation}</span></div>
+                    </div>
+                </div>
+
+                <button onclick="CRMApp.editClientPrealable()"
+                    style="padding:0.5rem 1.25rem;background:white;color:#065f46;border:1px solid #6ee7b7;border-radius:var(--radius-md);font-weight:500;cursor:pointer;">
+                    Modifier
+                </button>
+            </div>
+        `;
+    },
+
+    _renderPrealableForm(container, formation) {
+        // Initialiser les données du formulaire
+        if (!this.clientPrealableLearners) {
+            let existing = formation.learners_data || [];
+            if (typeof existing === 'string') {
+                try { existing = JSON.parse(existing); } catch (e) { existing = []; }
+            }
+            this.clientPrealableLearners = existing.length > 0
+                ? existing.map(l => ({ ...l }))
+                : [{ id: Date.now(), first_name: '', last_name: '', email: '', birth_year: '', position_title: '', phone: '', entity: '' }];
+        }
+
+        if (this.clientPrealableFormationType === undefined) {
+            this.clientPrealableFormationType = formation.prealable_formation_type || '';
+        }
+        if (this.clientPrealableFormationTypeAutre === undefined) {
+            const known = this.PREALABLE_FORMATION_TYPES;
+            const val = this.clientPrealableFormationType;
+            this.clientPrealableFormationTypeAutre = (val && !known.includes(val)) ? val : '';
+        }
+        if (this.clientPrealableOpcoName === undefined) {
+            this.clientPrealableOpcoName = formation.opco_name || '';
+        }
+        if (this.clientPrealableOpcoSubrogation === undefined) {
+            this.clientPrealableOpcoSubrogation = formation.opco_subrogation;
+        }
+
+        const inputStyle = 'padding:0.45rem 0.6rem;border:1px solid var(--gray-300);border-radius:var(--radius-md);font-size:0.85rem;width:100%;box-sizing:border-box;';
+        const labelStyle = 'font-size:0.75rem;font-weight:600;color:var(--gray-600);padding:0.5rem 0.5rem 0.25rem;white-space:nowrap;';
+
+        const formationTypes = this.PREALABLE_FORMATION_TYPES;
+        const selectedType = this.clientPrealableFormationType;
+        const isAutre = selectedType && !formationTypes.includes(selectedType);
+
+        container.innerHTML = `
+            <div style="background:#eff6ff;border:1px solid #93c5fd;border-radius:var(--radius-xl);padding:2rem;margin-bottom:1.5rem;">
+                <h3 style="color:#1e40af;font-weight:700;margin:0 0 0.5rem 0;">Préalable à la formation</h3>
+                <p style="color:#1e40af;margin:0;font-size:0.9rem;">Veuillez compléter l'ensemble des informations ci-dessous avant le début de votre formation.</p>
+            </div>
+
+            <!-- SECTION 1 — Formation -->
+            <div style="background:white;border:1px solid var(--gray-200);border-radius:var(--radius-xl);padding:1.5rem;margin-bottom:1.5rem;">
+                <h4 style="font-size:1rem;font-weight:700;color:var(--gray-900);margin:0 0 1rem 0;">1. Formation</h4>
+                <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(180px, 1fr));gap:0.5rem;">
+                    ${formationTypes.map(type => `
+                        <label style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem 0.75rem;background:${selectedType === type ? '#eff6ff' : 'var(--gray-50)'};border:1px solid ${selectedType === type ? '#3b82f6' : 'var(--gray-200)'};border-radius:var(--radius-md);cursor:pointer;font-size:0.875rem;color:var(--gray-800);">
+                            <input type="radio" name="prealable-formation-type" value="${type}"
+                                ${selectedType === type ? 'checked' : ''}
+                                onchange="CRMApp.setPrealableFormationType(this.value)"
+                                style="margin:0;">
+                            ${type}
+                        </label>
+                    `).join('')}
+                    <label style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem 0.75rem;background:${isAutre ? '#eff6ff' : 'var(--gray-50)'};border:1px solid ${isAutre ? '#3b82f6' : 'var(--gray-200)'};border-radius:var(--radius-md);cursor:pointer;font-size:0.875rem;color:var(--gray-800);">
+                        <input type="radio" name="prealable-formation-type" value="__autre__"
+                            ${isAutre ? 'checked' : ''}
+                            onchange="CRMApp.setPrealableFormationType('__autre__')"
+                            style="margin:0;">
+                        Autre
+                    </label>
+                </div>
+                <div id="prealable-autre-container" style="margin-top:0.75rem;${isAutre ? '' : 'display:none;'}">
+                    <input type="text" id="prealable-autre-input" placeholder="Précisez le type de formation"
+                        value="${this.clientPrealableFormationTypeAutre || ''}"
+                        onchange="CRMApp.clientPrealableFormationTypeAutre = this.value"
+                        style="${inputStyle} max-width:350px;">
+                </div>
+            </div>
+
+            <!-- SECTION 2 — Apprenants -->
+            <div style="background:white;border:1px solid var(--gray-200);border-radius:var(--radius-xl);padding:1.5rem;margin-bottom:1.5rem;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+                    <h4 style="font-size:1rem;font-weight:700;color:var(--gray-900);margin:0;">2. Apprenants</h4>
+                    <span style="font-size:0.8rem;color:var(--gray-500);">${this.clientPrealableLearners.length}/12</span>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table style="width:100%;border-collapse:collapse;min-width:800px;">
+                        <thead>
+                            <tr style="background:var(--gray-50);">
+                                <th style="${labelStyle}">#</th>
+                                <th style="${labelStyle}">Prénom *</th>
+                                <th style="${labelStyle}">NOM *</th>
+                                <th style="${labelStyle}">Année naissance</th>
+                                <th style="${labelStyle}">Poste</th>
+                                <th style="${labelStyle}">N° téléphone</th>
+                                <th style="${labelStyle}">Adresse mail</th>
+                                <th style="${labelStyle}">Entité *</th>
+                                <th style="${labelStyle}"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${this.clientPrealableLearners.map((l, i) => `
+                                <tr style="border-top:1px solid var(--gray-100);">
+                                    <td style="padding:0.4rem 0.5rem;text-align:center;color:var(--gray-500);font-weight:600;font-size:0.85rem;">${i + 1}</td>
+                                    <td style="padding:0.4rem 0.25rem;"><input type="text" value="${l.first_name || ''}" onchange="CRMApp.updateClientLearnerField(${i},'first_name',this.value)" style="${inputStyle}"></td>
+                                    <td style="padding:0.4rem 0.25rem;"><input type="text" value="${l.last_name || ''}" onchange="CRMApp.updateClientLearnerField(${i},'last_name',this.value)" style="${inputStyle} text-transform:uppercase;"></td>
+                                    <td style="padding:0.4rem 0.25rem;"><input type="text" value="${l.birth_year || ''}" placeholder="ex: 1985" maxlength="4" onchange="CRMApp.updateClientLearnerField(${i},'birth_year',this.value)" style="${inputStyle} max-width:80px;"></td>
+                                    <td style="padding:0.4rem 0.25rem;"><input type="text" value="${l.position_title || ''}" onchange="CRMApp.updateClientLearnerField(${i},'position_title',this.value)" style="${inputStyle}"></td>
+                                    <td style="padding:0.4rem 0.25rem;"><input type="tel" value="${l.phone || ''}" onchange="CRMApp.updateClientLearnerField(${i},'phone',this.value)" style="${inputStyle} max-width:130px;"></td>
+                                    <td style="padding:0.4rem 0.25rem;"><input type="email" value="${l.email || ''}" onchange="CRMApp.updateClientLearnerField(${i},'email',this.value)" style="${inputStyle}"></td>
+                                    <td style="padding:0.4rem 0.25rem;"><input type="text" value="${l.entity || ''}" onchange="CRMApp.updateClientLearnerField(${i},'entity',this.value)" style="${inputStyle}"></td>
+                                    <td style="padding:0.4rem 0.25rem;text-align:center;">
+                                        ${this.clientPrealableLearners.length > 1 ? `
+                                            <button onclick="CRMApp.removeClientLearnerRow(${i})" style="background:none;border:none;color:var(--gray-400);cursor:pointer;font-size:1.1rem;padding:0.25rem;" title="Supprimer">✕</button>
+                                        ` : ''}
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+                <p style="font-size:0.75rem;color:var(--gray-500);margin:0.75rem 0 0;font-style:italic;">* Entité : raison sociale, n° SIRET et adresse auxquelles l'apprenant doit être rattaché.</p>
+                ${this.clientPrealableLearners.length < 12 ? `
+                    <button onclick="CRMApp.addClientLearnerRow()"
+                        style="margin-top:0.75rem;padding:0.45rem 1rem;background:var(--gray-100);color:var(--gray-700);border:1px solid var(--gray-300);border-radius:var(--radius-md);font-size:0.85rem;cursor:pointer;">
+                        + Ajouter un apprenant
+                    </button>
+                ` : ''}
+            </div>
+
+            <!-- SECTION 3 — OPCO -->
+            <div style="background:white;border:1px solid var(--gray-200);border-radius:var(--radius-xl);padding:1.5rem;margin-bottom:1.5rem;">
+                <h4 style="font-size:1rem;font-weight:700;color:var(--gray-900);margin:0 0 1rem 0;">3. OPCO</h4>
+                <div style="display:flex;gap:1.5rem;align-items:flex-end;flex-wrap:wrap;">
+                    <div style="flex:1;min-width:200px;">
+                        <label style="display:block;font-size:0.8rem;font-weight:600;color:var(--gray-600);margin-bottom:0.35rem;">Nom de l'OPCO</label>
+                        <input type="text" id="prealable-opco-name" value="${this.clientPrealableOpcoName || ''}"
+                            onchange="CRMApp.clientPrealableOpcoName = this.value"
+                            style="${inputStyle} max-width:300px;">
+                    </div>
+                    <div style="display:flex;gap:1rem;">
+                        <label style="display:flex;align-items:center;gap:0.4rem;padding:0.5rem 0.75rem;background:${this.clientPrealableOpcoSubrogation === true ? '#eff6ff' : 'var(--gray-50)'};border:1px solid ${this.clientPrealableOpcoSubrogation === true ? '#3b82f6' : 'var(--gray-200)'};border-radius:var(--radius-md);cursor:pointer;font-size:0.875rem;">
+                            <input type="radio" name="prealable-opco-subrogation" value="true"
+                                ${this.clientPrealableOpcoSubrogation === true ? 'checked' : ''}
+                                onchange="CRMApp.clientPrealableOpcoSubrogation = true"
+                                style="margin:0;">
+                            Avec subrogation
+                        </label>
+                        <label style="display:flex;align-items:center;gap:0.4rem;padding:0.5rem 0.75rem;background:${this.clientPrealableOpcoSubrogation === false ? '#eff6ff' : 'var(--gray-50)'};border:1px solid ${this.clientPrealableOpcoSubrogation === false ? '#3b82f6' : 'var(--gray-200)'};border-radius:var(--radius-md);cursor:pointer;font-size:0.875rem;">
+                            <input type="radio" name="prealable-opco-subrogation" value="false"
+                                ${this.clientPrealableOpcoSubrogation === false ? 'checked' : ''}
+                                onchange="CRMApp.clientPrealableOpcoSubrogation = false"
+                                style="margin:0;">
+                            Sans subrogation
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bouton Envoyer -->
+            <div style="display:flex;justify-content:flex-end;margin-top:1rem;">
+                <button onclick="CRMApp.submitClientPrealable()"
+                    style="padding:0.75rem 2rem;background:var(--primary-purple);color:white;border:none;border-radius:var(--radius-md);font-weight:600;font-size:1rem;cursor:pointer;">
+                    Envoyer le préalable
+                </button>
+            </div>
+        `;
+    },
+
+    setPrealableFormationType(value) {
+        if (value === '__autre__') {
+            this.clientPrealableFormationType = this.clientPrealableFormationTypeAutre || '';
+            const autreContainer = document.getElementById('prealable-autre-container');
+            if (autreContainer) autreContainer.style.display = '';
+            const autreInput = document.getElementById('prealable-autre-input');
+            if (autreInput) autreInput.focus();
+        } else {
+            this.clientPrealableFormationType = value;
+            this.clientPrealableFormationTypeAutre = '';
+            const autreContainer = document.getElementById('prealable-autre-container');
+            if (autreContainer) autreContainer.style.display = 'none';
+        }
+    },
+
+    addClientLearnerRow() {
+        if (!this.clientPrealableLearners) this.clientPrealableLearners = [];
+        if (this.clientPrealableLearners.length >= 12) {
+            showToast('Maximum 12 apprenants', 'warning');
+            return;
+        }
+        this.clientPrealableLearners.push({ id: Date.now(), first_name: '', last_name: '', email: '', birth_year: '', position_title: '', phone: '', entity: '' });
+        this.renderClientPrealableTab(this.currentClientFormation);
+    },
+
+    removeClientLearnerRow(index) {
+        this.clientPrealableLearners.splice(index, 1);
+        this.renderClientPrealableTab(this.currentClientFormation);
+    },
+
+    updateClientLearnerField(index, field, value) {
+        if (this.clientPrealableLearners && this.clientPrealableLearners[index]) {
+            this.clientPrealableLearners[index][field] = value;
+        }
+    },
+
+    async submitClientPrealable() {
+        const formation = this.currentClientFormation;
+        if (!formation) return;
+
+        // Résoudre le type de formation
+        const isAutre = document.querySelector('input[name="prealable-formation-type"][value="__autre__"]');
+        let formationType = this.clientPrealableFormationType;
+        if (isAutre && isAutre.checked) {
+            formationType = (this.clientPrealableFormationTypeAutre || '').trim();
+        }
+
+        // Validation
+        if (!formationType) {
+            showToast('Veuillez sélectionner un type de formation', 'error');
+            return;
+        }
+
+        const valid = (this.clientPrealableLearners || []).filter(l =>
+            (l.first_name || '').trim() || (l.last_name || '').trim()
+        );
+
+        if (valid.length === 0) {
+            showToast('Veuillez renseigner au moins un apprenant', 'error');
+            return;
+        }
+
+        // Construire les données apprenants
+        const learnersData = valid.map((l, i) => ({
+            id: l.id || Date.now() + i,
+            first_name: (l.first_name || '').trim(),
+            last_name: (l.last_name || '').trim(),
+            birth_year: (l.birth_year || '').trim(),
+            position_title: (l.position_title || '').trim(),
+            phone: (l.phone || '').trim(),
+            email: (l.email || '').trim(),
+            entity: (l.entity || '').trim(),
+            position: i + 1
+        }));
+
+        try {
+            const result = await SupabaseData.updateFormation(formation.id, {
+                learners_data: learnersData,
+                prealable_recu: true,
+                prealable_formation_type: formationType,
+                opco_name: (this.clientPrealableOpcoName || '').trim() || null,
+                opco_subrogation: this.clientPrealableOpcoSubrogation === true,
+                number_of_learners: learnersData.length
+            });
+
+            if (!result.success) throw new Error(result.message);
+
+            const clientName = formation.company_name || formation.client_name || 'Client';
+            addNotification('formation', `Préalable reçu — ${clientName} (${learnersData.length} apprenant${learnersData.length > 1 ? 's' : ''})`);
+
+            // Mettre à jour l'état local
+            this.currentClientFormation.prealable_recu = true;
+            this.currentClientFormation.learners_data = learnersData;
+            this.currentClientFormation.prealable_formation_type = formationType;
+            this.currentClientFormation.opco_name = this.clientPrealableOpcoName;
+            this.currentClientFormation.opco_subrogation = this.clientPrealableOpcoSubrogation === true;
+            this.clientPrealableLearners = null;
+            this.clientPrealableFormationType = undefined;
+            this.clientPrealableFormationTypeAutre = undefined;
+            this.clientPrealableOpcoName = undefined;
+            this.clientPrealableOpcoSubrogation = undefined;
+            this.clientPrealableEditing = false;
+
+            showToast('Préalable enregistré !', 'success');
+            this.renderClientPrealableTab(this.currentClientFormation);
+        } catch (err) {
+            console.error('Erreur soumission préalable:', err);
+            showToast('Erreur lors de l\'enregistrement', 'error');
+        }
+    },
+
+    editClientPrealable() {
+        const formation = this.currentClientFormation;
+        if (!formation) return;
+
+        let existing = formation.learners_data || [];
+        if (typeof existing === 'string') {
+            try { existing = JSON.parse(existing); } catch (e) { existing = []; }
+        }
+        this.clientPrealableLearners = existing.length > 0
+            ? existing.map(l => ({ ...l }))
+            : [{ id: Date.now(), first_name: '', last_name: '', email: '', birth_year: '', position_title: '', phone: '', entity: '' }];
+        this.clientPrealableFormationType = formation.prealable_formation_type || '';
+        this.clientPrealableOpcoName = formation.opco_name || '';
+        this.clientPrealableOpcoSubrogation = formation.opco_subrogation;
+        this.clientPrealableEditing = true;
+
+        // Déterminer si c'est "Autre"
+        const known = this.PREALABLE_FORMATION_TYPES;
+        const val = this.clientPrealableFormationType;
+        this.clientPrealableFormationTypeAutre = (val && !known.includes(val)) ? val : '';
+
+        this.renderClientPrealableTab(formation);
+    },
+
     // ==================== END CLIENT VIEW ====================
 
     setupNavigation() {
@@ -1332,8 +1725,13 @@ const CRMApp = {
             setTimeout(() => this.loadSubcontractorsList(), 100);
         }
 
+        if (pageName === 'avant-formation') {
+            setTimeout(() => this.loadAvantFormation(), 100);
+        }
+
         const pageTitles = {
             'dashboard': 'Tableau de bord',
+            'avant-formation': 'Avant formation',
             'formations': 'Formation 2026',
             'clients': 'Clients',
             'subcontractors': 'Sous-traitants',
@@ -1350,6 +1748,128 @@ const CRMApp = {
         };
         document.querySelector('.header-title').textContent = pageTitles[pageName] || 'CRM';
     },
+
+    // ==================== AVANT FORMATION ====================
+
+    async loadAvantFormation() {
+        const container = document.getElementById('avant-formation-list');
+        if (!container) return;
+
+        container.innerHTML = '<p style="text-align:center;color:var(--gray-500);padding:2rem;">Chargement...</p>';
+
+        const result = await SupabaseData.getFormations();
+        if (!result.success) {
+            container.innerHTML = '<p style="color:var(--danger);padding:1rem;">Erreur de chargement</p>';
+            return;
+        }
+
+        const formations = result.data.filter(f => f.status !== 'completed');
+
+        if (formations.length === 0) {
+            container.innerHTML = '<p style="text-align:center;color:var(--gray-500);padding:2rem;">Aucune formation en cours ou planifiée.</p>';
+            return;
+        }
+
+        container.innerHTML = formations.map(f => {
+            const recu = f.prealable_recu === true;
+
+            let learners = f.learners_data || [];
+            if (typeof learners === 'string') {
+                try { learners = JSON.parse(learners); } catch (e) { learners = []; }
+            }
+
+            const badgeStyle = recu
+                ? 'background:#d1fae5;color:#065f46;'
+                : 'background:#fef3c7;color:#92400e;';
+            const badgeText = recu ? `Reçu (${learners.length} apprenant${learners.length > 1 ? 's' : ''})` : 'En attente';
+            const badgeIcon = recu ? '✅' : '📤';
+
+            // Liste des apprenants si reçu
+            const learnersHtml = recu && learners.length > 0 ? `
+                <details style="margin-top: 0.75rem;">
+                    <summary style="cursor: pointer; font-size: 0.85rem; color: var(--gray-600); font-weight: 500;">Voir les apprenants</summary>
+                    <div style="margin-top: 0.5rem; background: var(--gray-50); border-radius: var(--radius-md); padding: 0.75rem;">
+                        ${learners.map((l, i) => `
+                            <div style="display: flex; gap: 1rem; padding: 0.35rem 0; font-size: 0.85rem; ${i > 0 ? 'border-top: 1px solid var(--gray-200);' : ''}">
+                                <span style="color: var(--gray-900); font-weight: 500;">${l.first_name || ''} ${l.last_name || ''}</span>
+                                <span style="color: var(--gray-500);">${l.email || '—'}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </details>
+            ` : '';
+
+            return `
+            <div style="background:white;border-radius:var(--radius-xl);padding:1.5rem;box-shadow:var(--shadow-sm);margin-bottom:1rem;">
+                <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+                    <div style="flex:1;min-width:200px;">
+                        <h3 style="font-size:1.1rem;font-weight:600;color:var(--gray-900);margin:0 0 0.25rem 0;">
+                            ${f.company_name || f.client_name || 'Client inconnu'}
+                        </h3>
+                        <p style="color:var(--gray-600);margin:0;font-size:0.9rem;">
+                            ${f.formation_name || f.title || 'Formation sans nom'}
+                        </p>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
+                        <span style="padding:0.3rem 0.75rem;border-radius:9999px;font-size:0.85rem;font-weight:500;${badgeStyle}">
+                            ${badgeIcon} ${badgeText}
+                        </span>
+                        ${!recu ? `
+                        <button onclick="CRMApp.sendPrealableReminder(${f.id})" style="padding:0.5rem 1rem;background:var(--primary-blue);color:white;border:none;border-radius:var(--radius-md);font-size:0.85rem;font-weight:500;cursor:pointer;">
+                            Relancer le client
+                        </button>
+                        ` : ''}
+                        <button onclick="CRMApp.viewFormation(${f.id})" style="padding:0.5rem 1rem;background:var(--gray-100);color:var(--gray-700);border:1px solid var(--gray-300);border-radius:var(--radius-md);font-size:0.85rem;font-weight:500;cursor:pointer;">
+                            Voir la formation
+                        </button>
+                    </div>
+                </div>
+                ${learnersHtml}
+            </div>`;
+        }).join('');
+    },
+
+    async sendPrealableReminder(formationId) {
+        try {
+            const { data: formation, error } = await supabaseClient
+                .from('formations')
+                .select('*')
+                .eq('id', formationId)
+                .single();
+
+            if (error) throw error;
+
+            const to = formation.contact_email || formation.client_email;
+            if (!to) {
+                showToast('Aucun email de contact pour cette formation', 'error');
+                return;
+            }
+
+            const formationName = formation.formation_name || formation.title || 'votre formation';
+            const subject = `Rappel — Merci de renseigner vos apprenants`;
+            const body = `Bonjour,\n\nNous vous rappelons qu'il est nécessaire de renseigner les apprenants participant à la formation "${formationName}" avant son démarrage.\n\nVeuillez vous connecter à votre espace client pour compléter le questionnaire préalable.\n\nCordialement,\nNJM Conseil`;
+
+            const result = await EmailService.sendEmail(to, subject, body, []);
+
+            if (result.success) {
+                await SupabaseData.updateFormation(formationId, {
+                    prealable_envoye_at: new Date().toISOString()
+                });
+                showToast('Relance envoyée !', 'success');
+                addNotification('mail', `Relance préalable envoyée à ${to}`);
+                await this.loadAvantFormation();
+            } else {
+                const mailtoUrl = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+                window.open(mailtoUrl, '_blank');
+                showToast("L'envoi automatique a échoué. Brouillon ouvert dans votre client mail.", 'warning');
+            }
+        } catch (err) {
+            console.error('Erreur relance préalable:', err);
+            showToast('Erreur lors de l\'envoi', 'error');
+        }
+    },
+
+    // ==================== END AVANT FORMATION ====================
 
     async updateDashboardStats() {
         const result = await SupabaseData.getDashboardStats();

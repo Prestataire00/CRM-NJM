@@ -1134,6 +1134,15 @@
                     Tableau de bord
                 </a>
 
+                <a href="#avant-formation" class="nav-item" data-page="avant-formation">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
+                        <rect x="9" y="3" width="6" height="4" rx="1"/>
+                        <path d="M9 12h6M9 16h4"/>
+                    </svg>
+                    Avant formation
+                </a>
+
                 <a href="#formations" class="nav-item" data-page="formations">
                     <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -1514,6 +1523,15 @@
                 </div>
             </div>
             <!-- END DASHBOARD PAGE -->
+
+            <!-- AVANT FORMATION PAGE -->
+            <div id="page-avant-formation" class="page-content">
+                <div style="margin-bottom: 2rem;">
+                    <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-900);">Avant formation</h2>
+                    <p style="color: var(--gray-600); margin-top: 0.5rem;">Suivi des documents préalables à envoyer aux clients</p>
+                </div>
+                <div id="avant-formation-list"></div>
+            </div>
 
             <!-- FORMATION 2026 PAGE -->
             <div id="page-formations" class="page-content">
@@ -2556,7 +2574,7 @@
                             </button>
                             <button class="client-tab-btn" data-tab="questionnaires" onclick="CRMApp.switchClientFormationTab('questionnaires')"
                                 style="padding: 1rem 1.5rem; background: none; border: none; cursor: pointer; font-weight: 500; color: var(--gray-500); border-bottom: 2px solid transparent; white-space: nowrap;">
-                                Questionnaires
+                                Préalable
                             </button>
                         </div>
 
@@ -2590,16 +2608,10 @@
                                 </div>
                             </div>
 
-                            <!-- Onglet Questionnaires -->
+                            <!-- Onglet Préalable -->
                             <div id="client-tab-questionnaires" class="client-tab-content" style="display: none;">
                                 <div id="client-formation-questionnaires">
-                                    <div style="text-align: center; padding: 3rem; color: var(--gray-500);">
-                                        <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin: 0 auto 1rem; opacity: 0.5;">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
-                                        </svg>
-                                        <p style="font-weight: 500; margin-bottom: 0.5rem;">Questionnaires de satisfaction</p>
-                                        <p style="font-size: 0.875rem;">Cette fonctionnalité sera bientôt disponible.</p>
-                                    </div>
+                                    <!-- Rendu dynamiquement par renderClientPrealableTab() -->
                                 </div>
                             </div>
                         </div>

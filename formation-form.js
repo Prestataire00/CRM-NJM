@@ -373,6 +373,11 @@ const FormationForm = {
                 <div class="learner-inputs">
                     <input type="text" placeholder="Pr\u00E9nom" value="${l.first_name || ''}" onchange="FormationForm.updateLearnerField(${i}, 'first_name', this.value)">
                     <input type="text" placeholder="Nom" value="${l.last_name || ''}" onchange="FormationForm.updateLearnerField(${i}, 'last_name', this.value)">
+                    <input type="text" placeholder="Année naissance" value="${l.birth_year || ''}" maxlength="4" onchange="FormationForm.updateLearnerField(${i}, 'birth_year', this.value)" style="max-width:100px;">
+                    <input type="text" placeholder="Poste" value="${l.position_title || ''}" onchange="FormationForm.updateLearnerField(${i}, 'position_title', this.value)">
+                    <input type="tel" placeholder="Téléphone" value="${l.phone || ''}" onchange="FormationForm.updateLearnerField(${i}, 'phone', this.value)" style="max-width:130px;">
+                    <input type="email" placeholder="Email" value="${l.email || ''}" onchange="FormationForm.updateLearnerField(${i}, 'email', this.value)">
+                    <input type="text" placeholder="Entité (raison sociale, SIRET, adresse)" value="${l.entity || ''}" onchange="FormationForm.updateLearnerField(${i}, 'entity', this.value)">
                 </div>
                 <button type="button" onclick="FormationForm.removeLearner(${i})" class="btn-delete-small">\uD83D\uDDD1\uFE0F</button>
             </div>
@@ -437,7 +442,7 @@ const FormationForm = {
 
     // ==================== GESTION APPRENANTS ====================
     addLearner() {
-        this.learnersData.push({ id: Date.now(), first_name: '', last_name: '', hours: '', position: this.learnersData.length + 1 });
+        this.learnersData.push({ id: Date.now(), first_name: '', last_name: '', email: '', birth_year: '', position_title: '', phone: '', entity: '', hours: '', position: this.learnersData.length + 1 });
         this.refreshLearnersTab();
     },
 
