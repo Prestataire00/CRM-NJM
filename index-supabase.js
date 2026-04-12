@@ -1625,6 +1625,7 @@ const CRMApp = {
             const result = await SupabaseData.updateFormation(formation.id, {
                 learners_data: learnersData,
                 prealable_recu: true,
+                status: 'planned',
                 prealable_formation_type: formationType,
                 opco_name: (this.clientPrealableOpcoName || '').trim() || null,
                 opco_subrogation: this.clientPrealableOpcoSubrogation === true,
@@ -3335,6 +3336,7 @@ Nathalie Joulie-Morand`;
             const result = await SupabaseData.updateFormation(this._adminPrealableFormationId, {
                 learners_data: learnersData,
                 prealable_recu: true,
+                status: 'planned',
                 prealable_formation_type: formationType,
                 opco_name: (this._adminPrealableOpcoName || '').trim() || null,
                 opco_subrogation: this._adminPrealableOpcoSubrogation === true,
