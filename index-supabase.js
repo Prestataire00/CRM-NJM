@@ -996,7 +996,6 @@ const CRMApp = {
         const formationContent = document.getElementById('client-formation-content');
 
         if (!result.success || result.message === 'Aucune entreprise liée à ce compte.' || result.data.length === 0) {
-            // Client sans formation
             if (noFormation) noFormation.style.display = 'block';
             if (formationContent) formationContent.style.display = 'none';
             return;
@@ -1005,36 +1004,329 @@ const CRMApp = {
         if (noFormation) noFormation.style.display = 'none';
         if (formationContent) formationContent.style.display = 'block';
 
-        // Prendre la formation la plus récente (ou en cours)
-        const formations = result.data;
-        const activeFormation = formations.find(f => f.status === 'in_progress') || formations[0];
+        this.clientFormations = result.data;
+        // Formation active : en cours, ou en attente préalable, ou la première
+        const active = this.clientFormations.find(f => f.status === 'in_progress')
+            || this.clientFormations.find(f => f.status === 'awaiting_prealable')
+            || this.clientFormations[0];
 
-        this.currentClientFormation = activeFormation;
-        this.renderClientFormationSummary(activeFormation);
-        this.renderClientFormationTabs(activeFormation);
+        this.currentClientFormation = active;
+        this.renderClientSpace();
     },
 
-    renderClientFormationSummary(formation) {
+    selectClientFormation(formationId) {
+        const f = (this.clientFormations || []).find(x => x.id === formationId);
+        if (!f) return;
+        this.currentClientFormation = f;
+        // Reset préalable form state (au cas où édition en cours sur l'ancienne)
+        this.clientPrealableLearners = null;
+        this.clientPrealableFormationType = undefined;
+        this.clientPrealableFormationTypeAutre = undefined;
+        this.clientPrealableOpcoName = undefined;
+        this.clientPrealableOpcoSubrogation = undefined;
+        this.clientPrealableEditing = false;
+        this.renderClientSpace();
+    },
+
+    renderClientSpace() {
+        const f = this.currentClientFormation;
+        if (!f) return;
+
+        this.renderClientFormationList();
+        this.renderClientFormationHeader(f);
+        this.renderClientStepper(f);
+        this.renderClientActionZone(f);
+        this.renderClientDocsList(f);
+        // Charger les supports pédagogiques (affichés dans la section docs)
+        this.loadClientFormationSupports(f);
+    },
+
+    renderClientFormationList() {
+        const container = document.getElementById('client-formation-list');
+        if (!container) return;
+        const formations = this.clientFormations || [];
+        if (formations.length <= 1) { container.style.display = 'none'; return; }
+
+        container.style.display = 'block';
+        const statusMap = {
+            'completed': { label: 'Terminée', bg: '#d1fae5', color: '#065f46' },
+            'in_progress': { label: 'En cours', bg: '#fef3c7', color: '#92400e' },
+            'planned': { label: 'Planifiée', bg: '#dbeafe', color: '#1e40af' },
+            'awaiting_prealable': { label: 'À compléter', bg: '#f3e8ff', color: '#6b21a8' },
+            'cancelled': { label: 'Annulée', bg: '#fee2e2', color: '#991b1b' }
+        };
+
+        container.innerHTML = `
+            <div style="font-size:0.85rem;font-weight:600;color:var(--gray-600);margin-bottom:0.5rem;">Mes formations</div>
+            <div style="display:flex;gap:0.75rem;overflow-x:auto;padding-bottom:0.5rem;">
+                ${formations.map(form => {
+                    const isActive = form.id === this.currentClientFormation.id;
+                    const st = statusMap[form.status] || statusMap['planned'];
+                    const dates = form.start_date ? new Date(form.start_date).toLocaleDateString('fr-FR') : '';
+                    return `
+                        <div onclick="CRMApp.selectClientFormation(${form.id})"
+                            style="min-width:220px;background:white;border:2px solid ${isActive ? 'var(--primary-pink)' : 'var(--gray-200)'};border-radius:var(--radius-xl);padding:1rem;cursor:pointer;transition:all 0.2s;">
+                            <div style="font-weight:600;color:var(--gray-900);font-size:0.9rem;margin-bottom:0.35rem;line-height:1.3;">${form.formation_name || 'Formation'}</div>
+                            <div style="font-size:0.75rem;color:var(--gray-500);margin-bottom:0.5rem;">${dates}</div>
+                            <span style="display:inline-block;padding:0.2rem 0.55rem;background:${st.bg};color:${st.color};border-radius:9999px;font-size:0.7rem;font-weight:500;">${st.label}</span>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
+    },
+
+    renderClientFormationHeader(formation) {
+        const container = document.getElementById('client-formation-header');
+        if (!container) return;
         const startDate = formation.start_date ? new Date(formation.start_date).toLocaleDateString('fr-FR') : 'N/A';
         const endDate = formation.end_date ? new Date(formation.end_date).toLocaleDateString('fr-FR') : 'N/A';
-
         const statusMap = {
-            'completed': 'Terminée',
-            'in_progress': 'En cours',
-            'planned': 'Planifiée',
+            'completed': 'Terminée', 'in_progress': 'En cours',
+            'planned': 'Planifiée', 'awaiting_prealable': 'À compléter',
             'cancelled': 'Annulée'
         };
 
-        document.getElementById('client-formation-name').textContent = formation.formation_name || 'Formation';
-        document.getElementById('client-formation-dates').textContent = `Du ${startDate} au ${endDate}`;
-        document.getElementById('client-formation-status').textContent = statusMap[formation.status] || 'Planifiée';
-        document.getElementById('client-formation-location').textContent = formation.training_location || 'Non précisé';
-        document.getElementById('client-formation-duration').textContent = `${formation.number_of_days || '-'} jour(s)`;
-        document.getElementById('client-formation-hours').textContent = `${formation.hours_per_learner || '-'} h`;
+        container.innerHTML = `
+            <div style="background:linear-gradient(135deg, var(--primary-purple) 0%, var(--primary-pink) 100%);border-radius:var(--radius-xl);padding:2rem;color:white;">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem;">
+                    <div style="flex:1;min-width:250px;">
+                        <h2 style="font-size:1.6rem;font-weight:700;margin:0 0 0.5rem 0;">${formation.formation_name || 'Formation'}</h2>
+                        <div style="font-size:0.9rem;opacity:0.95;">
+                            ${formation.company_name || formation.client_name || ''} &bull;
+                            ${formation.custom_dates || `Du ${startDate} au ${endDate}`} &bull;
+                            ${formation.training_location || 'Lieu à définir'} &bull;
+                            ${formation.hours_per_learner || 0}h
+                        </div>
+                    </div>
+                    <div style="padding:0.5rem 1rem;background:rgba(255,255,255,0.2);border-radius:9999px;font-weight:600;font-size:0.85rem;">
+                        ${statusMap[formation.status] || 'Planifiée'}
+                    </div>
+                </div>
+            </div>
+        `;
     },
 
-    renderClientFormationTabs(formation) {
-        // Onglet Informations
+    renderClientStepper(formation) {
+        const container = document.getElementById('client-formation-stepper');
+        if (!container) return;
+
+        const docs = formation.formation_documents || [];
+        const hasConvention = docs.some(d => d.type === 'convention');
+        const hasCertificate = docs.some(d => d.type === 'certificate');
+        const hasPrealable = formation.prealable_recu === true;
+
+        // Déterminer l'état de chaque étape
+        const steps = [
+            {
+                num: 1, label: 'Préalable',
+                status: hasPrealable ? 'done' : 'active'
+            },
+            {
+                num: 2, label: 'Convention',
+                status: hasConvention ? 'done' : (hasPrealable ? 'active' : 'pending')
+            },
+            {
+                num: 3, label: 'Formation',
+                status: formation.status === 'completed' ? 'done'
+                    : formation.status === 'in_progress' ? 'active'
+                    : (hasConvention ? 'active' : 'pending')
+            },
+            {
+                num: 4, label: 'Mes documents',
+                status: hasCertificate ? 'done' : (formation.status === 'completed' ? 'active' : 'pending')
+            }
+        ];
+
+        // Une seule étape active à la fois : la première "active"
+        let foundActive = false;
+        this._currentClientStep = null;
+        steps.forEach(s => {
+            if (s.status === 'active') {
+                if (foundActive) s.status = 'pending';
+                else { foundActive = true; this._currentClientStep = s.num; }
+            }
+        });
+
+        const colors = {
+            done: { bg: '#059669', ring: '#6ee7b7', label: 'var(--gray-600)' },
+            active: { bg: 'var(--primary-pink)', ring: '#fbcfe8', label: 'var(--gray-900)' },
+            pending: { bg: 'var(--gray-300)', ring: 'transparent', label: 'var(--gray-400)' }
+        };
+
+        container.innerHTML = `
+            <div style="background:white;border-radius:var(--radius-xl);padding:1.5rem 1rem;box-shadow:var(--shadow-sm);">
+                <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;">
+                    ${steps.map((s, i) => {
+                        const c = colors[s.status];
+                        const icon = s.status === 'done' ? '✓' : s.num;
+                        return `
+                            ${i > 0 ? `<div style="flex:1;height:2px;background:${steps[i-1].status === 'done' ? '#059669' : 'var(--gray-200)'};min-width:20px;"></div>` : ''}
+                            <div style="display:flex;flex-direction:column;align-items:center;gap:0.4rem;min-width:80px;">
+                                <div style="width:42px;height:42px;border-radius:50%;background:${c.bg};color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem;box-shadow:${s.status === 'active' ? `0 0 0 4px ${c.ring}` : 'none'};transition:all 0.2s;">
+                                    ${icon}
+                                </div>
+                                <div style="font-size:0.8rem;font-weight:${s.status === 'active' ? '600' : '500'};color:${c.label};text-align:center;">${s.label}</div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            </div>
+        `;
+    },
+
+    renderClientActionZone(formation) {
+        const container = document.getElementById('client-formation-action');
+        if (!container) return;
+
+        const step = this._currentClientStep;
+        const docs = formation.formation_documents || [];
+
+        if (step === 1) {
+            // Préalable à remplir — on rend directement le formulaire préalable ici
+            container.innerHTML = `
+                <div style="background:#fdf2f8;border:2px solid var(--primary-pink);border-radius:var(--radius-xl);padding:1.5rem;">
+                    <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.5rem;">
+                        <span style="font-size:1.75rem;">📋</span>
+                        <h3 style="font-size:1.15rem;font-weight:700;color:var(--gray-900);margin:0;">Renseignez vos apprenants</h3>
+                    </div>
+                    <p style="color:var(--gray-600);margin:0 0 1.25rem 0;font-size:0.9rem;">Nathalie a besoin de ces informations pour préparer votre formation. Veuillez compléter le questionnaire ci-dessous.</p>
+                    <div id="client-formation-questionnaires"></div>
+                </div>
+            `;
+            // Le renderClientPrealableTab cible #client-formation-questionnaires
+            this.renderClientPrealableTab(formation);
+        } else if (step === 2) {
+            const convDoc = docs.find(d => d.type === 'convention' && d.visible_client !== false);
+            container.innerHTML = `
+                <div style="background:#eff6ff;border:2px solid #3b82f6;border-radius:var(--radius-xl);padding:1.5rem;">
+                    <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.5rem;">
+                        <span style="font-size:1.75rem;">✍️</span>
+                        <h3 style="font-size:1.15rem;font-weight:700;color:var(--gray-900);margin:0;">Signez votre convention</h3>
+                    </div>
+                    <p style="color:var(--gray-600);margin:0 0 1.25rem 0;font-size:0.9rem;">La convention doit être signée avant le début de la formation.</p>
+                    ${convDoc ? `
+                        <button onclick="CRMApp.openDocument(${formation.id}, 'convention')" style="padding:0.75rem 1.5rem;background:#3b82f6;color:white;border:none;border-radius:var(--radius-md);font-weight:600;cursor:pointer;">
+                            📄 Voir la convention
+                        </button>
+                    ` : `
+                        <p style="color:var(--gray-500);font-size:0.85rem;font-style:italic;">La convention sera disponible prochainement.</p>
+                    `}
+                </div>
+            `;
+        } else if (step === 3) {
+            const now = new Date();
+            const start = formation.start_date ? new Date(formation.start_date) : null;
+            let countdown = '';
+            if (formation.status === 'in_progress') {
+                countdown = `<p style="font-size:1.05rem;font-weight:600;color:#92400e;margin:0.5rem 0 0;">🎓 Votre formation est en cours</p>`;
+            } else if (start && start > now) {
+                const days = Math.ceil((start - now) / (1000 * 60 * 60 * 24));
+                countdown = `<p style="font-size:1.05rem;font-weight:600;color:#92400e;margin:0.5rem 0 0;">⏰ Dans ${days} jour${days > 1 ? 's' : ''}</p>`;
+            }
+            container.innerHTML = `
+                <div style="background:#fef3c7;border:2px solid #f59e0b;border-radius:var(--radius-xl);padding:1.5rem;">
+                    <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.5rem;">
+                        <span style="font-size:1.75rem;">🎓</span>
+                        <h3 style="font-size:1.15rem;font-weight:700;color:var(--gray-900);margin:0;">Votre formation</h3>
+                    </div>
+                    <div style="color:var(--gray-700);font-size:0.9rem;">
+                        <div><strong>Dates :</strong> ${formation.custom_dates || (formation.start_date ? new Date(formation.start_date).toLocaleDateString('fr-FR') + ' → ' + new Date(formation.end_date).toLocaleDateString('fr-FR') : 'À définir')}</div>
+                        <div style="margin-top:0.25rem;"><strong>Lieu :</strong> ${formation.training_location || 'À définir'}</div>
+                        ${countdown}
+                    </div>
+                </div>
+            `;
+        } else if (step === 4) {
+            container.innerHTML = `
+                <div style="background:#d1fae5;border:2px solid #059669;border-radius:var(--radius-xl);padding:1.5rem;">
+                    <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.5rem;">
+                        <span style="font-size:1.75rem;">🎉</span>
+                        <h3 style="font-size:1.15rem;font-weight:700;color:var(--gray-900);margin:0;">Formation terminée ✅</h3>
+                    </div>
+                    <p style="color:var(--gray-600);margin:0 0 1rem 0;font-size:0.9rem;">Vous pouvez consulter ci-dessous votre certificat, votre attestation et les autres documents de fin de formation.</p>
+                </div>
+            `;
+        } else {
+            // Tout est complété
+            container.innerHTML = `
+                <div style="background:#d1fae5;border:1px solid #6ee7b7;border-radius:var(--radius-xl);padding:1.5rem;text-align:center;">
+                    <span style="font-size:2rem;">🎉</span>
+                    <h3 style="font-size:1.1rem;font-weight:700;color:#065f46;margin:0.5rem 0 0;">Toutes les étapes sont complétées !</h3>
+                </div>
+            `;
+        }
+    },
+
+    renderClientDocsList(formation) {
+        const container = document.getElementById('client-formation-docs');
+        if (!container) return;
+
+        const docs = (formation.formation_documents || []).filter(d => d.visible_client !== false && d.type !== 'contrat_sous_traitance');
+        const staticDocsList = [
+            { name: 'Document préalable à la formation', type: 'doc_prealable', document_url: 'assets/static/document-prealable.docx' },
+            { name: 'Livret d\'accueil NJM Conseil', type: 'livret_accueil', document_url: 'assets/static/livret-accueil.pdf' },
+            { name: 'Fiche de réclamation', type: 'fiche_reclamation', document_url: 'assets/static/fiche-reclamation.pdf' }
+        ];
+        const allDocs = [...docs, ...staticDocsList];
+
+        const docTypes = {
+            'doc_prealable': { icon: '📋', label: 'Document préalable' },
+            'manual': { icon: '📎', label: 'Document' },
+            'convention': { icon: '📄', label: 'Convention' },
+            'attendance_sheet': { icon: '📋', label: 'Feuille de présence' },
+            'certificate': { icon: '🏅', label: 'Attestation' },
+            'fiche_pedagogique': { icon: '📝', label: 'Fiche pédagogique' },
+            'google_doc': { icon: '📝', label: 'Fiche pédagogique' },
+            'livret_accueil': { icon: '📖', label: 'Livret d\'accueil' },
+            'fiche_reclamation': { icon: '📝', label: 'Fiche de réclamation' },
+            'convocation': { icon: '📨', label: 'Convocation' }
+        };
+
+        const regenerableTypes = ['fiche_pedagogique', 'google_doc', 'convention', 'attendance_sheet', 'certificate'];
+
+        container.innerHTML = `
+            <div style="background:white;border-radius:var(--radius-xl);padding:1.5rem;box-shadow:var(--shadow-sm);">
+                <h3 style="font-size:1.05rem;font-weight:700;color:var(--gray-900);margin:0 0 1rem 0;">📁 Mes documents</h3>
+                <div style="display:grid;gap:0.6rem;">
+                    ${allDocs.map(doc => {
+                        const dt = docTypes[doc.type] || { icon: '📑', label: 'Document' };
+                        const canRegen = regenerableTypes.includes(doc.type) && formation.id;
+                        let onClick = '';
+                        if (canRegen) {
+                            onClick = `event.preventDefault(); CRMApp.openDocument(${formation.id}, '${doc.type}')`;
+                        } else {
+                            const url = doc.document_url || doc.url || '';
+                            if (!url || url === '#' || url.startsWith('generate://')) {
+                                onClick = `event.preventDefault(); showToast('Document non disponible', 'warning')`;
+                            }
+                        }
+                        const displayUrl = canRegen ? '#' : (typeof toPdfUrl === 'function' ? (toPdfUrl(doc.document_url || doc.url || '') || '#') : (doc.document_url || '#'));
+
+                        return `
+                            <a href="${displayUrl}" ${canRegen ? '' : 'target="_blank" rel="noopener noreferrer"'}
+                                ${onClick ? `onclick="${onClick}"` : ''}
+                                style="display:flex;align-items:center;gap:1rem;padding:0.85rem 1rem;background:var(--gray-50);border-radius:var(--radius-md);text-decoration:none;color:var(--gray-900);border:1px solid transparent;transition:all 0.15s;"
+                                onmouseover="this.style.background='white';this.style.borderColor='var(--gray-200)';"
+                                onmouseout="this.style.background='var(--gray-50)';this.style.borderColor='transparent';">
+                                <span style="font-size:1.5rem;">${dt.icon}</span>
+                                <div style="flex:1;">
+                                    <div style="font-weight:600;color:var(--gray-900);font-size:0.9rem;">${doc.name || dt.label}</div>
+                                    <div style="font-size:0.75rem;color:var(--gray-500);margin-top:0.15rem;">${dt.label}</div>
+                                </div>
+                                <span style="font-size:0.8rem;color:var(--primary-pink);font-weight:500;">Télécharger →</span>
+                            </a>
+                        `;
+                    }).join('')}
+                </div>
+
+                <div id="client-formation-supports" style="margin-top:1.5rem;"></div>
+            </div>
+        `;
+    },
+
+    _legacyRenderClientFormationTabs(formation) {
+        // DEAD CODE — remplacé par renderClientSpace(). Conservé temporairement au cas où.
         const infosContainer = document.getElementById('client-formation-infos');
         if (infosContainer) {
             infosContainer.innerHTML = `

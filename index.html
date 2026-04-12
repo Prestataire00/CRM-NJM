@@ -2518,97 +2518,20 @@
 
                 <!-- Contenu de la formation -->
                 <div id="client-formation-content" style="display: none;">
-                    <!-- Carte résumé de la formation -->
-                    <div id="client-formation-summary" style="background: linear-gradient(135deg, var(--primary-purple) 0%, var(--primary-pink) 100%); border-radius: var(--radius-xl); padding: 2rem; color: white; margin-bottom: 2rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
-                            <div>
-                                <h3 id="client-formation-name" style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem;">Nom de la formation</h3>
-                                <p id="client-formation-dates" style="opacity: 0.9; font-size: 0.875rem;">Dates</p>
-                            </div>
-                            <div id="client-formation-status" style="padding: 0.5rem 1rem; background: rgba(255,255,255,0.2); border-radius: 9999px; font-weight: 600; font-size: 0.875rem;">
-                                En cours
-                            </div>
-                        </div>
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-top: 1.5rem;">
-                            <div style="background: rgba(255,255,255,0.1); padding: 1rem; border-radius: var(--radius-md);">
-                                <div style="font-size: 0.75rem; opacity: 0.8;">Lieu</div>
-                                <div id="client-formation-location" style="font-weight: 600;">-</div>
-                            </div>
-                            <div style="background: rgba(255,255,255,0.1); padding: 1rem; border-radius: var(--radius-md);">
-                                <div style="font-size: 0.75rem; opacity: 0.8;">Durée</div>
-                                <div id="client-formation-duration" style="font-weight: 600;">- jours</div>
-                            </div>
-                            <div style="background: rgba(255,255,255,0.1); padding: 1rem; border-radius: var(--radius-md);">
-                                <div style="font-size: 0.75rem; opacity: 0.8;">Heures</div>
-                                <div id="client-formation-hours" style="font-weight: 600;">- h</div>
-                            </div>
-                        </div>
-                    </div>
+                    <!-- Sélecteur de formations (si plusieurs) -->
+                    <div id="client-formation-list" style="display:none;margin-bottom:1.5rem;"></div>
 
-                    <!-- Onglets de la formation -->
-                    <div style="background: white; border-radius: var(--radius-xl); box-shadow: var(--shadow-sm); overflow: hidden;">
-                        <!-- Navigation des onglets -->
-                        <div style="display: flex; border-bottom: 1px solid var(--gray-200); overflow-x: auto;">
-                            <button class="client-tab-btn active" data-tab="infos" onclick="CRMApp.switchClientFormationTab('infos')"
-                                style="padding: 1rem 1.5rem; background: none; border: none; cursor: pointer; font-weight: 500; color: var(--primary-purple); border-bottom: 2px solid var(--primary-purple); white-space: nowrap;">
-                                Informations
-                            </button>
-                            <button class="client-tab-btn" data-tab="pedagogie" onclick="CRMApp.switchClientFormationTab('pedagogie')"
-                                style="padding: 1rem 1.5rem; background: none; border: none; cursor: pointer; font-weight: 500; color: var(--gray-500); border-bottom: 2px solid transparent; white-space: nowrap;">
-                                Contenu pédagogique
-                            </button>
-                            <button class="client-tab-btn" data-tab="documents" onclick="CRMApp.switchClientFormationTab('documents')"
-                                style="padding: 1rem 1.5rem; background: none; border: none; cursor: pointer; font-weight: 500; color: var(--gray-500); border-bottom: 2px solid transparent; white-space: nowrap;">
-                                Documents
-                            </button>
-                            <button class="client-tab-btn" data-tab="supports" onclick="CRMApp.switchClientFormationTab('supports')"
-                                style="padding: 1rem 1.5rem; background: none; border: none; cursor: pointer; font-weight: 500; color: var(--gray-500); border-bottom: 2px solid transparent; white-space: nowrap;">
-                                Supports pédagogiques
-                            </button>
-                            <button class="client-tab-btn" data-tab="questionnaires" onclick="CRMApp.switchClientFormationTab('questionnaires')"
-                                style="padding: 1rem 1.5rem; background: none; border: none; cursor: pointer; font-weight: 500; color: var(--gray-500); border-bottom: 2px solid transparent; white-space: nowrap;">
-                                Préalable
-                            </button>
-                        </div>
+                    <!-- Header de la formation active -->
+                    <div id="client-formation-header" style="margin-bottom:1.5rem;"></div>
 
-                        <!-- Contenu des onglets -->
-                        <div style="padding: 1.5rem;">
-                            <!-- Onglet Informations -->
-                            <div id="client-tab-infos" class="client-tab-content" style="display: block;">
-                                <div id="client-formation-infos">
-                                    <!-- Contenu chargé dynamiquement -->
-                                </div>
-                            </div>
+                    <!-- Stepper 4 étapes -->
+                    <div id="client-formation-stepper" style="margin-bottom:1.5rem;"></div>
 
-                            <!-- Onglet Contenu pédagogique -->
-                            <div id="client-tab-pedagogie" class="client-tab-content" style="display: none;">
-                                <div id="client-formation-pedagogie">
-                                    <!-- Contenu chargé dynamiquement -->
-                                </div>
-                            </div>
+                    <!-- Zone d'action contextuelle -->
+                    <div id="client-formation-action" style="margin-bottom:1.5rem;"></div>
 
-                            <!-- Onglet Documents -->
-                            <div id="client-tab-documents" class="client-tab-content" style="display: none;">
-                                <div id="client-formation-documents">
-                                    <!-- Documents chargés dynamiquement -->
-                                </div>
-                            </div>
-
-                            <!-- Onglet Supports pédagogiques -->
-                            <div id="client-tab-supports" class="client-tab-content" style="display: none;">
-                                <div id="client-formation-supports">
-                                    <!-- Supports chargés dynamiquement -->
-                                </div>
-                            </div>
-
-                            <!-- Onglet Préalable -->
-                            <div id="client-tab-questionnaires" class="client-tab-content" style="display: none;">
-                                <div id="client-formation-questionnaires">
-                                    <!-- Rendu dynamiquement par renderClientPrealableTab() -->
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <!-- Liste des documents -->
+                    <div id="client-formation-docs"></div>
                 </div>
             </div>
             <!-- END MA FORMATION PAGE -->
