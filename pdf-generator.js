@@ -953,7 +953,14 @@ const PdfGenerator = {
             }).filter(Boolean);
             if (dates.length > 0) return dates;
         }
-        const numDays = parseInt(formation.number_of_days) || 1;
+        let numDays = parseInt(formation.number_of_days) || 0;
+        if (!numDays && formation.start_date && formation.end_date) {
+            const start = new Date(formation.start_date);
+            const end = new Date(formation.end_date);
+            const diffDays = Math.round((end - start) / (1000 * 60 * 60 * 24)) + 1;
+            numDays = diffDays > 0 ? diffDays : 1;
+        }
+        if (!numDays) numDays = 1;
         if (formation.start_date) {
             const start = new Date(formation.start_date);
             return Array.from({ length: numDays }, (_, i) => {
