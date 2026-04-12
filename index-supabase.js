@@ -2353,6 +2353,7 @@ const CRMApp = {
                                         ${visible ? '👁 Visible' : '🔒 Masqué'}
                                     </label>
                                     <button onclick="${doc.type === 'manual' ? `window.open('${doc.document_url}', '_blank')` : `CRMApp.openDocument(${formationId}, '${doc.type}')`}" style="padding:0.3rem 0.7rem;background:white;color:var(--gray-700);border:1px solid var(--gray-300);border-radius:var(--radius-md);cursor:pointer;font-size:0.8rem;">Ouvrir</button>
+                                    <button onclick="CRMApp.deleteManualDocument(${doc.id}, ${formationId})" title="Supprimer" style="padding:0.3rem 0.55rem;background:white;color:#dc2626;border:1px solid #fca5a5;border-radius:var(--radius-md);cursor:pointer;font-size:0.9rem;line-height:1;">🗑️</button>
                                 </div>
                             </div>`;
                         }).join('')}
