@@ -1726,13 +1726,8 @@ const CRMApp = {
             setTimeout(() => this.loadSubcontractorsList(), 100);
         }
 
-        if (pageName === 'avant-formation') {
-            setTimeout(() => this.loadAvantFormation(), 100);
-        }
-
         const pageTitles = {
             'dashboard': 'Tableau de bord',
-            'avant-formation': 'Avant formation',
             'formations': 'Formation 2026',
             'clients': 'Clients',
             'subcontractors': 'Sous-traitants',
@@ -1749,136 +1744,6 @@ const CRMApp = {
         };
         document.querySelector('.header-title').textContent = pageTitles[pageName] || 'CRM';
     },
-
-    // ==================== AVANT FORMATION ====================
-
-    async loadAvantFormation() {
-        const container = document.getElementById('avant-formation-list');
-        if (!container) return;
-
-        container.innerHTML = '<p style="text-align:center;color:var(--gray-500);padding:2rem;">Chargement...</p>';
-
-        const result = await SupabaseData.getFormations();
-        if (!result.success) {
-            container.innerHTML = '<p style="color:var(--danger);padding:1rem;">Erreur de chargement</p>';
-            return;
-        }
-
-        const formations = result.data.filter(f => f.status !== 'completed');
-
-        if (formations.length === 0) {
-            container.innerHTML = '<p style="text-align:center;color:var(--gray-500);padding:2rem;">Aucune formation en cours ou planifiée.</p>';
-            return;
-        }
-
-        container.innerHTML = formations.map(f => {
-            const recu = f.prealable_recu === true;
-
-            let learners = f.learners_data || [];
-            if (typeof learners === 'string') {
-                try { learners = JSON.parse(learners); } catch (e) { learners = []; }
-            }
-
-            const badgeStyle = recu
-                ? 'background:#d1fae5;color:#065f46;'
-                : 'background:#fef3c7;color:#92400e;';
-            const badgeText = recu ? `Reçu (${learners.length} apprenant${learners.length > 1 ? 's' : ''})` : 'En attente';
-            const badgeIcon = recu ? '✅' : '📤';
-
-            // Liste des apprenants si reçu
-            const learnersHtml = recu && learners.length > 0 ? `
-                <details style="margin-top: 0.75rem;">
-                    <summary style="cursor: pointer; font-size: 0.85rem; color: var(--gray-600); font-weight: 500;">Voir les apprenants</summary>
-                    <div style="margin-top: 0.5rem; background: var(--gray-50); border-radius: var(--radius-md); padding: 0.75rem;">
-                        ${learners.map((l, i) => `
-                            <div style="display: flex; gap: 1rem; padding: 0.35rem 0; font-size: 0.85rem; ${i > 0 ? 'border-top: 1px solid var(--gray-200);' : ''}">
-                                <span style="color: var(--gray-900); font-weight: 500;">${l.first_name || ''} ${l.last_name || ''}</span>
-                                <span style="color: var(--gray-500);">${l.email || '—'}</span>
-                            </div>
-                        `).join('')}
-                    </div>
-                </details>
-            ` : '';
-
-            return `
-            <div style="background:white;border-radius:var(--radius-xl);padding:1.5rem;box-shadow:var(--shadow-sm);margin-bottom:1rem;">
-                <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
-                    <div style="flex:1;min-width:200px;">
-                        <h3 style="font-size:1.1rem;font-weight:600;color:var(--gray-900);margin:0 0 0.25rem 0;">
-                            ${f.company_name || f.client_name || 'Client inconnu'}
-                        </h3>
-                        <p style="color:var(--gray-600);margin:0;font-size:0.9rem;">
-                            ${f.formation_name || f.title || 'Formation sans nom'}
-                        </p>
-                    </div>
-                    <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
-                        <span style="padding:0.3rem 0.75rem;border-radius:9999px;font-size:0.85rem;font-weight:500;${badgeStyle}">
-                            ${badgeIcon} ${badgeText}
-                        </span>
-                        ${!recu ? `
-                        <button onclick="CRMApp.sendPrealableReminder(${f.id})" style="padding:0.5rem 1rem;background:var(--primary-blue);color:white;border:none;border-radius:var(--radius-md);font-size:0.85rem;font-weight:500;cursor:pointer;">
-                            Relancer le client
-                        </button>
-                        ` : `
-                        <button onclick="FormationForm.show(${f.id})" style="padding:0.5rem 1rem;background:var(--primary-purple);color:white;border:none;border-radius:var(--radius-md);font-size:0.85rem;font-weight:600;cursor:pointer;">
-                            ✏️ Compléter la formation
-                        </button>
-                        `}
-                        <button onclick="CRMApp.viewFormation(${f.id})" style="padding:0.5rem 1rem;background:var(--gray-100);color:var(--gray-700);border:1px solid var(--gray-300);border-radius:var(--radius-md);font-size:0.85rem;font-weight:500;cursor:pointer;">
-                            Voir la formation
-                        </button>
-                    </div>
-                </div>
-                ${learnersHtml}
-            </div>`;
-        }).join('');
-    },
-
-    async sendPrealableReminder(formationId) {
-        try {
-            const { data: formation, error } = await supabaseClient
-                .from('formations')
-                .select('*')
-                .eq('id', formationId)
-                .single();
-
-            if (error) throw error;
-
-            const to = formation.client_email;
-            if (!to) {
-                showToast('Aucun email de contact pour cette formation', 'error');
-                return;
-            }
-
-            const formationName = formation.formation_name || formation.title || 'votre formation';
-
-            // Charger le template depuis la base (fallback hardcodé)
-            const tpl = await SupabaseData.getEmailTemplate('prealable_reminder');
-            const vars = { '{{formation}}': formationName };
-            const subject = tpl ? Object.keys(vars).reduce((s, k) => s.replaceAll(k, vars[k]), tpl.subject) : `Rappel — Merci de renseigner vos apprenants`;
-            const body = tpl ? Object.keys(vars).reduce((s, k) => s.replaceAll(k, vars[k]), tpl.body) : `Bonjour,\n\nNous vous rappelons qu'il est nécessaire de renseigner les apprenants participant à la formation "${formationName}" avant son démarrage.\n\nVeuillez vous connecter à votre espace client pour compléter le questionnaire préalable.\n\nCordialement,\nNJM Conseil`;
-
-            const result = await EmailService.sendEmail(to, subject, body, []);
-
-            if (result.success) {
-                await SupabaseData.updateFormation(formationId, {
-                    prealable_envoye_at: new Date().toISOString()
-                });
-                showToast('Relance envoyée !', 'success');
-                addNotification('mail', `Relance préalable envoyée à ${to}`);
-                await this.loadAvantFormation();
-            } else {
-                const mailtoUrl = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-                window.open(mailtoUrl, '_blank');
-                showToast("L'envoi automatique a échoué. Brouillon ouvert dans votre client mail.", 'warning');
-            }
-        } catch (err) {
-            console.error('Erreur relance préalable:', err);
-            showToast('Erreur lors de l\'envoi', 'error');
-        }
-    },
-
-    // ==================== END AVANT FORMATION ====================
 
     async updateDashboardStats() {
         const result = await SupabaseData.getDashboardStats();
@@ -2094,11 +1959,12 @@ const CRMApp = {
 
             showToast(`Formation créée${accessMsg}`, 'success', 5000);
 
-            // Naviguer vers "Avant formation"
-            this.showPage('avant-formation');
+            // Naviguer vers la liste formations
+            this.showPage('formations');
             document.querySelectorAll('.nav-item').forEach(nav => {
-                nav.classList.toggle('active', nav.getAttribute('data-page') === 'avant-formation');
+                nav.classList.toggle('active', nav.getAttribute('data-page') === 'formations');
             });
+            this.loadFormations();
         } catch (err) {
             console.error('Erreur création formation:', err);
             showToast('Erreur : ' + err.message, 'error');
@@ -2136,6 +2002,7 @@ const CRMApp = {
                     <span style="padding: 0.25rem 0.75rem; background: ${f.status === 'completed' ? '#d1fae5' : f.status === 'in_progress' ? '#fef3c7' : f.status === 'awaiting_prealable' ? '#f3e8ff' : '#dbeafe'}; color: ${f.status === 'completed' ? '#065f46' : f.status === 'in_progress' ? '#92400e' : f.status === 'awaiting_prealable' ? '#6b21a8' : '#1e40af'}; border-radius: 9999px; font-size: 0.875rem; font-weight: 500;">
                         ${f.status === 'completed' ? 'Terminée' : f.status === 'in_progress' ? 'En cours' : f.status === 'awaiting_prealable' ? '⏳ Préalable en attente' : 'Planifiée'}
                     </span>
+                    ${f.status === 'awaiting_prealable' ? `<br><a href="#" onclick="event.preventDefault();CRMApp.sendPrealableReminderDirect(${f.id})" style="font-size:0.75rem;color:#6b21a8;margin-top:0.25rem;display:inline-block;">Relancer le client</a>` : ''}
                 </td>
                 <td style="padding: 1rem; text-align: center;">
                     ${f.convocation_logs && f.convocation_logs.length > 0
@@ -2312,8 +2179,18 @@ const CRMApp = {
 
             // Workflow items
             const hasPrealable = formation.prealable_recu === true;
+            const learnersCount = learnersData.length;
             const workflow = [
-                { label: 'Préalable', done: hasPrealable, actionLabel: hasPrealable ? 'Reçu ✓' : 'Remplir', actionClass: hasPrealable ? 'open' : 'generate', action: hasPrealable ? '' : `CRMApp.showPrealableAdminForm(${formationId})` },
+                {
+                    label: hasPrealable ? `Préalable — ✅ Reçu (${learnersCount} apprenant${learnersCount > 1 ? 's' : ''})` : 'Préalable',
+                    done: hasPrealable,
+                    actionLabel: hasPrealable ? 'Modifier' : 'Remplir manuellement',
+                    actionClass: hasPrealable ? 'open' : 'generate',
+                    action: `CRMApp.showPrealableAdminForm(${formationId})`,
+                    secondActionLabel: hasPrealable ? null : 'Relancer le client',
+                    secondActionClass: 'send',
+                    secondAction: hasPrealable ? null : `CRMApp.sendPrealableReminderDirect(${formationId})`
+                },
                 { label: 'Fiche p\u00E9dagogique', done: hasDoc('fiche_pedagogique'), actionLabel: hasDoc('fiche_pedagogique') ? 'Ouvrir' : 'Creer', actionClass: hasDoc('fiche_pedagogique') ? 'open' : 'generate', action: hasDoc('fiche_pedagogique') ? `CRMApp.openDocument(${formationId}, 'fiche_pedagogique')` : `CRMApp.createPedagogicalSheet(${formationId})` },
                 { label: 'Convention', done: hasDoc('convention'), actionLabel: hasDoc('convention') ? 'Ouvrir' : 'Creer', actionClass: hasDoc('convention') ? 'open' : 'generate', action: hasDoc('convention') ? `CRMApp.openDocument(${formationId}, 'convention')` : `CRMApp.createConvention(${formationId})` },
                 {
@@ -3411,6 +3288,36 @@ Nathalie Joulie-Morand`;
             showToast('Erreur: ' + err.message, 'error');
             submitBtn.disabled = false;
             submitBtn.textContent = 'Enregistrer le préalable';
+        }
+    },
+
+    async sendPrealableReminderDirect(formationId) {
+        try {
+            const { data: formation, error } = await supabaseClient
+                .from('formations').select('client_email, formation_name, title').eq('id', formationId).single();
+            if (error) throw error;
+
+            const to = formation.client_email;
+            if (!to) { showToast('Aucun email client renseigné', 'error'); return; }
+
+            const formationName = formation.formation_name || formation.title || 'votre formation';
+            const tpl = await SupabaseData.getEmailTemplate('prealable_reminder');
+            const vars = { '{{formation}}': formationName };
+            const subject = tpl ? Object.keys(vars).reduce((s, k) => s.replaceAll(k, vars[k]), tpl.subject) : `Rappel — Merci de renseigner vos apprenants`;
+            const body = tpl ? Object.keys(vars).reduce((s, k) => s.replaceAll(k, vars[k]), tpl.body) : `Bonjour,\n\nNous vous rappelons qu'il est nécessaire de renseigner les apprenants participant à la formation "${formationName}" avant son démarrage.\n\nVeuillez vous connecter à votre espace client pour compléter le questionnaire préalable.\n\nCordialement,\nNJM Conseil`;
+
+            const result = await EmailService.sendEmail(to, subject, body, []);
+            if (result.success) {
+                await SupabaseData.updateFormation(formationId, { prealable_envoye_at: new Date().toISOString() });
+                showToast('Relance envoyée !', 'success');
+                addNotification('mail', `Relance préalable envoyée à ${to}`);
+            } else {
+                window.open(`mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_blank');
+                showToast("Échec envoi auto. Brouillon ouvert dans votre client mail.", 'warning');
+            }
+        } catch (err) {
+            console.error('Erreur relance préalable:', err);
+            showToast('Erreur: ' + err.message, 'error');
         }
     },
 
