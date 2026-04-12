@@ -1292,6 +1292,128 @@
                 </div>
             </header>
 
+            <!-- ==================== PAGES CLIENT (placées EN HAUT pour éviter le décalage) ==================== -->
+
+            <!-- MA FORMATION PAGE (Client) -->
+            <div id="page-ma-formation" class="page-content">
+                <div style="margin-bottom: 2rem;">
+                    <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-900);">Ma formation en cours</h2>
+                    <p style="color: var(--gray-600); margin-top: 0.5rem;">Suivez votre formation et accédez à vos documents</p>
+                </div>
+
+                <!-- Sélecteur d'entreprise (affiché seulement si plusieurs entreprises) -->
+                <div id="client-company-selector" style="display: none; margin-bottom: 1.5rem; background: white; border: 1px solid var(--gray-200); border-radius: var(--radius-xl); padding: 1rem 1.5rem;">
+                    <label style="font-size: 0.875rem; font-weight: 600; color: var(--gray-700); margin-bottom: 0.5rem; display: block;">Sélectionnez votre entreprise :</label>
+                    <select id="client-company-select" onchange="CRMApp.onClientCompanyChange(this.value)" style="width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--gray-300); border-radius: var(--radius-md); font-size: 1rem; color: var(--gray-900); background: white; cursor: pointer;">
+                    </select>
+                </div>
+
+                <!-- Message si pas de formation liée -->
+                <div id="client-no-formation" style="display: none; background: #dbeafe; border: 1px solid #93c5fd; border-radius: var(--radius-xl); padding: 2rem; text-align: center;">
+                    <svg width="48" height="48" fill="none" stroke="#1e40af" viewBox="0 0 24 24" style="margin: 0 auto 1rem;">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                    </svg>
+                    <h3 style="color: #1e40af; font-weight: 600; margin-bottom: 0.5rem;">Aucune formation en cours</h3>
+                    <p style="color: #1e40af;">Vous n'avez pas de formation active pour le moment. Consultez notre catalogue pour découvrir nos offres.</p>
+                </div>
+
+                <!-- Contenu de la formation -->
+                <div id="client-formation-content" style="display: none;">
+                    <!-- Sélecteur de formations (si plusieurs) -->
+                    <div id="client-formation-list" style="display:none;margin-bottom:1.5rem;"></div>
+
+                    <!-- Header de la formation active -->
+                    <div id="client-formation-header" style="margin-bottom:1.5rem;"></div>
+
+                    <!-- Stepper 4 étapes -->
+                    <div id="client-formation-stepper" style="margin-bottom:1.5rem;"></div>
+
+                    <!-- Zone d'action contextuelle -->
+                    <div id="client-formation-action" style="margin-bottom:1.5rem;"></div>
+
+                    <!-- Liste des documents -->
+                    <div id="client-formation-docs"></div>
+                </div>
+            </div>
+            <!-- END MA FORMATION PAGE -->
+
+            <!-- CATALOGUE PAGE (Client) -->
+            <div id="page-catalogue" class="page-content">
+                <div style="margin-bottom: 2rem;">
+                    <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-900);">Catalogue de formations</h2>
+                    <p style="color: var(--gray-600); margin-top: 0.5rem;">Découvrez nos formations disponibles</p>
+                </div>
+
+                <div style="background: white; border-radius: var(--radius-xl); padding: 3rem; box-shadow: var(--shadow-sm); text-align: center;">
+                    <svg width="64" height="64" fill="none" stroke="var(--gray-400)" viewBox="0 0 24 24" style="margin: 0 auto 1.5rem;">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                    </svg>
+                    <h3 style="font-size: 1.25rem; font-weight: 600; color: var(--gray-700); margin-bottom: 0.5rem;">Catalogue en cours de construction</h3>
+                    <p style="color: var(--gray-500); max-width: 400px; margin: 0 auto;">
+                        Notre catalogue de formations sera bientôt disponible. Vous pourrez y découvrir toutes nos offres de formation.
+                    </p>
+                </div>
+            </div>
+            <!-- END CATALOGUE PAGE -->
+
+            <!-- ==================== PAGES FORMATEUR ==================== -->
+
+            <!-- MES MISSIONS PAGE (Formateur) -->
+            <div id="page-missions" class="page-content">
+                <div style="margin-bottom: 2rem;">
+                    <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-900);">Mes missions</h2>
+                    <p style="color: var(--gray-600); margin-top: 0.5rem;">Formations auxquelles vous êtes affecté</p>
+                </div>
+
+                <!-- Message si pas lié à un sous-traitant -->
+                <div id="missions-no-link" style="display: none; background: #fef3c7; border: 1px solid #fcd34d; border-radius: var(--radius-xl); padding: 2rem; text-align: center;">
+                    <svg width="48" height="48" fill="none" stroke="#92400e" viewBox="0 0 24 24" style="margin: 0 auto 1rem;">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                    <h3 style="color: #92400e; font-weight: 600; margin-bottom: 0.5rem;">Compte non lié</h3>
+                    <p style="color: #92400e;">Votre compte n'est pas encore lié à un profil sous-traitant. Contactez l'administrateur.</p>
+                </div>
+
+                <!-- Tableau des missions -->
+                <div id="missions-table-container" style="background: white; border-radius: var(--radius-xl); padding: 1.5rem; box-shadow: var(--shadow-sm);">
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="border-bottom: 2px solid var(--gray-200);">
+                                    <th style="text-align: left; padding: 1rem; font-weight: 600; color: var(--gray-700);">Client</th>
+                                    <th style="text-align: left; padding: 1rem; font-weight: 600; color: var(--gray-700);">Formation</th>
+                                    <th style="text-align: left; padding: 1rem; font-weight: 600; color: var(--gray-700);">Dates</th>
+                                    <th style="text-align: left; padding: 1rem; font-weight: 600; color: var(--gray-700);">Statut</th>
+                                    <th style="text-align: center; padding: 1rem; font-weight: 600; color: var(--gray-700);">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="missions-tbody">
+                                <!-- Missions loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="missions-empty" style="display: none; text-align: center; padding: 3rem; color: var(--gray-500);">
+                        <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin: 0 auto 1rem; opacity: 0.5;">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                        </svg>
+                        <p>Aucune mission pour le moment</p>
+                    </div>
+                </div>
+            </div>
+            <!-- END MES MISSIONS PAGE -->
+
+            <!-- MES DOCUMENTS PAGE (Formateur) -->
+            <div id="page-mes-documents" class="page-content">
+                <div style="margin-bottom: 2rem;">
+                    <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-900);">Mes documents</h2>
+                    <p style="color: var(--gray-600); margin-top: 0.5rem;">Consultez et signez vos contrats de sous-traitance</p>
+                </div>
+                <div id="formateur-contracts-list">
+                    <p style="color:var(--gray-500);text-align:center;padding:2rem;">Chargement...</p>
+                </div>
+            </div>
+            <!-- END MES DOCUMENTS PAGE -->
+
             <!-- PARAMÈTRES PAGE (placé en haut du DOM pour éviter les problèmes de layout) -->
             <div id="page-parametres" class="page-content">
                 <div style="max-width: 900px; margin: 0 auto;">
@@ -2402,130 +2524,6 @@
             <!-- PARAMÈTRES PAGE -->
             <!-- PARAMETRES déplacé vers le haut du DOM -->
             <!-- END PARAMÈTRES PAGE -->
-
-            <!-- ==================== PAGES FORMATEUR ==================== -->
-
-            <!-- MES MISSIONS PAGE (Formateur) -->
-            <div id="page-missions" class="page-content">
-                <div style="margin-bottom: 2rem;">
-                    <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-900);">Mes missions</h2>
-                    <p style="color: var(--gray-600); margin-top: 0.5rem;">Formations auxquelles vous êtes affecté</p>
-                </div>
-
-                <!-- Message si pas lié à un sous-traitant -->
-                <div id="missions-no-link" style="display: none; background: #fef3c7; border: 1px solid #fcd34d; border-radius: var(--radius-xl); padding: 2rem; text-align: center;">
-                    <svg width="48" height="48" fill="none" stroke="#92400e" viewBox="0 0 24 24" style="margin: 0 auto 1rem;">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-                    </svg>
-                    <h3 style="color: #92400e; font-weight: 600; margin-bottom: 0.5rem;">Compte non lié</h3>
-                    <p style="color: #92400e;">Votre compte n'est pas encore lié à un profil sous-traitant. Contactez l'administrateur.</p>
-                </div>
-
-                <!-- Tableau des missions -->
-                <div id="missions-table-container" style="background: white; border-radius: var(--radius-xl); padding: 1.5rem; box-shadow: var(--shadow-sm);">
-                    <div style="overflow-x: auto;">
-                        <table style="width: 100%; border-collapse: collapse;">
-                            <thead>
-                                <tr style="border-bottom: 2px solid var(--gray-200);">
-                                    <th style="text-align: left; padding: 1rem; font-weight: 600; color: var(--gray-700);">Client</th>
-                                    <th style="text-align: left; padding: 1rem; font-weight: 600; color: var(--gray-700);">Formation</th>
-                                    <th style="text-align: left; padding: 1rem; font-weight: 600; color: var(--gray-700);">Dates</th>
-                                    <th style="text-align: left; padding: 1rem; font-weight: 600; color: var(--gray-700);">Statut</th>
-                                    <th style="text-align: center; padding: 1rem; font-weight: 600; color: var(--gray-700);">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="missions-tbody">
-                                <!-- Missions loaded dynamically -->
-                            </tbody>
-                        </table>
-                    </div>
-                    <div id="missions-empty" style="display: none; text-align: center; padding: 3rem; color: var(--gray-500);">
-                        <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin: 0 auto 1rem; opacity: 0.5;">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-                        </svg>
-                        <p>Aucune mission pour le moment</p>
-                    </div>
-                </div>
-            </div>
-            <!-- END MES MISSIONS PAGE -->
-
-            <!-- MES DOCUMENTS PAGE (Formateur) -->
-            <div id="page-mes-documents" class="page-content">
-                <div style="margin-bottom: 2rem;">
-                    <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-900);">Mes documents</h2>
-                    <p style="color: var(--gray-600); margin-top: 0.5rem;">Consultez et signez vos contrats de sous-traitance</p>
-                </div>
-                <div id="formateur-contracts-list">
-                    <p style="color:var(--gray-500);text-align:center;padding:2rem;">Chargement...</p>
-                </div>
-            </div>
-            <!-- END MES DOCUMENTS PAGE -->
-
-            <!-- ==================== PAGES CLIENT ==================== -->
-
-            <!-- MA FORMATION PAGE (Client) -->
-            <div id="page-ma-formation" class="page-content">
-                <div style="margin-bottom: 2rem;">
-                    <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-900);">Ma formation en cours</h2>
-                    <p style="color: var(--gray-600); margin-top: 0.5rem;">Suivez votre formation et accédez à vos documents</p>
-                </div>
-
-                <!-- Sélecteur d'entreprise (affiché seulement si plusieurs entreprises) -->
-                <div id="client-company-selector" style="display: none; margin-bottom: 1.5rem; background: white; border: 1px solid var(--gray-200); border-radius: var(--radius-xl); padding: 1rem 1.5rem;">
-                    <label style="font-size: 0.875rem; font-weight: 600; color: var(--gray-700); margin-bottom: 0.5rem; display: block;">Sélectionnez votre entreprise :</label>
-                    <select id="client-company-select" onchange="CRMApp.onClientCompanyChange(this.value)" style="width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--gray-300); border-radius: var(--radius-md); font-size: 1rem; color: var(--gray-900); background: white; cursor: pointer;">
-                    </select>
-                </div>
-
-                <!-- Message si pas de formation liée -->
-                <div id="client-no-formation" style="display: none; background: #dbeafe; border: 1px solid #93c5fd; border-radius: var(--radius-xl); padding: 2rem; text-align: center;">
-                    <svg width="48" height="48" fill="none" stroke="#1e40af" viewBox="0 0 24 24" style="margin: 0 auto 1rem;">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                    </svg>
-                    <h3 style="color: #1e40af; font-weight: 600; margin-bottom: 0.5rem;">Aucune formation en cours</h3>
-                    <p style="color: #1e40af;">Vous n'avez pas de formation active pour le moment. Consultez notre catalogue pour découvrir nos offres.</p>
-                </div>
-
-                <!-- Contenu de la formation -->
-                <div id="client-formation-content" style="display: none;">
-                    <!-- Sélecteur de formations (si plusieurs) -->
-                    <div id="client-formation-list" style="display:none;margin-bottom:1.5rem;"></div>
-
-                    <!-- Header de la formation active -->
-                    <div id="client-formation-header" style="margin-bottom:1.5rem;"></div>
-
-                    <!-- Stepper 4 étapes -->
-                    <div id="client-formation-stepper" style="margin-bottom:1.5rem;"></div>
-
-                    <!-- Zone d'action contextuelle -->
-                    <div id="client-formation-action" style="margin-bottom:1.5rem;"></div>
-
-                    <!-- Liste des documents -->
-                    <div id="client-formation-docs"></div>
-                </div>
-            </div>
-            <!-- END MA FORMATION PAGE -->
-
-            <!-- CATALOGUE PAGE (Client) -->
-            <div id="page-catalogue" class="page-content">
-                <div style="margin-bottom: 2rem;">
-                    <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-900);">Catalogue de formations</h2>
-                    <p style="color: var(--gray-600); margin-top: 0.5rem;">Découvrez nos formations disponibles</p>
-                </div>
-
-                <div style="background: white; border-radius: var(--radius-xl); padding: 3rem; box-shadow: var(--shadow-sm); text-align: center;">
-                    <svg width="64" height="64" fill="none" stroke="var(--gray-400)" viewBox="0 0 24 24" style="margin: 0 auto 1.5rem;">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                    </svg>
-                    <h3 style="font-size: 1.25rem; font-weight: 600; color: var(--gray-700); margin-bottom: 0.5rem;">Catalogue en cours de construction</h3>
-                    <p style="color: var(--gray-500); max-width: 400px; margin: 0 auto;">
-                        Notre catalogue de formations sera bientôt disponible. Vous pourrez y découvrir toutes nos offres de formation.
-                    </p>
-                </div>
-            </div>
-            <!-- END CATALOGUE PAGE -->
-
-            <!-- ==================== END PAGES CLIENT ==================== -->
 
         </main>
     </div>
