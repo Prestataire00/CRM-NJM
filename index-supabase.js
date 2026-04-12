@@ -2135,8 +2135,7 @@ const CRMApp = {
             'parametres': 'Paramètres',
             'missions': 'Mes missions',
             'mes-documents': 'Mes documents',
-            'ma-formation': 'Ma formation',
-            'catalogue': 'Catalogue de formations'
+            'ma-formation': 'Ma formation'
         };
         document.querySelector('.header-title').textContent = pageTitles[pageName] || 'CRM';
     },
