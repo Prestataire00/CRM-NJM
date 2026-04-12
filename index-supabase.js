@@ -2177,54 +2177,52 @@ const CRMApp = {
                 hasClientAccount = profileCheck.success && profileCheck.data;
             }
 
-            // Workflow items
+            // États des étapes
             const hasPrealable = formation.prealable_recu === true;
+            const hasFichePeda = hasDoc('fiche_pedagogique');
+            const hasConvention = hasDoc('convention');
+            const hasContratST = hasDoc('contrat_sous_traitance');
+            const hasAttendance = hasDoc('attendance_sheet');
+            const hasCertificate = hasDoc('certificate');
+            const isSousTraitant = !!formation.subcontractor_first_name;
             const learnersCount = learnersData.length;
-            const workflow = [
-                {
-                    label: hasPrealable ? `Préalable — ✅ Reçu (${learnersCount} apprenant${learnersCount > 1 ? 's' : ''})` : 'Préalable',
-                    done: hasPrealable,
-                    actionLabel: hasPrealable ? 'Modifier' : 'Remplir manuellement',
-                    actionClass: hasPrealable ? 'open' : 'generate',
-                    action: `CRMApp.showPrealableAdminForm(${formationId})`,
-                    secondActionLabel: hasPrealable ? null : 'Relancer le client',
-                    secondActionClass: 'send',
-                    secondAction: hasPrealable ? null : `CRMApp.sendPrealableReminderDirect(${formationId})`
-                },
-                { label: 'Fiche p\u00E9dagogique', done: hasDoc('fiche_pedagogique'), actionLabel: hasDoc('fiche_pedagogique') ? 'Ouvrir' : 'Creer', actionClass: hasDoc('fiche_pedagogique') ? 'open' : 'generate', action: hasDoc('fiche_pedagogique') ? `CRMApp.openDocument(${formationId}, 'fiche_pedagogique')` : `CRMApp.createPedagogicalSheet(${formationId})` },
-                { label: 'Convention', done: hasDoc('convention'), actionLabel: hasDoc('convention') ? 'Ouvrir' : 'Creer', actionClass: hasDoc('convention') ? 'open' : 'generate', action: hasDoc('convention') ? `CRMApp.openDocument(${formationId}, 'convention')` : `CRMApp.createConvention(${formationId})` },
-                {
-                    label: 'Acc\u00E8s client',
-                    done: hasClientAccount,
-                    actionLabel: hasClientAccount ? 'Inviter' : 'Cr\u00E9er l\'acc\u00E8s',
-                    actionClass: hasClientAccount ? 'send' : 'generate',
-                    action: hasClientAccount ? `CRMApp.inviterClient(${formationId})` : `CRMApp.createClientAccess(${formationId})`,
-                    secondActionLabel: hasClientAccount ? null : null,
-                    secondAction: hasClientAccount ? null : null,
-                },
-                { label: 'Convocation', done: hasConvocation, actionLabel: hasConvocation ? 'Renvoyer' : 'Envoyer', actionClass: 'send', action: `CRMApp.sendConvocation(${formationId})` },
-                { label: 'Feuille de présence', done: hasDoc('attendance_sheet'), actionLabel: hasDoc('attendance_sheet') ? 'Ouvrir' : 'Creer', actionClass: hasDoc('attendance_sheet') ? 'open' : 'generate', action: hasDoc('attendance_sheet') ? `CRMApp.openDocument(${formationId}, 'attendance_sheet')` : `CRMApp.createAttendanceSheet(${formationId})` },
-                { label: 'Mail fin de formation', done: false, actionLabel: 'Envoyer', actionClass: 'send', action: `CRMApp.sendMailFinFormation(${formationId})` },
-                { label: 'Certificat + Attestation', done: hasDoc('certificate'), actionLabel: hasDoc('certificate') ? 'Ouvrir' : 'Creer', actionClass: hasDoc('certificate') ? 'open' : 'generate', action: hasDoc('certificate') ? `CRMApp.openDocument(${formationId}, 'certificate')` : `CRMApp.createCertificate(${formationId})` },
-                { label: 'Envoyer vers BPF', done: false, actionLabel: 'Envoyer', actionClass: 'send', action: `CRMApp.envoyerVersBPF(${formationId})` },
-            ];
 
-            // Contrat sous-traitance si sous-traitant
-            if (formation.subcontractor_first_name) {
-                workflow.splice(2, 0, {
-                    label: 'Contrat sous-traitance', done: hasDoc('contrat_sous_traitance'),
-                    actionLabel: hasDoc('contrat_sous_traitance') ? 'Ouvrir' : 'Creer',
-                    actionClass: hasDoc('contrat_sous_traitance') ? 'open' : 'generate',
-                    action: hasDoc('contrat_sous_traitance') ? `CRMApp.openDocument(${formationId}, 'contrat_sous_traitance')` : `CRMApp.createContratSousTraitance(${formationId})`,
-                    secondActionLabel: 'Envoyer',
-                    secondActionClass: 'send',
-                    secondAction: `CRMApp.sendContratSousTraitance(${formationId})`
-                });
-            }
+            // Helper pour générer un item de phase
+            const phaseItem = (done, label, primary, secondary) => {
+                const checkIcon = done ? '✅' : '□';
+                const checkColor = done ? '#059669' : 'var(--gray-400)';
+                const labelColor = done ? 'var(--gray-600)' : 'var(--gray-900)';
+                const textDecor = done ? 'text-decoration:line-through;' : '';
+                return `
+                    <div style="padding:0.75rem 0;border-bottom:1px solid var(--gray-100);">
+                        <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;">
+                            <span style="font-size:1rem;color:${checkColor};">${checkIcon}</span>
+                            <span style="font-size:0.9rem;font-weight:500;color:${labelColor};${textDecor}">${label}</span>
+                        </div>
+                        <div style="display:flex;gap:0.4rem;flex-wrap:wrap;padding-left:1.5rem;">
+                            ${primary ? `<button onclick="${primary.action}" style="padding:0.35rem 0.75rem;background:${primary.bg || 'var(--primary-pink)'};color:white;border:none;border-radius:var(--radius-md);cursor:pointer;font-size:0.8rem;font-weight:500;">${primary.label}</button>` : ''}
+                            ${secondary ? `<button onclick="${secondary.action}" style="padding:0.35rem 0.75rem;background:var(--gray-100);color:var(--gray-700);border:1px solid var(--gray-300);border-radius:var(--radius-md);cursor:pointer;font-size:0.8rem;">${secondary.label}</button>` : ''}
+                        </div>
+                    </div>`;
+            };
+
+            // Documents pour l'espace client (BLOC 3)
+            const clientDocTypes = {
+                'fiche_pedagogique': '📝', 'google_doc': '📝',
+                'convention': '📄', 'attendance_sheet': '📋',
+                'certificate': '🏅', 'contrat_sous_traitance': '📝',
+                'manual': '📎'
+            };
+            const clientVisibleDocs = docs.filter(d => d.type !== 'contrat_sous_traitance');
+            const staticDocs = [
+                { icon: '📖', name: 'Livret d\'accueil NJM Conseil', label: 'Automatique' },
+                { icon: '📝', name: 'Fiche de réclamation', label: 'Automatique' },
+                { icon: '📋', name: 'Document préalable', label: 'Automatique' }
+            ];
 
             const container = document.getElementById('formation-detail-content');
             container.innerHTML = `
-                <!-- Header -->
+                <!-- BLOC 1 — Header -->
                 <div class="formation-detail-header">
                     <div>
                         <button onclick="CRMApp.showPage('formations')" style="background: none; border: none; cursor: pointer; color: var(--primary-purple); font-weight: 500; margin-bottom: 0.5rem; padding: 0; font-size: 0.9rem;">
@@ -2235,7 +2233,7 @@ const CRMApp = {
                             ${formation.company_name || formation.client_name || 'Client'} &bull;
                             ${formation.custom_dates || (startDate + (startDate !== endDate ? ' - ' + endDate : ''))} &bull;
                             ${formation.training_location || ''} &bull;
-                            ${learnersData.length} apprenant(s) &bull;
+                            ${learnersCount} apprenant(s) &bull;
                             ${formation.hours_per_learner || 0}h &bull;
                             ${formation.total_amount || 0} EUR HT
                         </div>
@@ -2254,70 +2252,139 @@ const CRMApp = {
                     </div>
                 </div>
 
-                <!-- Workflow -->
-                <div class="workflow-section">
-                    <h3>Prochaines étapes</h3>
-                    ${workflow.map(w => `
-                        <div class="workflow-item">
-                            <div class="left">
-                                <div class="check ${w.done ? 'done' : 'todo'}">${w.done ? '✓' : ''}</div>
-                                <span class="label ${w.done ? 'done' : ''}">${w.label}</span>
-                            </div>
-                            <button class="action-btn ${w.actionClass}" onclick="${w.action}">${w.actionLabel}</button>
-                            ${w.secondAction ? `<button class="action-btn ${w.secondActionClass}" onclick="${w.secondAction}" style="margin-left:0.25rem;">${w.secondActionLabel}</button>` : ''}
-                        </div>
-                    `).join('')}
+                <!-- BLOC 2 — 3 phases -->
+                <div class="formation-phases" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:1rem;margin-bottom:1.5rem;">
+                    <!-- ① Préparer -->
+                    <div style="background:white;border-radius:var(--radius-xl);padding:1.25rem;box-shadow:var(--shadow-sm);border-top:3px solid #3b82f6;">
+                        <h3 style="font-size:1rem;font-weight:700;color:var(--gray-900);margin:0 0 1rem 0;">① Préparer</h3>
+                        ${phaseItem(
+                            hasPrealable,
+                            hasPrealable ? `Préalable reçu (${learnersCount} apprenant${learnersCount > 1 ? 's' : ''})` : 'Préalable',
+                            { label: hasPrealable ? 'Modifier' : 'Remplir', action: `CRMApp.showPrealableAdminForm(${formationId})`, bg: hasPrealable ? 'var(--gray-400)' : 'var(--primary-pink)' },
+                            hasPrealable ? null : { label: 'Relancer', action: `CRMApp.sendPrealableReminderDirect(${formationId})` }
+                        )}
+                        ${phaseItem(
+                            hasFichePeda,
+                            'Fiche pédagogique',
+                            { label: hasFichePeda ? 'Ouvrir' : 'Créer', action: hasFichePeda ? `CRMApp.openDocument(${formationId}, 'fiche_pedagogique')` : `CRMApp.createPedagogicalSheet(${formationId})` }
+                        )}
+                        ${phaseItem(
+                            hasConvention,
+                            'Convention',
+                            { label: hasConvention ? 'Ouvrir' : 'Créer', action: hasConvention ? `CRMApp.openDocument(${formationId}, 'convention')` : `CRMApp.createConvention(${formationId})` },
+                            hasConvention ? { label: 'Relancer', action: `CRMApp.relanceConvention(${formationId})` } : null
+                        )}
+                        ${phaseItem(
+                            hasConvocation,
+                            'Convocation',
+                            { label: hasConvocation ? 'Renvoyer' : 'Envoyer', action: `CRMApp.sendConvocation(${formationId})` }
+                        )}
+                        ${isSousTraitant ? phaseItem(
+                            hasContratST,
+                            'Contrat sous-traitance',
+                            { label: hasContratST ? 'Ouvrir' : 'Créer', action: hasContratST ? `CRMApp.openDocument(${formationId}, 'contrat_sous_traitance')` : `CRMApp.createContratSousTraitance(${formationId})` },
+                            { label: 'Envoyer', action: `CRMApp.sendContratSousTraitance(${formationId})` }
+                        ) : ''}
+                    </div>
+
+                    <!-- ② Pendant -->
+                    <div style="background:white;border-radius:var(--radius-xl);padding:1.25rem;box-shadow:var(--shadow-sm);border-top:3px solid #f59e0b;">
+                        <h3 style="font-size:1rem;font-weight:700;color:var(--gray-900);margin:0 0 1rem 0;">② Pendant</h3>
+                        ${phaseItem(
+                            hasAttendance,
+                            'Feuille de présence',
+                            { label: hasAttendance ? 'Ouvrir' : 'Créer', action: hasAttendance ? `CRMApp.openDocument(${formationId}, 'attendance_sheet')` : `CRMApp.createAttendanceSheet(${formationId})` }
+                        )}
+                        ${phaseItem(
+                            hasClientAccount,
+                            'Accès client',
+                            { label: hasClientAccount ? 'Inviter' : 'Créer l\\'accès', action: hasClientAccount ? `CRMApp.inviterClient(${formationId})` : `CRMApp.createClientAccess(${formationId})` }
+                        )}
+                    </div>
+
+                    <!-- ③ Clôturer -->
+                    <div style="background:white;border-radius:var(--radius-xl);padding:1.25rem;box-shadow:var(--shadow-sm);border-top:3px solid #059669;">
+                        <h3 style="font-size:1rem;font-weight:700;color:var(--gray-900);margin:0 0 1rem 0;">③ Clôturer</h3>
+                        ${phaseItem(
+                            hasCertificate,
+                            'Certificat + Attestation',
+                            { label: hasCertificate ? 'Ouvrir' : 'Créer', action: hasCertificate ? `CRMApp.openDocument(${formationId}, 'certificate')` : `CRMApp.createCertificate(${formationId})` }
+                        )}
+                        ${phaseItem(
+                            false,
+                            'Mail fin de formation',
+                            { label: 'Envoyer', action: `CRMApp.sendMailFinFormation(${formationId})` }
+                        )}
+                        ${phaseItem(
+                            false,
+                            'Bilan de formation',
+                            { label: 'Télécharger', action: `window.open('assets/static/bilan-formation.docx', '_blank')`, bg: 'var(--gray-400)' }
+                        )}
+                        ${phaseItem(
+                            false,
+                            'BPF',
+                            { label: 'Envoyer', action: `CRMApp.envoyerVersBPF(${formationId})` }
+                        )}
+                    </div>
                 </div>
 
-                <!-- Documents & Emails -->
-                <div class="detail-grid">
-                    <div class="workflow-section">
-                        <h3 style="display:flex;align-items:center;justify-content:space-between;">
-                            <span>Documents (${docs.length})</span>
-                            <input type="file" id="upload-doc-${formationId}" accept=".pdf,.doc,.docx,.xlsx,.png,.jpg" onchange="CRMApp.uploadFormationDocument(${formationId}, this.files[0])" style="display:none;">
-                            <button onclick="document.getElementById('upload-doc-${formationId}').click()" style="padding:0.25rem 0.6rem;background:var(--primary-orange);color:white;border:none;border-radius:var(--radius-sm);cursor:pointer;font-size:0.8rem;font-weight:600;">+ Ajouter</button>
-                        </h3>
-                        ${docs.length === 0 ? '<p style="color: var(--gray-500); font-size: 0.9rem;">Aucun document généré</p>' :
-                        docs.map(doc => {
-                            const typeLabels = { 'fiche_pedagogique': 'Fiche pédagogique', 'google_doc': 'Fiche pédagogique', 'convention': 'Convention', 'attendance_sheet': 'Feuille de présence', 'certificate': 'Certificat', 'contrat_sous_traitance': 'Contrat sous-traitance', 'manual': 'Document' };
-                            const isManual = doc.type === 'manual';
-                            const icon = isManual ? '📎' : '📄';
-                            return `<div style="display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--gray-100);">
-                                <span style="font-size: 0.9rem; color: var(--gray-700);">${icon} ${doc.name || typeLabels[doc.type] || doc.type}</span>
-                                <div style="display:flex;align-items:center;gap:6px;">
-                                    ${isManual ? `
-                                        <label style="font-size:0.75rem;color:var(--gray-500);cursor:pointer;display:flex;align-items:center;gap:4px;" title="Visible par le client">
-                                            <input type="checkbox" ${doc.visible_client !== false ? 'checked' : ''} onchange="CRMApp.toggleDocVisibility(${doc.id}, this.checked)"> Client
-                                        </label>
-                                        <button onclick="CRMApp.deleteManualDocument(${doc.id}, ${formationId})" style="background:none;border:none;cursor:pointer;font-size:0.9rem;" title="Supprimer">🗑️</button>
-                                        <button onclick="window.open('${doc.document_url}', '_blank')" style="padding:0.25rem 0.6rem;background:var(--gray-100);border:none;border-radius:var(--radius-sm);cursor:pointer;font-size:0.8rem;">Ouvrir</button>
-                                    ` : `
-                                        <button onclick="CRMApp.deleteManualDocument(${doc.id}, ${formationId})" style="background:none;border:none;cursor:pointer;font-size:0.9rem;" title="Supprimer">🗑️</button>
-                                        <button onclick="CRMApp.openDocument(${formationId}, '${doc.type}')" style="padding:0.25rem 0.6rem;background:var(--gray-100);border:none;border-radius:var(--radius-sm);cursor:pointer;font-size:0.8rem;">Ouvrir</button>
-                                    `}
+                <!-- BLOC 3 — Espace client -->
+                <div style="background:white;border-radius:var(--radius-xl);padding:1.5rem;box-shadow:var(--shadow-sm);margin-bottom:1.5rem;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+                        <h3 style="font-size:1rem;font-weight:700;color:var(--gray-900);margin:0;">👁 Espace client — Ce que voit le client</h3>
+                        <input type="file" id="upload-doc-${formationId}" accept=".pdf,.doc,.docx,.xlsx,.png,.jpg" onchange="CRMApp.uploadFormationDocument(${formationId}, this.files[0])" style="display:none;">
+                        <button onclick="document.getElementById('upload-doc-${formationId}').click()" style="padding:0.35rem 0.85rem;background:var(--primary-orange);color:white;border:none;border-radius:var(--radius-md);cursor:pointer;font-size:0.8rem;font-weight:600;">+ Ajouter un document</button>
+                    </div>
+                    <div style="display:grid;gap:0.5rem;">
+                        ${clientVisibleDocs.length === 0 && staticDocs.length === 0 ? '<p style="color:var(--gray-500);font-size:0.9rem;">Aucun document généré</p>' : ''}
+                        ${clientVisibleDocs.map(doc => {
+                            const typeLabels = { 'fiche_pedagogique': 'Fiche pédagogique', 'google_doc': 'Fiche pédagogique', 'convention': 'Convention', 'attendance_sheet': 'Feuille de présence', 'certificate': 'Certificat', 'manual': 'Document' };
+                            const icon = clientDocTypes[doc.type] || '📄';
+                            const visible = doc.visible_client !== false;
+                            return `<div style="display:flex;align-items:center;justify-content:space-between;padding:0.6rem 0.75rem;background:var(--gray-50);border-radius:var(--radius-md);border:1px solid ${visible ? 'var(--gray-200)' : '#fca5a5'};">
+                                <span style="font-size:0.9rem;color:var(--gray-800);display:flex;align-items:center;gap:0.5rem;">
+                                    <span style="font-size:1.1rem;">${icon}</span>
+                                    ${doc.name || typeLabels[doc.type] || doc.type}
+                                </span>
+                                <div style="display:flex;align-items:center;gap:0.75rem;">
+                                    <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.8rem;color:${visible ? '#059669' : '#dc2626'};font-weight:500;cursor:pointer;" title="Basculer la visibilité client">
+                                        <input type="checkbox" ${visible ? 'checked' : ''} onchange="CRMApp.toggleDocVisibility(${doc.id}, this.checked)" style="cursor:pointer;">
+                                        ${visible ? '👁 Visible' : '🔒 Masqué'}
+                                    </label>
+                                    <button onclick="${doc.type === 'manual' ? `window.open('${doc.document_url}', '_blank')` : `CRMApp.openDocument(${formationId}, '${doc.type}')`}" style="padding:0.3rem 0.7rem;background:white;color:var(--gray-700);border:1px solid var(--gray-300);border-radius:var(--radius-md);cursor:pointer;font-size:0.8rem;">Ouvrir</button>
                                 </div>
                             </div>`;
                         }).join('')}
-                    </div>
-
-                    <div class="workflow-section">
-                        <h3>Emails envoyés (${convocLogs.length})</h3>
-                        ${convocLogs.length === 0 ? '<p style="color: var(--gray-500); font-size: 0.9rem;">Aucun email envoyé</p>' :
-                        convocLogs.map(log => `<div style="display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--gray-100);">
-                            <div>
-                                <span style="font-size: 0.85rem; font-weight: 500;">${log.subject || 'Convocation'}</span>
-                                <div style="font-size: 0.75rem; color: var(--gray-500);">${new Date(log.sent_at || log.created_at).toLocaleDateString('fr-FR')} - ${log.sent_to}</div>
+                        ${staticDocs.map(d => `
+                            <div style="display:flex;align-items:center;justify-content:space-between;padding:0.6rem 0.75rem;background:#f3e8ff;border-radius:var(--radius-md);border:1px solid #c084fc;">
+                                <span style="font-size:0.9rem;color:var(--gray-800);display:flex;align-items:center;gap:0.5rem;">
+                                    <span style="font-size:1.1rem;">${d.icon}</span>
+                                    ${d.name}
+                                </span>
+                                <span style="font-size:0.75rem;color:#6b21a8;background:white;padding:0.2rem 0.6rem;border-radius:9999px;font-weight:500;">${d.label}</span>
                             </div>
-                        </div>`).join('')}
+                        `).join('')}
+                    </div>
+                </div>
 
-                        <div style="margin-top: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                            <button onclick="CRMApp.relanceConvention(${formationId})" style="padding: 0.35rem 0.75rem; background: #fef3c7; border: 1px solid #fcd34d; border-radius: var(--radius-md); cursor: pointer; font-size: 0.8rem;">Relancer convention</button>
-                            <button onclick="CRMApp.relanceQuestionnaires(${formationId})" style="padding: 0.35rem 0.75rem; background: #fee2e2; border: 1px solid #fca5a5; border-radius: var(--radius-md); cursor: pointer; font-size: 0.8rem;">Relancer questionnaires</button>
-                        </div>
-                        <button onclick="CRMApp.sendMailLibre(${formationId})" style="width:100%;margin-top:0.75rem;padding:0.5rem 1rem;background:var(--primary-pink);color:white;border:none;border-radius:var(--radius-md);cursor:pointer;font-weight:500;font-size:0.85rem;">
+                <!-- BLOC 4 — Communications -->
+                <div style="background:white;border-radius:var(--radius-xl);padding:1.5rem;box-shadow:var(--shadow-sm);margin-bottom:1.5rem;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+                        <h3 style="font-size:1rem;font-weight:700;color:var(--gray-900);margin:0;">✉️ Communications (${convocLogs.length})</h3>
+                        <button onclick="CRMApp.sendMailLibre(${formationId})" style="padding:0.45rem 1rem;background:var(--primary-pink);color:white;border:none;border-radius:var(--radius-md);cursor:pointer;font-weight:600;font-size:0.85rem;">
                             ✉️ Envoyer un mail
                         </button>
                     </div>
+                    ${convocLogs.length === 0 ? '<p style="color:var(--gray-500);font-size:0.9rem;">Aucun email envoyé</p>' :
+                        `<div style="display:grid;gap:0.5rem;">
+                            ${convocLogs.map(log => `
+                                <div style="padding:0.65rem 0.85rem;background:var(--gray-50);border-radius:var(--radius-md);border-left:3px solid var(--primary-pink);">
+                                    <div style="font-size:0.85rem;font-weight:500;color:var(--gray-900);">${log.subject || 'Mail'}</div>
+                                    <div style="font-size:0.75rem;color:var(--gray-500);margin-top:0.15rem;">${new Date(log.sent_at || log.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })} — ${log.sent_to}</div>
+                                </div>
+                            `).join('')}
+                        </div>`
+                    }
                 </div>
 
                 <!-- Supports pédagogiques -->
@@ -2330,7 +2397,6 @@ const CRMApp = {
                         <p style="color: var(--gray-400); font-size: 0.85rem;">Chargement...</p>
                     </div>
                 </div>
-
             `;
 
             // Charger les supports assignés
