@@ -2068,13 +2068,16 @@ const CRMApp = {
     },
 
     showPage(pageName) {
+        // Forcer display:none inline sur toutes les pages (override tout autre style)
         document.querySelectorAll('.page-content').forEach(page => {
             page.classList.remove('active');
+            page.style.display = 'none';
         });
 
         const targetPage = document.getElementById(`page-${pageName}`);
         if (targetPage) {
             targetPage.classList.add('active');
+            targetPage.style.display = 'block';
             this.currentPage = pageName;
             window.scrollTo(0, 0);
         }
