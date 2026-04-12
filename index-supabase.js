@@ -3294,17 +3294,20 @@ Nathalie Joulie-Morand`;
     async sendPrealableReminderDirect(formationId) {
         try {
             const { data: formation, error } = await supabaseClient
-                .from('formations').select('client_email, formation_name, title').eq('id', formationId).single();
+                .from('formations').select('client_email, formation_name, title, company_director_name').eq('id', formationId).single();
             if (error) throw error;
 
             const to = formation.client_email;
             if (!to) { showToast('Aucun email client renseigné', 'error'); return; }
 
             const formationName = formation.formation_name || formation.title || 'votre formation';
+            const dirigeant = formation.company_director_name || '';
             const tpl = await SupabaseData.getEmailTemplate('prealable_reminder');
-            const vars = { '{{formation}}': formationName };
-            const subject = tpl ? Object.keys(vars).reduce((s, k) => s.replaceAll(k, vars[k]), tpl.subject) : `Rappel — Merci de renseigner vos apprenants`;
-            const body = tpl ? Object.keys(vars).reduce((s, k) => s.replaceAll(k, vars[k]), tpl.body) : `Bonjour,\n\nNous vous rappelons qu'il est nécessaire de renseigner les apprenants participant à la formation "${formationName}" avant son démarrage.\n\nVeuillez vous connecter à votre espace client pour compléter le questionnaire préalable.\n\nCordialement,\nNJM Conseil`;
+            const vars = { '{{formation}}': formationName, '{{dirigeant}}': dirigeant };
+            const fallbackSubject = `Rappel — Merci de renseigner vos apprenants pour la formation ${formationName}`;
+            const fallbackBody = `Bonjour${dirigeant ? ' ' + dirigeant : ''},\n\nNous vous rappelons que nous attendons les informations sur vos apprenants pour la formation "${formationName}".\n\nMerci de vous connecter à votre espace client pour remplir le questionnaire préalable.\n\nCordialement,\nNathalie JOULIE-MORAND\nNJM Conseil`;
+            const subject = tpl ? Object.keys(vars).reduce((s, k) => s.replaceAll(k, vars[k]), tpl.subject) : fallbackSubject;
+            const body = tpl ? Object.keys(vars).reduce((s, k) => s.replaceAll(k, vars[k]), tpl.body) : fallbackBody;
 
             const result = await EmailService.sendEmail(to, subject, body, []);
             if (result.success) {
@@ -3313,7 +3316,7 @@ Nathalie Joulie-Morand`;
                 addNotification('mail', `Relance préalable envoyée à ${to}`);
             } else {
                 window.open(`mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_blank');
-                showToast("Échec envoi auto. Brouillon ouvert dans votre client mail.", 'warning');
+                showToast(`Envoi automatique échoué : ${result.message || 'erreur inconnue'}. Brouillon ouvert dans votre client mail.`, 'error', 6000);
             }
         } catch (err) {
             console.error('Erreur relance préalable:', err);
