@@ -27,6 +27,24 @@ if (typeof showConfirmDialog === 'undefined') {
     };
 }
 
+// Normalise les URLs d'assets pour gérer les accents Mac (NFD) vs fichiers Git (NFC)
+// Les noms de fichiers avec accents créés sur Mac utilisent souvent NFD, alors que
+// Netlify/Git/browsers attendent NFC. Cette fonction décode + normalise + ré-encode.
+window.normalizeAssetUrl = function(url) {
+    if (!url) return '#';
+    // URLs absolues (Supabase Storage, Drive, etc.) → ne pas toucher
+    if (/^https?:\/\//i.test(url)) return url;
+    // URLs relatives : décode + normalise NFC + ré-encode proprement
+    try {
+        const decoded = decodeURIComponent(url);
+        const normalized = decoded.normalize('NFC');
+        return encodeURI(normalized);
+    } catch (e) {
+        console.warn('normalizeAssetUrl failed for', url, e);
+        return url;
+    }
+};
+
 // Diagnostic au chargement
 if (typeof SupabaseData !== 'undefined') {
 
@@ -1572,7 +1590,7 @@ const CRMApp = {
         container.innerHTML = `
             <div style="display:grid;gap:0.6rem;">
                 ${supports.map(s => `
-                    <a href="${s.file_url || '#'}" target="_blank" rel="noopener noreferrer"
+                    <a href="${normalizeAssetUrl(s.file_url)}" target="_blank" rel="noopener noreferrer"
                        style="display:flex;align-items:center;gap:1rem;padding:0.85rem 1rem;background:var(--gray-50);border-radius:var(--radius-md);text-decoration:none;color:var(--gray-900);border:1px solid transparent;transition:all 0.15s;"
                        onmouseover="this.style.background='white';this.style.borderColor='var(--gray-200)';"
                        onmouseout="this.style.background='var(--gray-50)';this.style.borderColor='transparent';">
@@ -2817,7 +2835,7 @@ const CRMApp = {
                     <span style="font-size: 0.7rem; color: var(--gray-400); background: var(--gray-100); padding: 0.1rem 0.4rem; border-radius: 8px;">${this.supportCategoryLabels[s.category] || s.category}</span>
                 </span>
                 <div style="display: flex; gap: 0.5rem;">
-                    ${s.file_url ? `<a href="${s.file_url}" target="_blank" style="font-size: 0.8rem; color: var(--primary-purple); text-decoration: none; padding: 0.2rem 0.5rem; background: #f3f0ff; border-radius: var(--radius-sm);">Ouvrir</a>` : ''}
+                    ${s.file_url ? `<a href="${normalizeAssetUrl(s.file_url)}" target="_blank" style="font-size: 0.8rem; color: var(--primary-purple); text-decoration: none; padding: 0.2rem 0.5rem; background: #f3f0ff; border-radius: var(--radius-sm);">Ouvrir</a>` : ''}
                     <button onclick="CRMApp.removeSupportFromFormation(${formationId}, ${s.id})" style="background: none; border: none; color: var(--gray-400); cursor: pointer; font-size: 0.8rem;">✕</button>
                 </div>
             </div>
@@ -4911,7 +4929,7 @@ Nathalie Joulie-Morand`;
                     ${fileIcon(s.title || s.file_url || '')} ${s.title}
                 </span>
                 <div style="display: flex; align-items: center; gap: 0.75rem;">
-                    ${s.file_url ? `<a href="${s.file_url}" target="_blank" rel="noopener noreferrer" style="color: var(--primary-purple); font-weight: 600; text-decoration: none; font-size: 0.8rem; padding: 0.2rem 0.5rem; background: #f3f0ff; border-radius: var(--radius-sm);">Ouvrir</a>` : ''}
+                    ${s.file_url ? `<a href="${normalizeAssetUrl(s.file_url)}" target="_blank" rel="noopener noreferrer" style="color: var(--primary-purple); font-weight: 600; text-decoration: none; font-size: 0.8rem; padding: 0.2rem 0.5rem; background: #f3f0ff; border-radius: var(--radius-sm);">Ouvrir</a>` : ''}
                     <button onclick="CRMApp.deleteSupport('${s.id}')" style="background:none;border:none;color:var(--gray-400);cursor:pointer;font-size:0.8rem;padding:0.2rem;" title="Supprimer">✕</button>
                 </div>
             </div>`;
@@ -5262,7 +5280,7 @@ Nathalie Joulie-Morand`;
                     <span style="font-size: 0.85rem; color: var(--gray-800); display: flex; align-items: center; gap: 0.5rem;">
                         ${fileIcon(f.title, f.ext)} ${f.title}
                     </span>
-                    <a href="${f.file_url}" target="_blank" rel="noopener noreferrer" style="color: var(--primary-purple); font-weight: 600; text-decoration: none; font-size: 0.8rem; padding: 0.2rem 0.5rem; background: #f3f0ff; border-radius: var(--radius-sm);">Ouvrir</a>
+                    <a href="${normalizeAssetUrl(f.file_url)}" target="_blank" rel="noopener noreferrer" style="color: var(--primary-purple); font-weight: 600; text-decoration: none; font-size: 0.8rem; padding: 0.2rem 0.5rem; background: #f3f0ff; border-radius: var(--radius-sm);">Ouvrir</a>
                 </div>`;
 
             ['avant', 'pendant', 'apres'].forEach(phase => {
