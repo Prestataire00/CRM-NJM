@@ -2595,7 +2595,7 @@ const CRMApp = {
                         ${phaseItem(
                             hasClientAccount,
                             'Accès client',
-                            { label: hasClientAccount ? 'Inviter' : "Créer l'accès", action: hasClientAccount ? `CRMApp.inviterClient(${formationId})` : `CRMApp.createClientAccess(${formationId})` }
+                            { label: hasClientAccount ? 'Inviter' : "Créer + envoyer", action: hasClientAccount ? `CRMApp.inviterClient(${formationId})` : `CRMApp.createClientAccessFromWorkflow(${formationId})` }
                         )}
                     </div>
 
@@ -3197,63 +3197,19 @@ const CRMApp = {
         }
     },
 
-    async createClientAccess(formationId) {
-        try {
-            const { data: formation, error } = await supabaseClient
-                .from('formations').select('*').eq('id', formationId).single();
-            if (error) throw error;
-
-            const clientEmail = formation.client_email;
-            if (!clientEmail) {
-                showToast('Email client non renseign\u00E9. Modifiez la fiche pour ajouter un email.', 'error');
-                return;
-            }
-
-            // Verifier si le compte existe deja
-            const profileCheck = await SupabaseData.getProfileByEmail(clientEmail);
-            if (profileCheck.success && profileCheck.data) {
-                showToast('Le compte client existe d\u00E9j\u00E0. Utilisez "Inviter" pour envoyer les identifiants.', 'info');
-                this.showFormationDetail(formationId);
-                return;
-            }
-
-            // Generer un mot de passe
-            const password = Math.random().toString(36).slice(-8) + 'A1!';
-            const clientName = formation.company_director_name || formation.company_name || '';
-
-            const confirmed = await showConfirmDialog({
-                title: 'Cr\u00E9er un acc\u00E8s client',
-                message: `Cr\u00E9er un compte pour :\n\nEmail : ${clientEmail}\nNom : ${clientName}\nMot de passe : ${password}\n\nLe client pourra acc\u00E9der \u00E0 son espace formation.`,
-                confirmText: 'Cr\u00E9er le compte',
-            });
-            if (!confirmed) return;
-
-            showToast('Cr\u00E9ation du compte...', 'info');
-
-            // Creer le compte via SupabaseAuth
-            const currentUser = (await supabaseClient.auth.getUser()).data.user;
-            const result = await SupabaseAuth.registerUser(currentUser.id, {
-                email: clientEmail,
-                password: password,
-                name: clientName,
-                role: 'client',
-                mustChangePassword: false
-            });
-
-            if (result && result.success) {
-                // Lier au client si client_id existe
-                if (formation.client_id && result.userId) {
-                    await SupabaseData.linkUserToClient(result.userId, formation.client_id);
-                }
-                showToast('Compte client cr\u00E9\u00E9 ! Vous pouvez maintenant envoyer l\'invitation.', 'success');
-                addNotification('acces', `Acc\u00E8s client cr\u00E9\u00E9 pour ${clientEmail}`);
-                this.showFormationDetail(formationId);
-            } else {
-                showToast('Erreur: ' + (result?.message || 'Erreur inconnue'), 'error');
-            }
-        } catch (err) {
-            console.error('Erreur createClientAccess:', err);
-            showToast('Erreur: ' + err.message, 'error');
+    async createClientAccessFromWorkflow(formationId) {
+        showToast('Création de l\'accès en cours...', 'info');
+        const result = await this.createClientAccessSilent(formationId);
+        if (result.success) {
+            showToast(
+                result.exists
+                    ? `Mail d'accès renvoyé à ${result.email}`
+                    : `Compte créé — mail envoyé à ${result.email}`,
+                'success'
+            );
+            this.showFormationDetail(formationId);
+        } else {
+            showToast('Erreur : ' + (result.message || 'inconnue'), 'error');
         }
     },
 
@@ -3277,6 +3233,10 @@ const CRMApp = {
             // Vérifier si le compte existe déjà
             const profileCheck = await SupabaseData.getProfileByEmail(clientEmail);
             if (profileCheck.success && profileCheck.data) {
+                // S'assurer que le lien user ↔ client est bien créé (même si compte existait pour un autre client)
+                if (formation.client_id && profileCheck.data.id) {
+                    await SupabaseData.linkUserToClient(profileCheck.data.id, formation.client_id);
+                }
                 // Compte existe — envoyer directement le mail d'invitation
                 let clientPassword = profileCheck.data.initial_password || '[mot de passe déjà communiqué]';
                 const vars = { '{{formation}}': formationName, '{{dirigeant}}': directorName, '{{email}}': clientEmail, '{{password}}': clientPassword, '{{url}}': siteUrl };
