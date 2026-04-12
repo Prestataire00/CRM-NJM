@@ -1995,7 +1995,7 @@ const CRMApp = {
 
 
         tbody.innerHTML = formations.map(f => `
-            <tr style="border-bottom: 1px solid var(--gray-200);">
+            <tr style="border-bottom: 1px solid var(--gray-200); vertical-align: top;">
                 <td style="padding: 1rem;">${f.client_name || f.title || 'Sans nom'}</td>
                 <td style="padding: 1rem;">${f.formation_name || f.description || 'N/A'}</td>
                 <td style="padding: 1rem;">
