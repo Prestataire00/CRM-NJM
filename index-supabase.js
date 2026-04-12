@@ -2645,7 +2645,7 @@ const CRMApp = {
                                 </span>
                                 <div style="display:flex;align-items:center;gap:0.75rem;">
                                     <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.8rem;color:${visible ? '#059669' : '#dc2626'};font-weight:500;cursor:pointer;" title="Basculer la visibilité client">
-                                        <input type="checkbox" ${visible ? 'checked' : ''} onchange="CRMApp.toggleDocVisibility(${doc.id}, this.checked)" style="cursor:pointer;">
+                                        <input type="checkbox" ${visible ? 'checked' : ''} onchange="CRMApp.toggleDocVisibility(${doc.id}, this.checked, ${formationId})" style="cursor:pointer;">
                                         ${visible ? '👁 Visible' : '🔒 Masqué'}
                                     </label>
                                     <button onclick="${doc.type === 'manual' ? `window.open('${doc.document_url}', '_blank')` : `CRMApp.openDocument(${formationId}, '${doc.type}')`}" style="padding:0.3rem 0.7rem;background:white;color:var(--gray-700);border:1px solid var(--gray-300);border-radius:var(--radius-md);cursor:pointer;font-size:0.8rem;">Ouvrir</button>
@@ -3027,14 +3027,23 @@ const CRMApp = {
         }
     },
 
-    async toggleDocVisibility(docId, visible) {
+    async toggleDocVisibility(docId, visible, formationId) {
         try {
-            await supabaseClient
+            const { error } = await supabaseClient
                 .from('formation_documents')
                 .update({ visible_client: visible })
                 .eq('id', docId);
+            if (error) throw error;
+
+            showToast(visible ? 'Document visible par le client' : 'Document masqué au client', 'success');
+
+            // Rafraîchir la fiche pour refléter le nouvel état (bordure + texte)
+            if (formationId) {
+                this.showFormationDetail(formationId);
+            }
         } catch (error) {
-            console.warn('Erreur toggle visibilité:', error);
+            console.error('Erreur toggle visibilité:', error);
+            showToast('Erreur : ' + (error.message || 'impossible de mettre à jour la visibilité'), 'error');
         }
     },
 
