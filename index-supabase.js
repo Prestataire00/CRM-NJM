@@ -2664,8 +2664,12 @@ const CRMApp = {
                             { label: hasFichePeda ? 'Ouvrir' : 'Créer', action: hasFichePeda ? `CRMApp.openDocument(${formationId}, 'fiche_pedagogique')` : `CRMApp.createPedagogicalSheet(${formationId})` }
                         )}
                         ${phaseItem(
-                            hasConvention,
-                            'Convention',
+                            hasConvention && !!formation.client_signed_at,
+                            hasConvention
+                                ? (formation.client_signed_at
+                                    ? `Convention — <span style="color:#059669;font-weight:600;">✍️ Signée le ${new Date(formation.client_signed_at).toLocaleDateString('fr-FR')}</span>`
+                                    : `Convention — <span style="color:#d97706;font-weight:600;">⏳ En attente signature client</span>`)
+                                : 'Convention',
                             { label: hasConvention ? 'Ouvrir' : 'Créer', action: hasConvention ? `CRMApp.openDocument(${formationId}, 'convention')` : `CRMApp.createConvention(${formationId})` },
                             hasConvention ? { label: 'Relancer', action: `CRMApp.relanceConvention(${formationId})` } : null
                         )}
@@ -2675,8 +2679,12 @@ const CRMApp = {
                             { label: hasConvocation ? 'Renvoyer' : 'Envoyer', action: `CRMApp.sendConvocation(${formationId})` }
                         )}
                         ${isSousTraitant ? phaseItem(
-                            hasContratST,
-                            'Contrat sous-traitance',
+                            hasContratST && !!formation.subcontractor_signed_at,
+                            hasContratST
+                                ? (formation.subcontractor_signed_at
+                                    ? `Contrat sous-traitance — <span style="color:#059669;font-weight:600;">✍️ Signé le ${new Date(formation.subcontractor_signed_at).toLocaleDateString('fr-FR')}</span>`
+                                    : `Contrat sous-traitance — <span style="color:#d97706;font-weight:600;">⏳ En attente signature formateur</span>`)
+                                : 'Contrat sous-traitance',
                             { label: hasContratST ? 'Ouvrir' : 'Créer', action: hasContratST ? `CRMApp.openDocument(${formationId}, 'contrat_sous_traitance')` : `CRMApp.createContratSousTraitance(${formationId})` },
                             { label: 'Envoyer', action: `CRMApp.sendContratSousTraitance(${formationId})` }
                         ) : ''}
@@ -3833,6 +3841,13 @@ Nathalie Joulie-Morand`;
             const signatureBase64 = this._signaturePad.toDataURL('image/png');
             const now = new Date().toISOString();
 
+            // Charger la formation pour récupérer les noms (client/formateur)
+            const { data: formation } = await supabaseClient
+                .from('formations')
+                .select('company_name, client_name, subcontractor_first_name, subcontractor_last_name')
+                .eq('id', formationId)
+                .single();
+
             const updates = type === 'client'
                 ? { client_signature: signatureBase64, client_signed_at: now }
                 : { subcontractor_signature: signatureBase64, subcontractor_signed_at: now };
@@ -3841,7 +3856,16 @@ Nathalie Joulie-Morand`;
             if (!result.success) throw new Error(result.message);
 
             showToast(type === 'client' ? 'Convention signée ✅' : 'Contrat signé ✅', 'success');
-            addNotification('formation', type === 'client' ? `Convention signée par le client` : `Contrat signé par le sous-traitant`);
+
+            // Notification détaillée avec nom et date
+            const dateFr = new Date().toLocaleDateString('fr-FR');
+            if (type === 'client') {
+                const clientName = formation?.company_name || formation?.client_name || 'Client';
+                addNotification('signature', `Convention signée — ${clientName} le ${dateFr}`);
+            } else {
+                const trainerName = `${formation?.subcontractor_first_name || ''} ${formation?.subcontractor_last_name || ''}`.trim() || 'Formateur';
+                addNotification('signature', `Contrat signé — ${trainerName} le ${dateFr}`);
+            }
 
             const modal = document.getElementById('signature-modal');
             if (modal) modal.remove();
@@ -3862,6 +3886,11 @@ Nathalie Joulie-Morand`;
                 // Sous-traitant : recharger les vues formateur
                 if (this.currentPage === 'mes-documents') this.loadFormateurContracts();
                 else this.loadMissions();
+            }
+
+            // Si l'admin a la fiche formation ouverte, recharger pour voir le badge
+            if (this.currentPage === 'formation-detail') {
+                await this.showFormationDetail(formationId);
             }
         } catch (err) {
             console.error('Erreur saveSignature:', err);
