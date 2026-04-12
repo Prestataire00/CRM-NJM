@@ -6383,9 +6383,28 @@ Nathalie Joulie-Morand`;
                         return opt ? opt.textContent : `Client #${cid}`;
                     }).join(', ');
 
-                    showToast(`Entreprise "${clientNames}" ajoutée au compte existant "${existingProfile.data.name}"`, 'success');
+                    // Envoi automatique du mail avec les accès
+                    try {
+                        const siteUrl = window.location.origin;
+                        const pwd = existingProfile.data.initial_password || '[mot de passe à réinitialiser]';
+                        const subject = `Votre espace NJM Conseil — nouvelle entreprise associée`;
+                        const body = `Bonjour ${existingProfile.data.name || ''},\n\nL'entreprise "${clientNames}" a été associée à votre espace client NJM Conseil.\n\nAccès : ${siteUrl}\nIdentifiant : ${email}\nMot de passe : ${pwd}\n\nVous pouvez désormais basculer entre vos entreprises depuis votre espace.\n\nCordialement,\nNathalie Joulie-Morand`;
+                        await EmailService.sendEmail(email, subject, body, []);
+                    } catch (mailErr) {
+                        console.warn('Envoi mail échec:', mailErr);
+                    }
+
+                    showToast(`Entreprise "${clientNames}" ajoutée au compte existant "${existingProfile.data.name}" — mail envoyé`, 'success');
                     this.closeModal();
                     await this.loadUsers();
+                    return;
+                } else {
+                    // Compte orphelin : existe en auth.users mais pas en profiles
+                    showToast(
+                        `Cet email est déjà utilisé dans le système d'authentification mais n'est lié à aucun profil utilisable. Utilisez un autre email (ex: ${email.replace('@', '+test@')}) ou contactez l'administrateur pour supprimer le compte orphelin.`,
+                        'error',
+                        10000
+                    );
                     return;
                 }
             }
