@@ -750,6 +750,16 @@ const PdfGenerator = {
             y += 5;
             doc.text(formation.company_name || formation.client_name || '', margin + 10, y);
 
+            // Image signature client (si signé)
+            if (formation.client_signature) {
+                try { doc.addImage(formation.client_signature, 'PNG', margin + 10, y + 2, 40, 20); } catch (e) { console.warn('Erreur ajout signature client:', e); }
+                if (formation.client_signed_at) {
+                    doc.setFontSize(8);
+                    doc.text(`Signé le ${new Date(formation.client_signed_at).toLocaleDateString('fr-FR')}`, margin + 10, y + 25);
+                    doc.setFontSize(10);
+                }
+            }
+
             // Image signature sous le nom de la gérante
             if (this.SIGNATURE_DATA) {
                 doc.addImage(this.SIGNATURE_DATA, 'PNG', 120, y + 2, 40, 20);
@@ -924,6 +934,16 @@ const PdfGenerator = {
             // Cachet/signature NJM
             if (this.SIGNATURE_DATA) {
                 doc.addImage(this.SIGNATURE_DATA, 'PNG', margin, y + 3, 40, 28);
+            }
+
+            // Signature sous-traitant (si signé)
+            if (formation.subcontractor_signature) {
+                try { doc.addImage(formation.subcontractor_signature, 'PNG', 120, y + 3, 40, 20); } catch (e) { console.warn('Erreur ajout signature sous-traitant:', e); }
+                if (formation.subcontractor_signed_at) {
+                    doc.setFontSize(8);
+                    doc.text(`Signé le ${new Date(formation.subcontractor_signed_at).toLocaleDateString('fr-FR')}`, 120, y + 26);
+                    doc.setFontSize(10);
+                }
             }
 
             this.addNJMFooter(doc);

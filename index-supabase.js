@@ -492,6 +492,61 @@ const CRMApp = {
         this.showPage('missions');
     },
 
+    async loadFormateurContracts() {
+        const container = document.getElementById('formateur-contracts-list');
+        if (!container) return;
+
+        const result = await SupabaseData.getFormationsByFormateur(this.currentUser.id);
+        if (!result.success) {
+            container.innerHTML = '<p style="color:var(--danger);padding:1rem;">Erreur de chargement</p>';
+            return;
+        }
+
+        const formations = result.data || [];
+        if (formations.length === 0) {
+            container.innerHTML = '<p style="color:var(--gray-500);text-align:center;padding:2rem;">Aucun contrat pour le moment.</p>';
+            return;
+        }
+
+        container.innerHTML = formations.map(f => {
+            const isSigned = !!f.subcontractor_signed_at;
+            const signedDate = isSigned ? new Date(f.subcontractor_signed_at).toLocaleDateString('fr-FR') : null;
+            const docs = f.formation_documents || [];
+            const hasContract = docs.some(d => d.type === 'contrat_sous_traitance');
+            const dates = f.start_date ? new Date(f.start_date).toLocaleDateString('fr-FR') : '';
+
+            return `
+                <div style="background:white;border-radius:var(--radius-xl);padding:1.5rem;box-shadow:var(--shadow-sm);margin-bottom:1rem;border:2px solid ${isSigned ? '#6ee7b7' : 'var(--gray-200)'};">
+                    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:1rem;">
+                        <div style="flex:1;min-width:220px;">
+                            <h3 style="font-size:1.1rem;font-weight:700;color:var(--gray-900);margin:0 0 0.35rem 0;">${f.formation_name || 'Formation'}</h3>
+                            <p style="color:var(--gray-600);margin:0;font-size:0.85rem;">${f.company_name || f.client_name || ''} ${dates ? ' • ' + dates : ''}</p>
+                        </div>
+                        ${isSigned ? `
+                            <span style="padding:0.35rem 0.8rem;background:#d1fae5;color:#065f46;border-radius:9999px;font-size:0.8rem;font-weight:600;">✅ Signé le ${signedDate}</span>
+                        ` : `
+                            <span style="padding:0.35rem 0.8rem;background:#fef3c7;color:#92400e;border-radius:9999px;font-size:0.8rem;font-weight:600;">⏳ En attente de signature</span>
+                        `}
+                    </div>
+                    <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
+                        ${hasContract ? `
+                            <button onclick="CRMApp.openDocument(${f.id}, 'contrat_sous_traitance')" style="padding:0.6rem 1.25rem;background:white;color:var(--gray-700);border:1px solid var(--gray-300);border-radius:var(--radius-md);font-weight:500;cursor:pointer;">
+                                📄 Voir le contrat
+                            </button>
+                        ` : `
+                            <p style="color:var(--gray-500);font-size:0.85rem;font-style:italic;margin:0;padding:0.6rem 0;">Le contrat sera disponible prochainement.</p>
+                        `}
+                        ${hasContract && !isSigned ? `
+                            <button onclick="CRMApp.openSignatureModal('subcontractor', ${f.id})" style="padding:0.6rem 1.5rem;background:var(--primary-pink);color:white;border:none;border-radius:var(--radius-md);font-weight:600;cursor:pointer;">
+                                ✍️ Signer le contrat
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    },
+
     setupFormateurNavigation() {
         const formateurNav = document.getElementById('formateur-nav');
         if (formateurNav) {
@@ -1198,19 +1253,36 @@ const CRMApp = {
             this.renderClientPrealableTab(formation);
         } else if (step === 2) {
             const convDoc = docs.find(d => d.type === 'convention' && d.visible_client !== false);
+            const isSigned = !!formation.client_signed_at;
+            const signedDate = isSigned ? new Date(formation.client_signed_at).toLocaleDateString('fr-FR') : null;
+
             container.innerHTML = `
-                <div style="background:#eff6ff;border:2px solid #3b82f6;border-radius:var(--radius-xl);padding:1.5rem;">
+                <div style="background:${isSigned ? '#d1fae5' : '#eff6ff'};border:2px solid ${isSigned ? '#059669' : '#3b82f6'};border-radius:var(--radius-xl);padding:1.5rem;">
                     <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.5rem;">
-                        <span style="font-size:1.75rem;">✍️</span>
-                        <h3 style="font-size:1.15rem;font-weight:700;color:var(--gray-900);margin:0;">Signez votre convention</h3>
+                        <span style="font-size:1.75rem;">${isSigned ? '✅' : '✍️'}</span>
+                        <h3 style="font-size:1.15rem;font-weight:700;color:var(--gray-900);margin:0;">${isSigned ? 'Convention signée' : 'Signez votre convention'}</h3>
                     </div>
-                    <p style="color:var(--gray-600);margin:0 0 1.25rem 0;font-size:0.9rem;">La convention doit être signée avant le début de la formation.</p>
-                    ${convDoc ? `
-                        <button onclick="CRMApp.openDocument(${formation.id}, 'convention')" style="padding:0.75rem 1.5rem;background:#3b82f6;color:white;border:none;border-radius:var(--radius-md);font-weight:600;cursor:pointer;">
-                            📄 Voir la convention
-                        </button>
+                    ${isSigned ? `
+                        <p style="color:#065f46;margin:0 0 1.25rem 0;font-size:0.9rem;font-weight:500;">Signée le ${signedDate}. Vous pouvez retélécharger le document signé à tout moment.</p>
+                        ${convDoc ? `
+                            <button onclick="CRMApp.openDocument(${formation.id}, 'convention')" style="padding:0.75rem 1.5rem;background:#059669;color:white;border:none;border-radius:var(--radius-md);font-weight:600;cursor:pointer;">
+                                📄 Voir le document signé
+                            </button>
+                        ` : ''}
                     ` : `
-                        <p style="color:var(--gray-500);font-size:0.85rem;font-style:italic;">La convention sera disponible prochainement.</p>
+                        <p style="color:var(--gray-600);margin:0 0 1.25rem 0;font-size:0.9rem;">La convention doit être signée avant le début de la formation.</p>
+                        ${convDoc ? `
+                            <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
+                                <button onclick="CRMApp.openDocument(${formation.id}, 'convention')" style="padding:0.75rem 1.25rem;background:white;color:var(--gray-700);border:1px solid var(--gray-300);border-radius:var(--radius-md);font-weight:500;cursor:pointer;">
+                                    📄 Lire la convention
+                                </button>
+                                <button onclick="CRMApp.openSignatureModal('client', ${formation.id})" style="padding:0.75rem 1.5rem;background:var(--primary-pink);color:white;border:none;border-radius:var(--radius-md);font-weight:600;cursor:pointer;">
+                                    ✍️ Signer la convention
+                                </button>
+                            </div>
+                        ` : `
+                            <p style="color:var(--gray-500);font-size:0.85rem;font-style:italic;">La convention sera disponible prochainement.</p>
+                        `}
                     `}
                 </div>
             `;
@@ -2021,6 +2093,10 @@ const CRMApp = {
         }
         if (pageName === 'subcontractors') {
             setTimeout(() => this.loadSubcontractorsList(), 100);
+        }
+
+        if (pageName === 'mes-documents') {
+            setTimeout(() => this.loadFormateurContracts(), 100);
         }
 
         const pageTitles = {
@@ -3657,6 +3733,122 @@ Nathalie Joulie-Morand`;
             showToast('Erreur: ' + err.message, 'error');
         }
     },
+
+    // ==================== SIGNATURE ÉLECTRONIQUE ====================
+
+    openSignatureModal(type, formationId) {
+        if (typeof SignaturePad === 'undefined') {
+            showToast('Module signature non chargé. Rafraîchissez la page.', 'error');
+            return;
+        }
+
+        const existing = document.getElementById('signature-modal');
+        if (existing) existing.remove();
+
+        const title = type === 'client' ? 'Signez la convention' : 'Signez le contrat';
+
+        const modal = document.createElement('div');
+        modal.id = 'signature-modal';
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div style="background:white;border-radius:var(--radius-xl);padding:2rem;max-width:520px;width:95%;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+                    <h2 style="font-size:1.2rem;font-weight:700;color:var(--gray-900);margin:0;">${title}</h2>
+                    <button onclick="document.getElementById('signature-modal').remove()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--gray-400);">&times;</button>
+                </div>
+                <p style="color:var(--gray-600);font-size:0.9rem;margin:0 0 1rem 0;">Utilisez votre souris ou votre doigt pour signer dans le cadre ci-dessous.</p>
+                <div style="border:2px solid var(--gray-300);border-radius:var(--radius-md);background:white;overflow:hidden;touch-action:none;">
+                    <canvas id="signature-canvas" width="470" height="200" style="display:block;width:100%;height:200px;cursor:crosshair;"></canvas>
+                </div>
+                <div style="display:flex;justify-content:space-between;gap:0.75rem;margin-top:1rem;flex-wrap:wrap;">
+                    <button onclick="CRMApp._clearSignature()" style="padding:0.6rem 1rem;background:var(--gray-100);color:var(--gray-700);border:1px solid var(--gray-300);border-radius:var(--radius-md);font-weight:500;cursor:pointer;">
+                        ✕ Effacer
+                    </button>
+                    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+                        <button onclick="document.getElementById('signature-modal').remove()" style="padding:0.6rem 1.25rem;background:var(--gray-100);color:var(--gray-700);border:1px solid var(--gray-300);border-radius:var(--radius-md);font-weight:500;cursor:pointer;">
+                            Annuler
+                        </button>
+                        <button onclick="CRMApp.saveSignature('${type}', ${formationId})" id="signature-save-btn" style="padding:0.6rem 1.5rem;background:var(--primary-pink);color:white;border:none;border-radius:var(--radius-md);font-weight:600;cursor:pointer;">
+                            Valider la signature
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        setTimeout(() => modal.classList.add('show'), 10);
+
+        // Initialiser SignaturePad
+        const canvas = document.getElementById('signature-canvas');
+        // Ajuster la résolution canvas au DPR pour un rendu net
+        const ratio = Math.max(window.devicePixelRatio || 1, 1);
+        canvas.width = canvas.offsetWidth * ratio;
+        canvas.height = canvas.offsetHeight * ratio;
+        canvas.getContext('2d').scale(ratio, ratio);
+
+        this._signaturePad = new SignaturePad(canvas, {
+            backgroundColor: 'rgb(255, 255, 255)',
+            penColor: 'rgb(0, 0, 0)',
+            minWidth: 0.8,
+            maxWidth: 2.5
+        });
+    },
+
+    _clearSignature() {
+        if (this._signaturePad) this._signaturePad.clear();
+    },
+
+    async saveSignature(type, formationId) {
+        if (!this._signaturePad || this._signaturePad.isEmpty()) {
+            showToast('Veuillez dessiner votre signature avant de valider', 'error');
+            return;
+        }
+
+        const btn = document.getElementById('signature-save-btn');
+        if (btn) { btn.disabled = true; btn.textContent = 'Enregistrement...'; }
+
+        try {
+            const signatureBase64 = this._signaturePad.toDataURL('image/png');
+            const now = new Date().toISOString();
+
+            const updates = type === 'client'
+                ? { client_signature: signatureBase64, client_signed_at: now }
+                : { subcontractor_signature: signatureBase64, subcontractor_signed_at: now };
+
+            const result = await SupabaseData.updateFormation(formationId, updates);
+            if (!result.success) throw new Error(result.message);
+
+            showToast(type === 'client' ? 'Convention signée ✅' : 'Contrat signé ✅', 'success');
+            addNotification('formation', type === 'client' ? `Convention signée par le client` : `Contrat signé par le sous-traitant`);
+
+            const modal = document.getElementById('signature-modal');
+            if (modal) modal.remove();
+            this._signaturePad = null;
+
+            // Recharger la vue concernée
+            if (type === 'client') {
+                // Recharger la formation active pour refléter la signature
+                if (this.clientFormations) {
+                    const idx = this.clientFormations.findIndex(f => f.id === formationId);
+                    if (idx !== -1) {
+                        this.clientFormations[idx] = { ...this.clientFormations[idx], ...updates };
+                        this.currentClientFormation = this.clientFormations[idx];
+                    }
+                }
+                this.renderClientSpace();
+            } else {
+                // Sous-traitant : recharger les vues formateur
+                if (this.currentPage === 'mes-documents') this.loadFormateurContracts();
+                else this.loadMissions();
+            }
+        } catch (err) {
+            console.error('Erreur saveSignature:', err);
+            showToast('Erreur : ' + err.message, 'error');
+            if (btn) { btn.disabled = false; btn.textContent = 'Valider la signature'; }
+        }
+    },
+
+    // ==================== END SIGNATURE ====================
 
     async sendMailLibre(formationId) {
         try {

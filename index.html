@@ -957,6 +957,7 @@
     </style>
     <!-- jsPDF pour la génération de documents PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
 </head>
 
 <body>
@@ -2452,41 +2453,10 @@
             <div id="page-mes-documents" class="page-content">
                 <div style="margin-bottom: 2rem;">
                     <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-900);">Mes documents</h2>
-                    <p style="color: var(--gray-600); margin-top: 0.5rem;">Gérez vos documents contractuels</p>
+                    <p style="color: var(--gray-600); margin-top: 0.5rem;">Consultez et signez vos contrats de sous-traitance</p>
                 </div>
-
-                <!-- Contrat de prestation -->
-                <div style="background: white; border-radius: var(--radius-xl); padding: 2rem; box-shadow: var(--shadow-sm);">
-                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
-                        <div style="width: 48px; height: 48px; background: var(--primary-purple); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-                            <svg width="24" height="24" fill="none" stroke="white" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                            </svg>
-                        </div>
-                        <div>
-                            <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--gray-900);">Contrat de prestation</h3>
-                            <p style="color: var(--gray-600); font-size: 0.875rem;" id="contract-status">Statut : En attente du template</p>
-                        </div>
-                    </div>
-
-                    <div style="background: var(--gray-50); border-radius: var(--radius-md); padding: 1.5rem; border: 1px dashed var(--gray-300);">
-                        <p style="color: var(--gray-600); text-align: center;">
-                            <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display: inline-block; vertical-align: middle; margin-right: 0.5rem;">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            La fonctionnalité de signature électronique sera bientôt disponible.
-                        </p>
-                    </div>
-
-                    <!-- Boutons d'action (désactivés pour l'instant) -->
-                    <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
-                        <button disabled style="padding: 0.75rem 1.5rem; background: var(--gray-300); color: var(--gray-500); border: none; border-radius: var(--radius-md); font-weight: 600; cursor: not-allowed;">
-                            Voir le contrat
-                        </button>
-                        <button disabled style="padding: 0.75rem 1.5rem; background: var(--gray-300); color: var(--gray-500); border: none; border-radius: var(--radius-md); font-weight: 600; cursor: not-allowed;">
-                            Signer
-                        </button>
-                    </div>
+                <div id="formateur-contracts-list">
+                    <p style="color:var(--gray-500);text-align:center;padding:2rem;">Chargement...</p>
                 </div>
             </div>
             <!-- END MES DOCUMENTS PAGE -->
