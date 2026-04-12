@@ -994,6 +994,7 @@ const CRMApp = {
         this.setupClientNavigation();
         await this.loadClientCompanies();
         this.showPage('ma-formation');
+        window.scrollTo({ top: 0, behavior: 'instant' });
     },
 
     async loadClientCompanies() {
@@ -2079,7 +2080,7 @@ const CRMApp = {
             targetPage.classList.add('active');
             targetPage.style.display = 'block';
             this.currentPage = pageName;
-            window.scrollTo(0, 0);
+            window.scrollTo({ top: 0, behavior: 'instant' });
         }
 
         // Reload users when navigating to access management page
