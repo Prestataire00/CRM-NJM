@@ -2298,7 +2298,7 @@ const CRMApp = {
                         ${phaseItem(
                             hasClientAccount,
                             'Accès client',
-                            { label: hasClientAccount ? 'Inviter' : 'Créer l\\'accès', action: hasClientAccount ? `CRMApp.inviterClient(${formationId})` : `CRMApp.createClientAccess(${formationId})` }
+                            { label: hasClientAccount ? 'Inviter' : "Créer l'accès", action: hasClientAccount ? `CRMApp.inviterClient(${formationId})` : `CRMApp.createClientAccess(${formationId})` }
                         )}
                     </div>
 
