@@ -177,38 +177,52 @@ const SupabaseData = {
         try {
             console.log('🔍 getFormationsByClient - User ID:', clientUserId, 'Specific Client ID:', specificClientId);
 
-            let clientId = specificClientId;
+            let clientIds = [];
 
-            if (!clientId) {
-                // Fallback: récupérer le premier client_id lié à ce profil
-                const { data: profile, error: profileError } = await supabaseClient
-                    .from('profiles')
-                    .select('client_id, name, email')
-                    .eq('id', clientUserId)
-                    .single();
+            if (specificClientId) {
+                clientIds = [specificClientId];
+            } else {
+                // Priorité 1 : profile_clients (many-to-many moderne)
+                const { data: links } = await supabaseClient
+                    .from('profile_clients')
+                    .select('client_id')
+                    .eq('profile_id', clientUserId);
 
-                console.log('👤 Profile trouvé:', profile);
+                if (links && links.length > 0) {
+                    clientIds = links.map(l => l.client_id);
+                    console.log('🔗 Clients liés via profile_clients:', clientIds);
+                } else {
+                    // Fallback : profiles.client_id (rétrocompat)
+                    const { data: profile, error: profileError } = await supabaseClient
+                        .from('profiles')
+                        .select('client_id, name, email')
+                        .eq('id', clientUserId)
+                        .single();
 
-                if (profileError) {
-                    console.error('Error getting client profile:', profileError);
-                    return { success: false, message: 'Erreur lors de la récupération du profil.' };
+                    if (profileError) {
+                        console.error('Error getting client profile:', profileError);
+                        return { success: false, message: 'Erreur lors de la récupération du profil.' };
+                    }
+
+                    if (profile?.client_id) {
+                        clientIds = [profile.client_id];
+                        console.log('🔗 Client lié via profiles.client_id:', profile.client_id);
+                    }
                 }
 
-                if (!profile?.client_id) {
-                    console.log('⚠️ Client non lié à une entreprise - client_id est null ou undefined');
+                if (clientIds.length === 0) {
+                    console.log('⚠️ Aucun client lié à ce profil');
                     return { success: true, data: [], message: 'Aucune entreprise liée à ce compte.' };
                 }
-
-                clientId = profile.client_id;
             }
 
-            console.log('🏢 Client ID utilisé:', clientId);
+            console.log('🏢 Client IDs utilisés:', clientIds);
 
-            // Récupérer les formations avec ce client_id
+            // Récupérer les formations pour tous ces clients
             const { data: formations, error: formError } = await supabaseClient
                 .from('formations')
                 .select('*, formation_documents(*)')
-                .eq('client_id', clientId)
+                .in('client_id', clientIds)
                 .order('start_date', { ascending: false });
 
             if (formError) {
