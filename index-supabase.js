@@ -1264,7 +1264,6 @@ const CRMApp = {
 
         const docs = (formation.formation_documents || []).filter(d => d.visible_client !== false && d.type !== 'contrat_sous_traitance');
         const staticDocsList = [
-            { name: 'Document préalable à la formation', type: 'doc_prealable', document_url: 'assets/static/document-prealable.docx' },
             { name: 'Livret d\'accueil NJM Conseil', type: 'livret_accueil', document_url: 'assets/static/livret-accueil.pdf' },
             { name: 'Fiche de réclamation', type: 'fiche_reclamation', document_url: 'assets/static/fiche-reclamation.pdf' }
         ];
@@ -1287,9 +1286,11 @@ const CRMApp = {
 
         container.innerHTML = `
             <div style="background:white;border-radius:var(--radius-xl);padding:1.5rem;box-shadow:var(--shadow-sm);">
-                <h3 style="font-size:1.05rem;font-weight:700;color:var(--gray-900);margin:0 0 1rem 0;">📁 Mes documents</h3>
+                <!-- SOUS-SECTION 1 — Documents administratifs -->
+                <h3 style="font-size:1.05rem;font-weight:700;color:var(--gray-900);margin:0 0 1rem 0;">📋 Documents administratifs</h3>
                 <div style="display:grid;gap:0.6rem;">
-                    ${allDocs.map(doc => {
+                    ${allDocs.length === 0 ? '<p style="color:var(--gray-500);font-size:0.9rem;padding:0.5rem 0;">Aucun document disponible pour le moment.</p>' :
+                    allDocs.map(doc => {
                         const dt = docTypes[doc.type] || { icon: '📑', label: 'Document' };
                         const canRegen = regenerableTypes.includes(doc.type) && formation.id;
                         let onClick = '';
@@ -1320,7 +1321,12 @@ const CRMApp = {
                     }).join('')}
                 </div>
 
-                <div id="client-formation-supports" style="margin-top:1.5rem;"></div>
+                <!-- Séparateur -->
+                <div style="height:1px;background:var(--gray-200);margin:2rem 0;"></div>
+
+                <!-- SOUS-SECTION 2 — Supports de formation -->
+                <h3 style="font-size:1.05rem;font-weight:700;color:var(--gray-900);margin:0 0 1rem 0;">📚 Supports de formation</h3>
+                <div id="client-formation-supports"></div>
             </div>
         `;
     },
@@ -1477,7 +1483,7 @@ const CRMApp = {
         const supports = result.success ? result.data : [];
 
         if (supports.length === 0) {
-            container.innerHTML = '<p style="color: var(--gray-500); text-align: center; padding: 2rem;">Aucun support pédagogique disponible pour cette formation.</p>';
+            container.innerHTML = '<p style="color:var(--gray-500);font-size:0.9rem;padding:0.5rem 0;">Vos supports de formation seront disponibles prochainement.</p>';
             return;
         }
 
@@ -1490,20 +1496,18 @@ const CRMApp = {
         };
 
         container.innerHTML = `
-            <div style="display: grid; gap: 0.5rem;">
+            <div style="display:grid;gap:0.6rem;">
                 ${supports.map(s => `
                     <a href="${s.file_url || '#'}" target="_blank" rel="noopener noreferrer"
-                       style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: var(--gray-50); border-radius: var(--radius-md); text-decoration: none; color: var(--gray-900); transition: all 0.2s; border: 1px solid transparent;"
-                       onmouseover="this.style.background='white'; this.style.borderColor='var(--gray-200)'; this.style.boxShadow='var(--shadow-sm)';"
-                       onmouseout="this.style.background='var(--gray-50)'; this.style.borderColor='transparent'; this.style.boxShadow='none';">
-                        <span style="font-size: 1.5rem;">${fileIcon(s.title)}</span>
-                        <div style="flex: 1;">
-                            <div style="font-weight: 600;">${s.title}</div>
-                            <div style="font-size: 0.75rem; color: var(--gray-500); margin-top: 0.15rem;">${s.description || ''}</div>
+                       style="display:flex;align-items:center;gap:1rem;padding:0.85rem 1rem;background:var(--gray-50);border-radius:var(--radius-md);text-decoration:none;color:var(--gray-900);border:1px solid transparent;transition:all 0.15s;"
+                       onmouseover="this.style.background='white';this.style.borderColor='var(--gray-200)';"
+                       onmouseout="this.style.background='var(--gray-50)';this.style.borderColor='transparent';">
+                        <span style="font-size:1.5rem;">${fileIcon(s.title)}</span>
+                        <div style="flex:1;">
+                            <div style="font-weight:600;color:var(--gray-900);font-size:0.9rem;">${s.title}</div>
+                            <div style="font-size:0.75rem;color:var(--gray-500);margin-top:0.15rem;">${s.description || 'Support pédagogique'}</div>
                         </div>
-                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="opacity: 0.5;">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-                        </svg>
+                        <span style="font-size:0.8rem;color:var(--primary-pink);font-weight:500;">Ouvrir →</span>
                     </a>
                 `).join('')}
             </div>
