@@ -2068,7 +2068,6 @@ const CRMApp = {
     },
 
     showPage(pageName) {
-        console.log('[showPage] appelé avec:', pageName, '— appelant:', new Error().stack.split('\n')[2]);
         // Forcer display:none inline sur toutes les pages (override tout autre style)
         document.querySelectorAll('.page-content').forEach(page => {
             page.classList.remove('active');
