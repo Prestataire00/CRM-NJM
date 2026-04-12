@@ -1199,13 +1199,13 @@ const CRMApp = {
             },
             {
                 num: 2, label: 'Convention',
-                status: hasConvention ? 'done' : (hasPrealable ? 'active' : 'pending')
+                status: formation.client_signed_at ? 'done' : (hasPrealable ? 'active' : 'pending')
             },
             {
                 num: 3, label: 'Formation',
                 status: formation.status === 'completed' ? 'done'
                     : formation.status === 'in_progress' ? 'active'
-                    : (hasConvention ? 'active' : 'pending')
+                    : (formation.client_signed_at ? 'active' : 'pending')
             },
             {
                 num: 4, label: 'Mes documents',
