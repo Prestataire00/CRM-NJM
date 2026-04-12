@@ -73,6 +73,7 @@ const CRMApp = {
 
     async init() {
         this.setupNavigation();
+        this.showPage('dashboard');
         await this.updateDashboardStats();
         await this.loadFormations();
         await this.loadVeille();
