@@ -1419,8 +1419,20 @@ const CRMApp = {
                 <!-- SOUS-SECTION 2 — Supports de formation -->
                 <h3 style="font-size:1.05rem;font-weight:700;color:var(--gray-900);margin:0 0 1rem 0;">📚 Supports de formation</h3>
                 <div id="client-formation-supports"></div>
+
+                <!-- Séparateur -->
+                <div style="height:1px;background:var(--gray-200);margin:2rem 0;"></div>
+
+                <!-- SOUS-SECTION 3 — Questionnaires à remplir -->
+                <h3 style="font-size:1.05rem;font-weight:700;color:var(--gray-900);margin:0 0 1rem 0;">📝 Questionnaires à remplir</h3>
+                <div id="client-formation-questionnaires-list">
+                    <p style="color:var(--gray-400);font-size:0.85rem;">Chargement...</p>
+                </div>
             </div>
         `;
+
+        // Charger les questionnaires attribués côté client
+        this._loadClientQuestionnaires(formation.id);
     },
 
     _legacyRenderClientFormationTabs(formation) {
@@ -2122,6 +2134,10 @@ const CRMApp = {
             setTimeout(() => this.loadFormateurContracts(), 100);
         }
 
+        if (pageName === 'questionnaires') {
+            setTimeout(() => this.loadQuestionnaires(), 100);
+        }
+
         const pageTitles = {
             'dashboard': 'Tableau de bord',
             'formations': 'Formation 2026',
@@ -2131,6 +2147,7 @@ const CRMApp = {
             'bpf': 'BPF',
             'biblio-supports': 'Bibliothèque Supports',
             'biblio-templates': 'Bibliothèque Templates',
+            'questionnaires': 'Questionnaires',
             'acces': 'Gestion des Accès',
             'parametres': 'Paramètres',
             'missions': 'Mes missions',
@@ -2801,10 +2818,24 @@ const CRMApp = {
                         <p style="color: var(--gray-400); font-size: 0.85rem;">Chargement...</p>
                     </div>
                 </div>
+
+                <!-- Questionnaires attribués -->
+                <div class="workflow-section" style="background:white;border-radius:var(--radius-xl);padding:1.5rem;box-shadow:var(--shadow-sm);margin-top:1.5rem;">
+                    <h3 style="display: flex; align-items: center; justify-content: space-between; margin: 0 0 1rem 0; font-size:1rem; font-weight:700; color:var(--gray-900);">
+                        <span>📝 Questionnaires attribués</span>
+                        <button onclick="CRMApp.showAssignQuestionnaireModal(${formationId})" style="padding: 0.35rem 0.85rem; background: var(--primary-orange); color: white; border: none; border-radius: var(--radius-md); font-size: 0.8rem; font-weight: 600; cursor: pointer;">+ Attribuer</button>
+                    </h3>
+                    <div id="formation-questionnaires-list" style="display: grid; gap: 0.5rem;">
+                        <p style="color: var(--gray-400); font-size: 0.85rem;">Chargement...</p>
+                    </div>
+                </div>
             `;
 
             // Charger les supports assignés
             this.loadFormationSupports(formationId);
+
+            // Charger les questionnaires attribués
+            this.loadFormationQuestionnaires(formationId);
 
             // Afficher la page
             this.showPage('formation-detail');
@@ -5424,6 +5455,321 @@ Nathalie Joulie-Morand`;
             }
         }
     },
+
+    // ==================== QUESTIONNAIRES ====================
+
+    _questionnairesCache: [],
+    _questionnairesCurrentCategory: 'all',
+
+    _categoryLabels: {
+        amont: 'Amont',
+        satisfaction: 'Satisfaction',
+        evaluation_acquis: 'Eval. acquis',
+        froid_dirigeant: 'Froid dirigeant',
+        froid_apprenant: 'Froid apprenant',
+        autre: 'Autre'
+    },
+
+    _categoryColors: {
+        amont: '#3b82f6',
+        satisfaction: '#10b981',
+        evaluation_acquis: '#f59e0b',
+        froid_dirigeant: '#8b5cf6',
+        froid_apprenant: '#ec4899',
+        autre: '#6b7280'
+    },
+
+    async loadQuestionnaires(category) {
+        if (category) this._questionnairesCurrentCategory = category;
+        const cat = this._questionnairesCurrentCategory;
+        const result = await SupabaseData.getQuestionnaires(cat === 'all' ? null : cat);
+        if (!result.success) {
+            showToast('Erreur chargement questionnaires', 'error');
+            return;
+        }
+        this._questionnairesCache = result.data;
+        this._renderQuestionnaires(result.data);
+    },
+
+    showQuestionnaireCategory(category) {
+        this._questionnairesCurrentCategory = category;
+        // Update tabs
+        document.querySelectorAll('.quest-tab').forEach(btn => {
+            const isActive = btn.textContent.trim() === (category === 'all' ? 'Tous' : (this._categoryLabels[category] || category));
+            btn.style.background = isActive ? 'var(--primary-orange)' : 'white';
+            btn.style.color = isActive ? 'white' : 'var(--gray-700)';
+        });
+        this.loadQuestionnaires(category);
+    },
+
+    filterQuestionnairesSearch() {
+        const search = (document.getElementById('questionnaires-search')?.value || '').toLowerCase();
+        const filtered = this._questionnairesCache.filter(q =>
+            q.title.toLowerCase().includes(search) ||
+            (q.description || '').toLowerCase().includes(search) ||
+            (q.formation_type || '').toLowerCase().includes(search)
+        );
+        this._renderQuestionnaires(filtered);
+    },
+
+    _renderQuestionnaires(questionnaires) {
+        const container = document.getElementById('questionnaires-content');
+        if (!container) return;
+
+        if (questionnaires.length === 0) {
+            container.innerHTML = '<p style="color: var(--gray-500); grid-column: 1/-1;">Aucun questionnaire trouvé.</p>';
+            return;
+        }
+
+        const isAdmin = window.currentUserRole === 'admin';
+
+        container.innerHTML = questionnaires.map(q => {
+            const color = this._categoryColors[q.category] || '#6b7280';
+            const label = this._categoryLabels[q.category] || q.category;
+            return `
+                <div style="background: white; border-radius: var(--radius-xl); padding: 1.25rem; box-shadow: var(--shadow-sm); border: 1px solid var(--gray-200); display: flex; flex-direction: column; gap: 0.75rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div style="flex: 1;">
+                            <h4 style="font-size: 1rem; font-weight: 600; color: var(--gray-900); margin: 0 0 0.5rem 0;">${q.title}</h4>
+                            <span style="display: inline-block; padding: 0.15rem 0.6rem; border-radius: 12px; font-size: 0.75rem; font-weight: 500; background: ${color}15; color: ${color};">${label}</span>
+                            ${q.formation_type ? `<span style="display: inline-block; padding: 0.15rem 0.6rem; border-radius: 12px; font-size: 0.75rem; font-weight: 500; background: var(--gray-100); color: var(--gray-600); margin-left: 0.25rem;">${q.formation_type}</span>` : ''}
+                        </div>
+                        ${!q.active ? '<span style="font-size: 0.75rem; color: #dc2626; font-weight: 500;">Inactif</span>' : ''}
+                    </div>
+                    ${q.description ? `<p style="font-size: 0.85rem; color: var(--gray-600); margin: 0; line-height: 1.4;">${q.description}</p>` : ''}
+                    <div style="display: flex; gap: 0.5rem; margin-top: auto; flex-wrap: wrap;">
+                        <a href="${q.url}" target="_blank" rel="noopener"
+                            style="padding: 0.4rem 0.85rem; background: ${color}; color: white; border: none; border-radius: var(--radius-md); font-size: 0.8rem; font-weight: 500; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 0.3rem;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                            Ouvrir
+                        </a>
+                        ${isAdmin ? `
+                        <button onclick="CRMApp.editQuestionnaire(${q.id})"
+                            style="padding: 0.4rem 0.85rem; background: var(--gray-100); color: var(--gray-700); border: none; border-radius: var(--radius-md); font-size: 0.8rem; font-weight: 500; cursor: pointer;">Modifier</button>
+                        <button onclick="CRMApp.deleteQuestionnaireConfirm(${q.id}, '${q.title.replace(/'/g, "\\'")}')"
+                            style="padding: 0.4rem 0.85rem; background: #fee2e2; color: #dc2626; border: none; border-radius: var(--radius-md); font-size: 0.8rem; font-weight: 500; cursor: pointer;">Supprimer</button>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    },
+
+    addQuestionnaire() {
+        document.getElementById('questionnaire-edit-id').value = '';
+        document.getElementById('questionnaire-title').value = '';
+        document.getElementById('questionnaire-category').value = 'amont';
+        document.getElementById('questionnaire-formation-type').value = '';
+        document.getElementById('questionnaire-url').value = '';
+        document.getElementById('questionnaire-description').value = '';
+        document.getElementById('questionnaire-modal-title').textContent = 'Ajouter un questionnaire';
+        document.getElementById('questionnaireModal').style.display = 'flex';
+    },
+
+    async editQuestionnaire(id) {
+        const result = await SupabaseData.getQuestionnaire(id);
+        if (!result.success) { showToast('Erreur chargement', 'error'); return; }
+        const q = result.data;
+        document.getElementById('questionnaire-edit-id').value = q.id;
+        document.getElementById('questionnaire-title').value = q.title;
+        document.getElementById('questionnaire-category').value = q.category;
+        document.getElementById('questionnaire-formation-type').value = q.formation_type || '';
+        document.getElementById('questionnaire-url').value = q.url;
+        document.getElementById('questionnaire-description').value = q.description || '';
+        document.getElementById('questionnaire-modal-title').textContent = 'Modifier le questionnaire';
+        document.getElementById('questionnaireModal').style.display = 'flex';
+    },
+
+    closeQuestionnaireModal() {
+        document.getElementById('questionnaireModal').style.display = 'none';
+    },
+
+    async saveQuestionnaire() {
+        const id = document.getElementById('questionnaire-edit-id').value;
+        const title = document.getElementById('questionnaire-title').value.trim();
+        const category = document.getElementById('questionnaire-category').value;
+        const formation_type = document.getElementById('questionnaire-formation-type').value.trim() || null;
+        const url = document.getElementById('questionnaire-url').value.trim();
+        const description = document.getElementById('questionnaire-description').value.trim() || null;
+
+        if (!title || !url) { showToast('Titre et URL requis', 'error'); return; }
+
+        let result;
+        if (id) {
+            result = await SupabaseData.updateQuestionnaire(id, { title, category, formation_type, url, description });
+        } else {
+            result = await SupabaseData.createQuestionnaire({ title, category, formation_type, url, description });
+        }
+
+        if (result.success) {
+            this.closeQuestionnaireModal();
+            showToast(id ? 'Questionnaire modifie' : 'Questionnaire ajoute', 'success');
+            await this.loadQuestionnaires();
+        } else {
+            showToast(result.message || 'Erreur', 'error');
+        }
+    },
+
+    async deleteQuestionnaireConfirm(id, title) {
+        if (!confirm(`Supprimer le questionnaire "${title}" ?`)) return;
+        const result = await SupabaseData.deleteQuestionnaire(id);
+        if (result.success) {
+            showToast('Questionnaire supprime', 'success');
+            await this.loadQuestionnaires();
+        } else {
+            showToast(result.message || 'Erreur suppression', 'error');
+        }
+    },
+
+    // ==================== CLIENT-SIDE QUESTIONNAIRES ====================
+
+    async _loadClientQuestionnaires(formationId) {
+        const container = document.getElementById('client-formation-questionnaires-list');
+        if (!container) return;
+
+        const result = await SupabaseData.getFormationQuestionnaires(formationId);
+        if (!result.success || result.data.length === 0) {
+            container.innerHTML = '<p style="color:var(--gray-400);font-size:0.85rem;">Aucun questionnaire pour le moment.</p>';
+            return;
+        }
+
+        container.innerHTML = `<div style="display:grid;gap:0.6rem;">
+            ${result.data.map(fq => {
+                const q = fq.questionnaires;
+                if (!q) return '';
+                const color = this._categoryColors[q.category] || '#6b7280';
+                const label = this._categoryLabels[q.category] || q.category;
+                return `
+                    <a href="${q.url}" target="_blank" rel="noopener noreferrer"
+                        style="display:flex;align-items:center;gap:1rem;padding:0.85rem 1rem;background:var(--gray-50);border-radius:var(--radius-md);text-decoration:none;color:var(--gray-900);border:1px solid transparent;transition:all 0.15s;"
+                        onmouseover="this.style.background='white';this.style.borderColor='var(--gray-200)';"
+                        onmouseout="this.style.background='var(--gray-50)';this.style.borderColor='transparent';">
+                        <span style="font-size:1.5rem;">📝</span>
+                        <div style="flex:1;">
+                            <div style="font-weight:600;color:var(--gray-900);font-size:0.9rem;">${q.title}</div>
+                            <div style="font-size:0.75rem;color:var(--gray-500);margin-top:0.15rem;">
+                                <span style="display:inline-block;padding:0.1rem 0.4rem;border-radius:8px;background:${color}15;color:${color};font-weight:500;">${label}</span>
+                            </div>
+                        </div>
+                        <span style="font-size:0.8rem;color:var(--primary-pink);font-weight:500;">Ouvrir le questionnaire →</span>
+                    </a>
+                `;
+            }).join('')}
+        </div>`;
+    },
+
+    // ==================== FORMATION-QUESTIONNAIRES (attribution) ====================
+
+    async loadFormationQuestionnaires(formationId) {
+        const container = document.getElementById('formation-questionnaires-list');
+        if (!container) return;
+
+        const result = await SupabaseData.getFormationQuestionnaires(formationId);
+        if (!result.success) {
+            container.innerHTML = '<p style="color:#dc2626;font-size:0.85rem;">Erreur chargement</p>';
+            return;
+        }
+
+        if (result.data.length === 0) {
+            container.innerHTML = '<p style="color:var(--gray-400);font-size:0.85rem;">Aucun questionnaire attribue</p>';
+            return;
+        }
+
+        container.innerHTML = result.data.map(fq => {
+            const q = fq.questionnaires;
+            if (!q) return '';
+            const color = this._categoryColors[q.category] || '#6b7280';
+            const label = this._categoryLabels[q.category] || q.category;
+            const sentInfo = fq.sent_at
+                ? `<span style="font-size:0.75rem;color:#059669;font-weight:500;">Envoye le ${new Date(fq.sent_at).toLocaleDateString('fr-FR')}</span>`
+                : '<span style="font-size:0.75rem;color:var(--gray-500);">Non envoye</span>';
+
+            return `<div style="display:flex;align-items:center;justify-content:space-between;padding:0.6rem 0.75rem;background:var(--gray-50);border-radius:var(--radius-md);border:1px solid var(--gray-200);">
+                <div style="display:flex;align-items:center;gap:0.75rem;flex:1;">
+                    <span style="display:inline-block;padding:0.15rem 0.5rem;border-radius:12px;font-size:0.7rem;font-weight:500;background:${color}15;color:${color};">${label}</span>
+                    <span style="font-size:0.9rem;color:var(--gray-800);">${q.title}</span>
+                    ${sentInfo}
+                </div>
+                <div style="display:flex;align-items:center;gap:0.5rem;">
+                    <a href="${q.url}" target="_blank" rel="noopener" style="padding:0.3rem 0.6rem;background:${color};color:white;border:none;border-radius:var(--radius-md);font-size:0.75rem;cursor:pointer;text-decoration:none;">Ouvrir</a>
+                    <button onclick="CRMApp.removeFormationQuestionnaire(${formationId}, ${q.id})" style="padding:0.3rem 0.55rem;background:white;color:#dc2626;border:1px solid #fca5a5;border-radius:var(--radius-md);cursor:pointer;font-size:0.8rem;">Retirer</button>
+                </div>
+            </div>`;
+        }).join('');
+    },
+
+    async showAssignQuestionnaireModal(formationId) {
+        const result = await SupabaseData.getQuestionnaires();
+        if (!result.success) { showToast('Erreur chargement questionnaires', 'error'); return; }
+
+        const existingResult = await SupabaseData.getFormationQuestionnaires(formationId);
+        const existingIds = (existingResult.data || []).map(fq => fq.questionnaire_id);
+
+        const available = result.data.filter(q => !existingIds.includes(q.id) && q.active !== false);
+
+        const modal = document.createElement('div');
+        modal.id = 'assign-questionnaire-modal';
+        modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:50001;display:flex;align-items:center;justify-content:center;';
+        modal.innerHTML = `
+            <div style="background:white;padding:2rem;border-radius:var(--radius-xl);max-width:600px;width:95%;max-height:80vh;overflow-y:auto;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+                    <h3 style="font-size:1.1rem;font-weight:700;color:var(--gray-900);margin:0;">Attribuer un questionnaire</h3>
+                    <button onclick="document.getElementById('assign-questionnaire-modal').remove()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--gray-500);">&times;</button>
+                </div>
+                <input type="search" id="assign-quest-search" placeholder="Rechercher..."
+                    oninput="CRMApp._filterAssignQuestList()" style="width:100%;padding:0.6rem;border:1px solid var(--gray-300);border-radius:var(--radius-md);margin-bottom:1rem;font-size:0.9rem;">
+                <div id="assign-quest-list" style="display:grid;gap:0.5rem;">
+                    ${available.length === 0 ? '<p style="color:var(--gray-500);font-size:0.9rem;">Tous les questionnaires sont deja attribues</p>' :
+                        available.map(q => {
+                            const color = this._categoryColors[q.category] || '#6b7280';
+                            const label = this._categoryLabels[q.category] || q.category;
+                            return `<div class="assign-quest-item" data-title="${q.title.toLowerCase()}" style="display:flex;align-items:center;justify-content:space-between;padding:0.6rem 0.75rem;background:var(--gray-50);border-radius:var(--radius-md);border:1px solid var(--gray-200);">
+                                <div>
+                                    <span style="font-size:0.9rem;font-weight:500;color:var(--gray-900);">${q.title}</span>
+                                    <span style="display:inline-block;padding:0.1rem 0.5rem;border-radius:10px;font-size:0.7rem;background:${color}15;color:${color};margin-left:0.5rem;">${label}</span>
+                                </div>
+                                <button onclick="CRMApp.assignFormationQuestionnaire(${formationId}, ${q.id})"
+                                    style="padding:0.35rem 0.75rem;background:var(--primary-orange);color:white;border:none;border-radius:var(--radius-md);font-size:0.8rem;font-weight:500;cursor:pointer;">Attribuer</button>
+                            </div>`;
+                        }).join('')
+                    }
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    },
+
+    _filterAssignQuestList() {
+        const search = (document.getElementById('assign-quest-search')?.value || '').toLowerCase();
+        document.querySelectorAll('.assign-quest-item').forEach(item => {
+            item.style.display = item.dataset.title.includes(search) ? 'flex' : 'none';
+        });
+    },
+
+    async assignFormationQuestionnaire(formationId, questionnaireId) {
+        const result = await SupabaseData.assignQuestionnaireToFormation(formationId, questionnaireId);
+        if (result.success) {
+            showToast('Questionnaire attribue', 'success');
+            const modal = document.getElementById('assign-questionnaire-modal');
+            if (modal) modal.remove();
+            await this.loadFormationQuestionnaires(formationId);
+        } else {
+            showToast(result.message || 'Erreur', 'error');
+        }
+    },
+
+    async removeFormationQuestionnaire(formationId, questionnaireId) {
+        if (!confirm('Retirer ce questionnaire de la formation ?')) return;
+        const result = await SupabaseData.removeQuestionnaireFromFormation(formationId, questionnaireId);
+        if (result.success) {
+            showToast('Questionnaire retire', 'success');
+            await this.loadFormationQuestionnaires(formationId);
+        } else {
+            showToast(result.message || 'Erreur', 'error');
+        }
+    },
+
+    // ==================== QUESTIONNAIRES À FROID ====================
 
     async checkQuestionnairesFroid() {
         try {

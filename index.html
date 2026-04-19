@@ -1202,6 +1202,14 @@
                     Bibliothèque Qualiopi
                 </a>
 
+                <a href="#questionnaires" class="nav-item" data-page="questionnaires">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                    </svg>
+                    Questionnaires
+                </a>
+
                 <a href="#acces" class="nav-item" data-page="acces">
                     <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -1241,6 +1249,14 @@
                         </path>
                     </svg>
                     Mes documents
+                </a>
+
+                <a href="#questionnaires" class="nav-item" data-page="questionnaires">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                    </svg>
+                    Questionnaires
                 </a>
             </nav>
 
@@ -1920,6 +1936,102 @@
                             <button onclick="CRMApp.uploadQualiopi('apres')" style="margin-left: auto; padding: 0.35rem 0.85rem; background: #059669; color: white; border: none; border-radius: var(--radius-md); font-size: 0.8rem; font-weight: 600; cursor: pointer;">+ Ajouter</button>
                         </h3>
                         <div id="qualiopi-apres-list" style="display: grid; gap: 0.25rem;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- QUESTIONNAIRES PAGE -->
+            <div id="page-questionnaires" class="page-content">
+                <div style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+                    <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-900);">Questionnaires</h2>
+                    <button onclick="CRMApp.addQuestionnaire()"
+                        style="padding: 0.6rem 1.25rem; background: var(--primary-orange); color: white; border: none; border-radius: var(--radius-md); font-weight: 600; cursor: pointer; font-size: 0.85rem;">+ Ajouter un questionnaire</button>
+                </div>
+
+                <!-- Onglets catégories -->
+                <div id="questionnaires-tabs" style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem;">
+                    <button onclick="CRMApp.showQuestionnaireCategory('all')" class="quest-tab active"
+                        style="padding: 0.4rem 1rem; border: 1px solid var(--gray-300); border-radius: 20px; background: var(--primary-orange); color: white; font-size: 0.85rem; cursor: pointer; font-weight: 500;">Tous</button>
+                    <button onclick="CRMApp.showQuestionnaireCategory('amont')" class="quest-tab"
+                        style="padding: 0.4rem 1rem; border: 1px solid var(--gray-300); border-radius: 20px; background: white; color: var(--gray-700); font-size: 0.85rem; cursor: pointer; font-weight: 500;">Amont</button>
+                    <button onclick="CRMApp.showQuestionnaireCategory('satisfaction')" class="quest-tab"
+                        style="padding: 0.4rem 1rem; border: 1px solid var(--gray-300); border-radius: 20px; background: white; color: var(--gray-700); font-size: 0.85rem; cursor: pointer; font-weight: 500;">Satisfaction</button>
+                    <button onclick="CRMApp.showQuestionnaireCategory('evaluation_acquis')" class="quest-tab"
+                        style="padding: 0.4rem 1rem; border: 1px solid var(--gray-300); border-radius: 20px; background: white; color: var(--gray-700); font-size: 0.85rem; cursor: pointer; font-weight: 500;">Eval. acquis</button>
+                    <button onclick="CRMApp.showQuestionnaireCategory('froid_dirigeant')" class="quest-tab"
+                        style="padding: 0.4rem 1rem; border: 1px solid var(--gray-300); border-radius: 20px; background: white; color: var(--gray-700); font-size: 0.85rem; cursor: pointer; font-weight: 500;">Froid dirigeant</button>
+                    <button onclick="CRMApp.showQuestionnaireCategory('froid_apprenant')" class="quest-tab"
+                        style="padding: 0.4rem 1rem; border: 1px solid var(--gray-300); border-radius: 20px; background: white; color: var(--gray-700); font-size: 0.85rem; cursor: pointer; font-weight: 500;">Froid apprenant</button>
+                    <button onclick="CRMApp.showQuestionnaireCategory('autre')" class="quest-tab"
+                        style="padding: 0.4rem 1rem; border: 1px solid var(--gray-300); border-radius: 20px; background: white; color: var(--gray-700); font-size: 0.85rem; cursor: pointer; font-weight: 500;">Autre</button>
+                </div>
+
+                <!-- Recherche -->
+                <div style="margin-bottom: 1rem;">
+                    <input type="search" id="questionnaires-search" placeholder="Rechercher un questionnaire..."
+                        oninput="CRMApp.filterQuestionnairesSearch()"
+                        style="width: 100%; max-width: 400px; padding: 0.6rem 1rem 0.6rem 2.5rem; border: 1px solid var(--gray-300); border-radius: var(--radius-md); font-size: 0.9rem; background: white url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2716%27 height=%2716%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%239ca3af%27 stroke-width=%272%27%3E%3Ccircle cx=%2711%27 cy=%2711%27 r=%278%27/%3E%3Cpath d=%27m21 21-4.3-4.3%27/%3E%3C/svg%3E') no-repeat 0.75rem center;">
+                </div>
+
+                <!-- Grille questionnaires -->
+                <div id="questionnaires-content" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem;">
+                    <p style="color: var(--gray-500);">Chargement...</p>
+                </div>
+            </div>
+
+            <!-- Modal Questionnaire (ajout/modification) -->
+            <div id="questionnaireModal" class="modal"
+                style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 50000; align-items: center; justify-content: center;">
+                <div style="background: white; padding: 2rem; border-radius: var(--radius-xl); max-width: 600px; width: 95%; max-height: 90vh; overflow-y: auto;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--gray-200); padding-bottom: 1rem;">
+                        <h3 id="questionnaire-modal-title" style="font-size: 1.25rem; font-weight: 700; color: var(--gray-900);">Ajouter un questionnaire</h3>
+                        <button onclick="CRMApp.closeQuestionnaireModal()"
+                            style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--gray-500);">&times;</button>
+                    </div>
+                    <input type="hidden" id="questionnaire-edit-id">
+                    <div style="display: grid; gap: 1rem;">
+                        <div>
+                            <label style="display: block; font-weight: 500; color: var(--gray-700); margin-bottom: 0.5rem;">Titre *</label>
+                            <input type="text" id="questionnaire-title" required
+                                style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: var(--radius-md); font-family: inherit;"
+                                placeholder="Ex: Techniques de vente 1">
+                        </div>
+                        <div>
+                            <label style="display: block; font-weight: 500; color: var(--gray-700); margin-bottom: 0.5rem;">Categorie *</label>
+                            <select id="questionnaire-category"
+                                style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: var(--radius-md); font-family: inherit; background: white;">
+                                <option value="amont">Questionnaire amont</option>
+                                <option value="satisfaction">Satisfaction (fin de formation)</option>
+                                <option value="evaluation_acquis">Evaluation des acquis</option>
+                                <option value="froid_dirigeant">A froid - Dirigeant (6 mois)</option>
+                                <option value="froid_apprenant">A froid - Apprenant (6 mois)</option>
+                                <option value="autre">Autre</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display: block; font-weight: 500; color: var(--gray-700); margin-bottom: 0.5rem;">Type de formation</label>
+                            <input type="text" id="questionnaire-formation-type"
+                                style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: var(--radius-md); font-family: inherit;"
+                                placeholder="Ex: techniques_vente, management...">
+                        </div>
+                        <div>
+                            <label style="display: block; font-weight: 500; color: var(--gray-700); margin-bottom: 0.5rem;">URL Google Forms *</label>
+                            <input type="url" id="questionnaire-url" required
+                                style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: var(--radius-md); font-family: inherit;"
+                                placeholder="https://docs.google.com/forms/d/...">
+                        </div>
+                        <div>
+                            <label style="display: block; font-weight: 500; color: var(--gray-700); margin-bottom: 0.5rem;">Description</label>
+                            <textarea id="questionnaire-description" rows="3"
+                                style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: var(--radius-md); font-family: inherit; resize: vertical;"
+                                placeholder="Description optionnelle..."></textarea>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 1rem; margin-top: 1.5rem; justify-content: flex-end;">
+                        <button type="button" onclick="CRMApp.closeQuestionnaireModal()"
+                            style="padding: 0.75rem 1.5rem; background: var(--gray-200); color: var(--gray-700); border: none; border-radius: var(--radius-md); font-weight: 600; cursor: pointer;">Annuler</button>
+                        <button type="button" onclick="CRMApp.saveQuestionnaire()"
+                            style="padding: 0.75rem 1.5rem; background: var(--primary-orange); color: white; border: none; border-radius: var(--radius-md); font-weight: 600; cursor: pointer;">Enregistrer</button>
                     </div>
                 </div>
             </div>

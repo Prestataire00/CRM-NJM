@@ -676,6 +676,129 @@ const SupabaseData = {
         }
     },
 
+    // ==================== QUESTIONNAIRES ====================
+
+    async getQuestionnaires(category = null) {
+        try {
+            let query = supabaseClient
+                .from('questionnaires')
+                .select('*')
+                .order('category')
+                .order('title');
+            if (category) query = query.eq('category', category);
+            const { data, error } = await query;
+            if (error) throw error;
+            return { success: true, data: data || [] };
+        } catch (error) {
+            console.error('Error getting questionnaires:', error);
+            return { success: false, data: [], message: error.message };
+        }
+    },
+
+    async getQuestionnaire(id) {
+        try {
+            const { data, error } = await supabaseClient
+                .from('questionnaires')
+                .select('*')
+                .eq('id', id)
+                .single();
+            if (error) throw error;
+            return { success: true, data };
+        } catch (error) {
+            console.error('Error getting questionnaire:', error);
+            return { success: false, message: error.message };
+        }
+    },
+
+    async createQuestionnaire({ title, category, formation_type, url, description }) {
+        try {
+            const { data, error } = await supabaseClient
+                .from('questionnaires')
+                .insert([{ title, category, formation_type, url, description }])
+                .select()
+                .single();
+            if (error) throw error;
+            return { success: true, data };
+        } catch (error) {
+            console.error('Error creating questionnaire:', error);
+            return { success: false, message: error.message };
+        }
+    },
+
+    async updateQuestionnaire(id, fields) {
+        try {
+            const { data, error } = await supabaseClient
+                .from('questionnaires')
+                .update({ ...fields, updated_at: new Date().toISOString() })
+                .eq('id', id)
+                .select()
+                .single();
+            if (error) throw error;
+            return { success: true, data };
+        } catch (error) {
+            console.error('Error updating questionnaire:', error);
+            return { success: false, message: error.message };
+        }
+    },
+
+    async deleteQuestionnaire(id) {
+        try {
+            const { error } = await supabaseClient
+                .from('questionnaires')
+                .delete()
+                .eq('id', id);
+            if (error) throw error;
+            return { success: true };
+        } catch (error) {
+            console.error('Error deleting questionnaire:', error);
+            return { success: false, message: error.message };
+        }
+    },
+
+    async getFormationQuestionnaires(formationId) {
+        try {
+            const { data, error } = await supabaseClient
+                .from('formation_questionnaires')
+                .select('*, questionnaires(*)')
+                .eq('formation_id', formationId);
+            if (error) throw error;
+            return { success: true, data: data || [] };
+        } catch (error) {
+            console.error('Error getting formation questionnaires:', error);
+            return { success: false, data: [], message: error.message };
+        }
+    },
+
+    async assignQuestionnaireToFormation(formationId, questionnaireId) {
+        try {
+            const { data, error } = await supabaseClient
+                .from('formation_questionnaires')
+                .insert([{ formation_id: formationId, questionnaire_id: questionnaireId }])
+                .select('*, questionnaires(*)')
+                .single();
+            if (error) throw error;
+            return { success: true, data };
+        } catch (error) {
+            console.error('Error assigning questionnaire:', error);
+            return { success: false, message: error.message };
+        }
+    },
+
+    async removeQuestionnaireFromFormation(formationId, questionnaireId) {
+        try {
+            const { error } = await supabaseClient
+                .from('formation_questionnaires')
+                .delete()
+                .eq('formation_id', formationId)
+                .eq('questionnaire_id', questionnaireId);
+            if (error) throw error;
+            return { success: true };
+        } catch (error) {
+            console.error('Error removing questionnaire from formation:', error);
+            return { success: false, message: error.message };
+        }
+    },
+
     // ==================== TEMPLATES LIBRARY ====================
 
     // Get templates by category
