@@ -416,6 +416,7 @@ const CRMApp = {
                 '<div style="grid-column:span 2;"><label style="display:block;font-weight:500;margin-bottom:0.25rem;">Adresse</label><input type="text" id="sub-address" value="' + (s.address || '') + '" style="width:100%;padding:0.65rem;border:1px solid var(--gray-300);border-radius:var(--radius-md);"></div>' +
                 '<div><label style="display:block;font-weight:500;margin-bottom:0.25rem;">SIRET</label><input type="text" id="sub-siret" value="' + (s.siret || '') + '" style="width:100%;padding:0.65rem;border:1px solid var(--gray-300);border-radius:var(--radius-md);"></div>' +
                 '<div><label style="display:block;font-weight:500;margin-bottom:0.25rem;">N\u00B0 activit\u00E9 (NDA)</label><input type="text" id="sub-nda" value="' + (s.nda || '') + '" style="width:100%;padding:0.65rem;border:1px solid var(--gray-300);border-radius:var(--radius-md);"></div>' +
+                '<div><label style="display:block;font-weight:500;margin-bottom:0.25rem;">Code NAF</label><input type="text" id="sub-naf" value="' + (s.naf || '') + '" style="width:100%;padding:0.65rem;border:1px solid var(--gray-300);border-radius:var(--radius-md);"></div>' +
                 '<div><label style="display:block;font-weight:500;margin-bottom:0.25rem;">Entreprise</label><input type="text" id="sub-company" value="' + (s.company || '') + '" style="width:100%;padding:0.65rem;border:1px solid var(--gray-300);border-radius:var(--radius-md);"></div>' +
                 '<div><label style="display:block;font-weight:500;margin-bottom:0.25rem;">Notes</label><input type="text" id="sub-notes" value="' + (s.notes || '') + '" style="width:100%;padding:0.65rem;border:1px solid var(--gray-300);border-radius:var(--radius-md);"></div>' +
             '</div>' +
@@ -437,6 +438,7 @@ const CRMApp = {
             address: document.getElementById('sub-address').value.trim(),
             siret: document.getElementById('sub-siret').value.trim(),
             nda: document.getElementById('sub-nda').value.trim(),
+            naf: document.getElementById('sub-naf')?.value.trim() || '',
             company: document.getElementById('sub-company').value.trim(),
             notes: document.getElementById('sub-notes').value.trim(),
         };
@@ -1245,7 +1247,7 @@ const CRMApp = {
                     ${convocLogs.length === 0 ? '<p style="color:var(--gray-500);font-size:0.9rem;">Aucun email envoyé</p>' :
                         '<div style="display:grid;gap:0.5rem;">' +
                             convocLogs.map(log =>
-                                '<div style="padding:0.65rem 0.85rem;background:var(--gray-50);border-radius:var(--radius-md);border-left:3px solid var(--primary-pink);">' +
+                                '<div onclick="CRMApp.showEmailDetail(' + log.id + ')" style="padding:0.65rem 0.85rem;background:var(--gray-50);border-radius:var(--radius-md);border-left:3px solid var(--primary-pink);cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background=\'#fdf2f8\'" onmouseout="this.style.background=\'var(--gray-50)\'">' +
                                     '<div style="font-size:0.85rem;font-weight:500;color:var(--gray-900);">' + (log.subject || 'Mail') + '</div>' +
                                     '<div style="font-size:0.75rem;color:var(--gray-500);margin-top:0.15rem;">' + new Date(log.sent_at || log.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }) + ' — ' + log.sent_to + '</div>' +
                                 '</div>'
@@ -3130,7 +3132,7 @@ const CRMApp = {
                     ${convocLogs.length === 0 ? '<p style="color:var(--gray-500);font-size:0.9rem;">Aucun email envoyé</p>' :
                         `<div style="display:grid;gap:0.5rem;">
                             ${convocLogs.map(log => `
-                                <div style="padding:0.65rem 0.85rem;background:var(--gray-50);border-radius:var(--radius-md);border-left:3px solid var(--primary-pink);">
+                                <div onclick="CRMApp.showEmailDetail(${log.id})" style="padding:0.65rem 0.85rem;background:var(--gray-50);border-radius:var(--radius-md);border-left:3px solid var(--primary-pink);cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background='#fdf2f8'" onmouseout="this.style.background='var(--gray-50)'">
                                     <div style="font-size:0.85rem;font-weight:500;color:var(--gray-900);">${log.subject || 'Mail'}</div>
                                     <div style="font-size:0.75rem;color:var(--gray-500);margin-top:0.15rem;">${new Date(log.sent_at || log.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })} — ${log.sent_to}</div>
                                 </div>
@@ -3205,7 +3207,7 @@ const CRMApp = {
                 </span>
                 <div style="display: flex; gap: 0.5rem;">
                     ${s.file_url ? `<a href="${normalizeAssetUrl(s.file_url)}" target="_blank" style="font-size: 0.8rem; color: var(--primary-purple); text-decoration: none; padding: 0.2rem 0.5rem; background: #f3f0ff; border-radius: var(--radius-sm);">Ouvrir</a>` : ''}
-                    <button onclick="CRMApp.removeSupportFromFormation(${formationId}, ${s.id})" style="background: none; border: none; color: var(--gray-400); cursor: pointer; font-size: 0.8rem;">✕</button>
+                    ${window.currentUserRole !== 'formateur' ? `<button onclick="CRMApp.removeSupportFromFormation(${formationId}, ${s.id})" style="background: none; border: none; color: var(--gray-400); cursor: pointer; font-size: 0.8rem;">✕</button>` : ''}
                 </div>
             </div>
         `).join('');
@@ -4709,6 +4711,62 @@ Nathalie Joulie-Morand`;
             showToast('Paramètres enregistrés !', 'success');
         } else {
             showToast('Paramètres sauvegardés localement (erreur Supabase)', 'warning');
+        }
+    },
+
+    // ==================== EMAIL DETAIL (historique) ====================
+
+    async showEmailDetail(logId) {
+        try {
+            const { data: log, error } = await supabaseClient
+                .from('convocation_logs')
+                .select('*')
+                .eq('id', logId)
+                .single();
+            if (error) throw error;
+
+            const existing = document.getElementById('email-detail-modal');
+            if (existing) existing.remove();
+
+            const sentDate = new Date(log.sent_at || log.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+            const modal = document.createElement('div');
+            modal.id = 'email-detail-modal';
+            modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:50001;display:flex;align-items:center;justify-content:center;padding:1rem;';
+            modal.innerHTML = `
+                <div style="background:white;border-radius:var(--radius-xl);padding:2rem;max-width:700px;width:95%;max-height:90vh;overflow-y:auto;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+                        <h3 style="font-size:1.15rem;font-weight:700;color:var(--gray-900);margin:0;">✉️ Detail du mail</h3>
+                        <button onclick="document.getElementById('email-detail-modal').remove()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--gray-400);">&times;</button>
+                    </div>
+                    <div style="display:grid;gap:0.75rem;margin-bottom:1.25rem;">
+                        <div style="display:flex;gap:0.75rem;">
+                            <span style="font-size:0.8rem;font-weight:600;color:var(--gray-500);min-width:80px;">Date</span>
+                            <span style="font-size:0.9rem;color:var(--gray-800);">${sentDate}</span>
+                        </div>
+                        <div style="display:flex;gap:0.75rem;">
+                            <span style="font-size:0.8rem;font-weight:600;color:var(--gray-500);min-width:80px;">Destinataire</span>
+                            <span style="font-size:0.9rem;color:var(--gray-800);">${log.sent_to || 'N/A'}</span>
+                        </div>
+                        <div style="display:flex;gap:0.75rem;">
+                            <span style="font-size:0.8rem;font-weight:600;color:var(--gray-500);min-width:80px;">Objet</span>
+                            <span style="font-size:0.9rem;font-weight:600;color:var(--gray-900);">${log.subject || 'Sans objet'}</span>
+                        </div>
+                    </div>
+                    <div style="margin-bottom:1.25rem;">
+                        <div style="font-size:0.8rem;font-weight:600;color:var(--gray-500);margin-bottom:0.5rem;">Contenu</div>
+                        <div style="padding:1rem;background:var(--gray-50);border-radius:var(--radius-md);font-size:0.9rem;color:var(--gray-800);line-height:1.6;white-space:pre-wrap;max-height:400px;overflow-y:auto;">${log.body || '<span style="color:var(--gray-400);font-style:italic;">Contenu non archivé (mail envoyé avant la mise à jour)</span>'}</div>
+                    </div>
+                    <div style="display:flex;justify-content:flex-end;padding-top:1rem;border-top:1px solid var(--gray-200);">
+                        <button onclick="document.getElementById('email-detail-modal').remove()" style="padding:0.6rem 1.25rem;background:var(--gray-200);color:var(--gray-700);border:none;border-radius:var(--radius-md);font-weight:500;cursor:pointer;">Fermer</button>
+                    </div>
+                </div>
+            `;
+            modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+            document.body.appendChild(modal);
+        } catch (err) {
+            console.error('Erreur showEmailDetail:', err);
+            showToast('Erreur chargement du mail', 'error');
         }
     },
 
@@ -7767,15 +7825,15 @@ const ConvocationEmail = {
 Comment allez-vous ?
 
 Comme convenu, je vous transmets un complément d'information relatif à la formation qui se tiendra :
-En vos locaux
-Dates : {{dates_de_début}}, {{dates_de_fin}}
+En vos locaux, à {{training_location}}
+Dates : {{dates_de_début}} - {{dates_de_fin}}
 
 Nous commencerons à 8h30 et nous terminerons à 17h00.
 Le repas de midi se déroulera au plus rapide, sur place.
 
 Je vous laisse le soin d'informer vos collaborateurs de la tenue de cette formation, et de ses objectifs pédagogiques.
 
-Merci de bien vouloir trouver ici un questionnaire amont à leur intention. Celui-ci a pour but de bien identifier leurs attentes et leur niveau. Il est très important que tous me le renvoient, avant le {{dates_de_début}}.
+Merci de bien vouloir trouver ici un questionnaire amont à leur intention. Celui-ci a pour but de bien identifier leurs attentes et leur niveau. Il est très important que tous me le renvoient, avant le {{date_limite_questionnaire}}.
 {{Questionnaire}}
 
 Je vous remercie de veiller en particulier :
@@ -7858,10 +7916,21 @@ Nathalie JOULIÉ MORAND`;
         const dirigeantName = formation.company_director_name || '[Nom du dirigeant]';
         const startDate = this.formatDate(formation.start_date);
         const endDate = this.formatDate(formation.end_date);
+        const trainingLocation = formation.training_location || '[lieu de formation à préciser]';
+
+        // Calculer date limite questionnaire = date début - 5 jours
+        let dateLimit = '[date limite à définir]';
+        if (formation.start_date) {
+            const limitDate = new Date(formation.start_date);
+            limitDate.setDate(limitDate.getDate() - 5);
+            dateLimit = limitDate.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+        }
 
         body = body.replace(/\{\{Nom_du_dirigeant\}\}/g, dirigeantName);
         body = body.replace(/\{\{dates_de_début\}\}/g, startDate);
         body = body.replace(/\{\{dates_de_fin\}\}/g, endDate);
+        body = body.replace(/\{\{training_location\}\}/g, trainingLocation);
+        body = body.replace(/\{\{date_limite_questionnaire\}\}/g, dateLimit);
         body = body.replace(/\{\{Questionnaire\}\}/g, '[Lien du questionnaire à sélectionner ci-dessus]');
         body = body.replace(/\{\{client_login\}\}/g, clientLogin);
         body = body.replace(/\{\{client_password\}\}/g, clientPassword);
@@ -8041,6 +8110,7 @@ Nathalie JOULIÉ MORAND`;
                 const logData = {
                     sent_to: toInput.value,
                     subject: subjectInput.value,
+                    body: bodyTextarea.value,
                     questionnaire_url: questionnaireSelect.value || null,
                     attachments: attachments.map(a => ({ name: a.name, mimeType: a.mimeType })),
                     email_message_id: result.messageId,
@@ -8329,6 +8399,7 @@ const GenericEmail = {
                     await SupabaseData.logConvocationSent(this.currentFormationId, {
                         sent_to: to,
                         subject: subject,
+                        body: body,
                         sent_by: 'resend'
                     });
                 }

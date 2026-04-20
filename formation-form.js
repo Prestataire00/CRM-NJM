@@ -16,7 +16,7 @@ const FormationForm = {
             target_audience: 'commercial, technico-commercial, conseiller commercial',
             prerequisites: 'avoir une bonne connaissance de l\'offre (produits, services) et des tarifs',
             objectives: '-\u00EAtre capable de mettre en oeuvre les techniques d\'\u00E9coute active tout en menant la direction de la vente\n-\u00EAtre capable de valoriser les prix et services\n-\u00EAtre capable de verrouiller la vente',
-            module_1: '-1-Les bases\n-les bases de ce qu\'est un vendeur : l\'\u00E9coute, l\'observation, la r\u00E9activit\u00E9, le souci d\'amener des solutions\n-les bases de ce qu\'est un consommateur : l\'exigence, les motivations (primaire et secondaire), les freins, les besoins, les typologies\n-les \u00E9tapes de la vente\n\n2-La d\u00E9couverte et l\'argumentation\n-focus sur la phase de d\u00E9couverte\n-identifier les motivations primaires et secondaires\n-\u00E9couter vraiment et identifier le vrai besoin du client\n-\u00EAtre attentif au non-verbal\n-\u00EAtre attentif aux termes employ\u00E9s par le client\n-le questionnement ouvert ; les questions creus\u00E9es\n-les vertus de reformulation ; les moments de la reformulation',
+            module_1: '-1-Les bases\n-les bases de ce qu\'est un vendeur : l\'\u00E9coute, l\'observation, la r\u00E9activit\u00E9, le souci d\'amener des solutions\n-les bases de ce qu\'est un consommateur : l\'exigence, les motivations (primaire et secondaire), les freins, les besoins, les typologies\n-les \u00E9tapes de la vente\n\n2-La d\u00E9couverte et l\'argumentation\n-focus sur la phase de d\u00E9couverte\n-identifier les motivations primaires et secondaires\n-\u00E9couter vraiment et identifier le vrai besoin du client\n-\u00EAtre attentif au non-verbal\n-\u00EAtre attentif aux termes employ\u00E9s par le client\n-le questionnement ouvert ; les questions creus\u00E9es\n-les vertus de reformulation ; les moments de la reformulation\n-la mise en \u0153uvre \u00e0 bon escient de l\'argumentation, autre que technique\n-l\'argumentation adapt\u00e9e \u00e0 la phase de d\u00e9couverte\n-les arguments face \u00e0 l\'objection prix\n-savoir vendre un prix\n-savoir vendre ses diff\u00e9rences\n-g\u00e9rer les objections par les termes et le ton ad\u00e9quat : l\'objection cadeau\n-apporter au client une solution pertinente : la sienne\n-savoir faire preuve de directivit\u00e9 douce : verrouiller la vente',
             content_summary: 'les outils, m\u00E9thodes, le savoir-\u00EAtre pour vendre',
             methods_tools: 'mises en situation, accompagnement terrain, techniques de vente (SONCAS, CAP...), accompagnement en rendez-vous et debrief, les 5 pourquoi, exercices CAP, PNL, m\u00E9thode AEC, outils de coaching pour personnaliser les plans d\'actions individuels, base de donn\u00E9es commerciale, exercices inter s\u00E9ances et debrief, m\u00E9thodes de recommandations, atelier-retour',
             evaluation_methodology: 'par un questionnaire individuel en ligne, en fin de formation.',
@@ -129,6 +129,8 @@ const FormationForm = {
             'subcontractor_address': sub.address || '',
             'subcontractor_siret': sub.siret || '',
             'subcontractor_nda': sub.nda || '',
+            'subcontractor_naf': sub.naf || '',
+            'subcontractor_phone': sub.phone || '',
         };
         Object.entries(map).forEach(([id, val]) => {
             const el = document.getElementById(id);

@@ -247,6 +247,7 @@ const SupabaseData = {
                     formation_id: formationId,
                     sent_to: logData.sent_to,
                     subject: logData.subject,
+                    body: logData.body || null,
                     questionnaire_url: logData.questionnaire_url,
                     attachments: logData.attachments || [],
                     gmail_message_id: logData.email_message_id || logData.gmail_message_id,
