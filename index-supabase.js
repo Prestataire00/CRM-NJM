@@ -4955,33 +4955,23 @@ Nathalie Joulie-Morand`;
 
     // ==================== EMAIL TEMPLATES ====================
 
-    // Mapping des templates par section et métadonnées
-    _emailTemplateSections: {
-        avant: {
-            label: 'Avant la formation',
-            icon: '🟣',
-            color: '#8b5cf6',
-            ids: ['acces_client', 'prealable_reminder', 'convocation_v2', 'relance_convention_v2', 'contrat_sous_traitance'],
-            descriptions: {
-                acces_client: 'Envoyé automatiquement quand vous créez une nouvelle formation',
-                prealable_reminder: 'A envoyer si le client n\'a pas encore rempli le questionnaire des apprenants',
-                convocation_v2: 'Envoyée une semaine avant la formation avec le questionnaire amont',
-                relance_convention_v2: 'Si vous n\'avez pas reçu la convention signée du client',
-                contrat_sous_traitance: 'Envoyé au formateur pour signature du contrat'
-            }
-        },
-        apres: {
-            label: 'Après la formation',
-            icon: '🟢',
-            color: '#059669',
-            ids: ['fin_formation_v2', 'relance_questionnaires', 'avis_google_sous_traitant', 'avis_google_direct'],
-            descriptions: {
-                fin_formation_v2: 'Envoyé au client avec les questionnaires et liens vers l\'espace',
-                relance_questionnaires: 'Si les apprenants n\'ont pas répondu aux questionnaires de satisfaction et d\'évaluation',
-                avis_google_sous_traitant: 'Envoyé 3 jours après la fin de formation, mentionne le formateur sous-traitant',
-                avis_google_direct: 'Envoyé 3 jours après la fin de formation, quand vous animez vous-même'
-            }
-        }
+    // Descriptions des templates système
+    _templateDescriptions: {
+        acces_client: 'Envoyé automatiquement quand vous créez une nouvelle formation',
+        prealable_reminder: 'A envoyer si le client n\'a pas encore rempli le questionnaire des apprenants',
+        convocation_v2: 'Envoyée une semaine avant la formation avec le questionnaire amont',
+        relance_convention_v2: 'Si vous n\'avez pas reçu la convention signée du client',
+        contrat_sous_traitance: 'Envoyé au formateur pour signature du contrat',
+        fin_formation_v2: 'Envoyé au client avec les questionnaires et liens vers l\'espace',
+        relance_questionnaires: 'Si les apprenants n\'ont pas répondu aux questionnaires',
+        avis_google_sous_traitant: 'Envoyé 3 jours après la fin de formation, mentionne le formateur',
+        avis_google_direct: 'Envoyé 3 jours après la fin de formation, quand vous animez vous-même'
+    },
+
+    _sectionConfig: {
+        avant: { label: 'Avant la formation', icon: '🟣', color: '#8b5cf6' },
+        apres: { label: 'Après la formation', icon: '🟢', color: '#059669' },
+        autre: { label: 'Mes templates personnalisés', icon: '📁', color: 'var(--gray-400)' }
     },
 
     // IDs d'anciennes versions masquées quand une _v2 existe
@@ -4993,30 +4983,28 @@ Nathalie Joulie-Morand`;
 
         const result = await SupabaseData.getEmailTemplates();
         if (!result.success || result.data.length === 0) {
-            container.innerHTML = '<p style="color:var(--gray-500);text-align:center;padding:1rem;">Aucun template trouvé. Executez la migration SQL pour initialiser les templates.</p>';
+            container.innerHTML = '<p style="color:var(--gray-500);text-align:center;padding:1rem;">Aucun template trouvé.</p>';
             return;
         }
 
-        const allTemplates = result.data;
-
-        // Déterminer les IDs v2 présents pour masquer les anciennes versions
-        const allIds = allTemplates.map(t => t.id);
+        // Masquer les anciennes versions
+        const allIds = result.data.map(t => t.id);
         const hidden = new Set(this._hiddenTemplateIds.filter(oldId => allIds.includes(oldId + '_v2')));
+        const templates = result.data.filter(t => !hidden.has(t.id));
 
-        const templates = allTemplates.filter(t => !hidden.has(t.id));
-        const templateMap = {};
-        templates.forEach(t => { templateMap[t.id] = t; });
-
-        // Collecter les IDs assignés à une section
-        const assignedIds = new Set();
-        Object.values(this._emailTemplateSections).forEach(s => s.ids.forEach(id => assignedIds.add(id)));
-
-        // Autres templates (non assignés à une section)
-        const otherTemplates = templates.filter(t => !assignedIds.has(t.id));
+        // Grouper par category
+        const groups = { avant: [], apres: [], autre: [] };
+        templates.forEach(t => {
+            const cat = t.category || 'autre';
+            if (!groups[cat]) groups[cat] = [];
+            groups[cat].push(t);
+        });
 
         // Rendu d'une mini-card
-        const renderCard = (t, description) => {
+        const renderCard = (t) => {
+            const desc = this._templateDescriptions[t.id] || t.subject;
             const updatedAt = t.updated_at ? new Date(t.updated_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }) : null;
+            const isCustom = (t.category === 'autre' || !t.category);
             return `
                 <div style="display:flex;align-items:center;gap:1rem;padding:1rem;border:1px solid var(--gray-200);border-radius:8px;background:white;transition:all 0.15s;cursor:default;"
                      onmouseover="this.style.background='#fdf2f8';this.style.borderColor='#f9a8d4';"
@@ -5024,8 +5012,8 @@ Nathalie Joulie-Morand`;
                     <span style="font-size:1.75rem;flex-shrink:0;">📨</span>
                     <div style="flex:1;min-width:0;">
                         <div style="font-weight:600;color:var(--gray-900);font-size:0.95rem;">${t.name}</div>
-                        <div style="font-size:0.8rem;color:var(--gray-500);margin-top:0.2rem;line-height:1.4;">${description || t.subject}</div>
-                        ${updatedAt ? '<div style="font-size:0.7rem;color:var(--gray-400);margin-top:0.25rem;">Modifie le ' + updatedAt + '</div>' : ''}
+                        <div style="font-size:0.8rem;color:var(--gray-500);margin-top:0.2rem;line-height:1.4;">${desc}</div>
+                        ${updatedAt ? '<div style="font-size:0.7rem;color:var(--gray-400);margin-top:0.25rem;">Modifié le ' + updatedAt + '</div>' : ''}
                     </div>
                     <div style="display:flex;gap:0.4rem;flex-shrink:0;">
                         <button onclick="CRMApp.showTemplatePreview('${t.id}')"
@@ -5036,43 +5024,164 @@ Nathalie Joulie-Morand`;
                             style="padding:0.4rem 0.75rem;background:var(--primary-pink);color:white;border:none;border-radius:var(--radius-md);font-size:0.8rem;cursor:pointer;font-weight:500;white-space:nowrap;">
                             ✏️ Modifier
                         </button>
-                    </div>
-                </div>`;
-        };
-
-        // Rendu d'une section
-        const renderSection = (key) => {
-            const section = this._emailTemplateSections[key];
-            const sectionTemplates = section.ids.map(id => templateMap[id]).filter(Boolean);
-            if (sectionTemplates.length === 0) return '';
-
-            return `
-                <div style="background:white;border-radius:var(--radius-xl);padding:1.5rem;box-shadow:var(--shadow-sm);border-left:4px solid ${section.color};margin-bottom:1.5rem;">
-                    <h3 style="font-size:1.1rem;font-weight:700;color:var(--gray-900);margin:0 0 1rem 0;">${section.icon} ${section.label}</h3>
-                    <div style="display:grid;gap:0.75rem;">
-                        ${sectionTemplates.map(t => renderCard(t, section.descriptions[t.id])).join('')}
+                        ${isCustom ? `<button onclick="CRMApp.deleteCustomTemplate('${t.id}', '${t.name.replace(/'/g, "\\'")}')"
+                            style="padding:0.4rem 0.5rem;background:white;color:#dc2626;border:1px solid #fca5a5;border-radius:var(--radius-md);font-size:0.8rem;cursor:pointer;" title="Supprimer">🗑</button>` : ''}
                     </div>
                 </div>`;
         };
 
         let html = '';
-
-        // Sections principales
-        html += renderSection('avant');
-        html += renderSection('apres');
-
-        // Autres templates
-        if (otherTemplates.length > 0) {
+        ['avant', 'apres', 'autre'].forEach(cat => {
+            const items = groups[cat] || [];
+            if (items.length === 0 && cat !== 'autre') return;
+            const cfg = this._sectionConfig[cat];
             html += `
-                <div style="background:white;border-radius:var(--radius-xl);padding:1.5rem;box-shadow:var(--shadow-sm);border-left:4px solid var(--gray-400);margin-bottom:1.5rem;">
-                    <h3 style="font-size:1.1rem;font-weight:700;color:var(--gray-900);margin:0 0 1rem 0;">📁 Autres templates</h3>
+                <div style="background:white;border-radius:var(--radius-xl);padding:1.5rem;box-shadow:var(--shadow-sm);border-left:4px solid ${cfg.color};margin-bottom:1.5rem;">
+                    <h3 style="font-size:1.1rem;font-weight:700;color:var(--gray-900);margin:0 0 1rem 0;">${cfg.icon} ${cfg.label}</h3>
                     <div style="display:grid;gap:0.75rem;">
-                        ${otherTemplates.map(t => renderCard(t, null)).join('')}
+                        ${items.length > 0 ? items.map(t => renderCard(t)).join('') : '<p style="color:var(--gray-400);font-size:0.85rem;margin:0;">Aucun template personnalisé. Cliquez "+ Nouveau template" pour en créer un.</p>'}
                     </div>
                 </div>`;
-        }
+        });
 
         container.innerHTML = html;
+    },
+
+    createEmailTemplate() {
+        const existing = document.getElementById('create-template-modal');
+        if (existing) existing.remove();
+
+        const allVars = ['{{formation}}', '{{client}}', '{{dirigeant}}', '{{dates}}', '{{training_location}}', '{{url}}', '{{password}}', '{{formateur}}', '{{lien_questionnaire}}', '{{lien_satisfaction}}', '{{lien_evaluation}}', '{{date_limite_questionnaire}}'];
+
+        const modal = document.createElement('div');
+        modal.id = 'create-template-modal';
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div style="background:white;border-radius:var(--radius-xl);padding:2rem;max-width:650px;width:90%;max-height:90vh;overflow-y:auto;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+                    <h2 style="font-size:1.15rem;font-weight:700;color:var(--gray-900);margin:0;">Nouveau template d'email</h2>
+                    <button onclick="document.getElementById('create-template-modal').remove()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--gray-400);">&times;</button>
+                </div>
+
+                <div style="display:grid;gap:1rem;">
+                    <div>
+                        <label style="display:block;font-size:0.8rem;font-weight:600;color:var(--gray-700);margin-bottom:0.35rem;">Nom du template *</label>
+                        <input type="text" id="new-tpl-name" placeholder="Ex: Remerciements clients VIP" oninput="CRMApp._autoSlug()" style="width:100%;padding:0.6rem 0.75rem;border:1px solid var(--gray-300);border-radius:var(--radius-md);font-size:0.9rem;font-family:inherit;box-sizing:border-box;">
+                    </div>
+                    <div>
+                        <label style="display:block;font-size:0.8rem;font-weight:600;color:var(--gray-700);margin-bottom:0.35rem;">Identifiant technique</label>
+                        <input type="text" id="new-tpl-id" placeholder="auto-genere" style="width:100%;padding:0.6rem 0.75rem;border:1px solid var(--gray-300);border-radius:var(--radius-md);font-size:0.9rem;font-family:monospace;box-sizing:border-box;color:var(--gray-500);">
+                    </div>
+                    <div>
+                        <label style="display:block;font-size:0.8rem;font-weight:600;color:var(--gray-700);margin-bottom:0.35rem;">Moment d'utilisation</label>
+                        <select id="new-tpl-category" style="width:100%;padding:0.6rem 0.75rem;border:1px solid var(--gray-300);border-radius:var(--radius-md);font-size:0.9rem;font-family:inherit;background:white;">
+                            <option value="avant">Avant la formation</option>
+                            <option value="apres">Après la formation</option>
+                            <option value="autre" selected>Autre</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display:block;font-size:0.8rem;font-weight:600;color:var(--gray-700);margin-bottom:0.35rem;">Objet du mail *</label>
+                        <input type="text" id="new-tpl-subject" placeholder="Objet du mail..." style="width:100%;padding:0.6rem 0.75rem;border:1px solid var(--gray-300);border-radius:var(--radius-md);font-size:0.9rem;font-family:inherit;box-sizing:border-box;">
+                    </div>
+                    <div>
+                        <label style="display:block;font-size:0.8rem;font-weight:600;color:var(--gray-700);margin-bottom:0.35rem;">Variables disponibles (cliquer pour insérer)</label>
+                        <div style="display:flex;flex-wrap:wrap;gap:0.4rem;margin-bottom:0.5rem;">
+                            ${allVars.map(v => '<button type="button" onclick="CRMApp._insertVarInNewTpl(\'' + v + '\')" style="padding:0.2rem 0.5rem;background:#eff6ff;color:#1e40af;border:1px solid #93c5fd;border-radius:var(--radius-md);font-size:0.75rem;cursor:pointer;font-family:monospace;">' + v + '</button>').join('')}
+                        </div>
+                    </div>
+                    <div>
+                        <label style="display:block;font-size:0.8rem;font-weight:600;color:var(--gray-700);margin-bottom:0.35rem;">Corps du message *</label>
+                        <textarea id="new-tpl-body" rows="12" placeholder="Bonjour {{dirigeant}},..." style="width:100%;padding:0.75rem;border:1px solid var(--gray-300);border-radius:var(--radius-md);font-size:0.9rem;font-family:inherit;resize:vertical;box-sizing:border-box;"></textarea>
+                    </div>
+                </div>
+
+                <div style="display:flex;justify-content:flex-end;gap:0.75rem;padding-top:1rem;border-top:1px solid var(--gray-200);margin-top:1rem;">
+                    <button onclick="document.getElementById('create-template-modal').remove()" style="padding:0.6rem 1.25rem;background:var(--gray-100);color:var(--gray-700);border:1px solid var(--gray-300);border-radius:var(--radius-md);font-weight:500;cursor:pointer;">Annuler</button>
+                    <button onclick="CRMApp.saveNewEmailTemplate()" style="padding:0.6rem 1.25rem;background:var(--primary-pink);color:white;border:none;border-radius:var(--radius-md);font-weight:600;cursor:pointer;">Enregistrer</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        setTimeout(() => modal.classList.add('show'), 10);
+    },
+
+    _autoSlug() {
+        const name = document.getElementById('new-tpl-name')?.value || '';
+        const slug = name.toLowerCase()
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9]+/g, '_')
+            .replace(/^_|_$/g, '');
+        const idField = document.getElementById('new-tpl-id');
+        if (idField) idField.value = slug;
+    },
+
+    _insertVarInNewTpl(variable) {
+        const textarea = document.getElementById('new-tpl-body');
+        if (!textarea) return;
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const text = textarea.value;
+        textarea.value = text.substring(0, start) + variable + text.substring(end);
+        textarea.selectionStart = textarea.selectionEnd = start + variable.length;
+        textarea.focus();
+    },
+
+    async saveNewEmailTemplate() {
+        const name = document.getElementById('new-tpl-name')?.value.trim();
+        const id = document.getElementById('new-tpl-id')?.value.trim();
+        const category = document.getElementById('new-tpl-category')?.value || 'autre';
+        const subject = document.getElementById('new-tpl-subject')?.value.trim();
+        const body = document.getElementById('new-tpl-body')?.value;
+
+        if (!name || !subject || !body) {
+            showToast('Nom, objet et corps sont obligatoires', 'error');
+            return;
+        }
+
+        const templateId = id || name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+
+        // Vérifier unicité
+        const existing = await SupabaseData.getEmailTemplate(templateId);
+        if (existing) {
+            showToast('Un template avec cet identifiant existe déjà', 'error');
+            return;
+        }
+
+        // Collecter les variables utilisées
+        const usedVars = (body.match(/\{\{[^}]+\}\}/g) || []);
+        const subjectVars = (subject.match(/\{\{[^}]+\}\}/g) || []);
+        const allUsedVars = [...new Set([...usedVars, ...subjectVars])].join(', ');
+
+        const { error } = await supabaseClient
+            .from('email_templates')
+            .insert([{ id: templateId, name, subject, body, variables: allUsedVars, category }]);
+
+        if (error) {
+            showToast('Erreur création : ' + error.message, 'error');
+            return;
+        }
+
+        showToast('Template "' + name + '" créé !', 'success');
+        document.getElementById('create-template-modal')?.remove();
+        this.loadEmailTemplates();
+    },
+
+    async deleteCustomTemplate(id, name) {
+        if (!confirm('Supprimer le template "' + name + '" ?')) return;
+
+        const { error } = await supabaseClient
+            .from('email_templates')
+            .delete()
+            .eq('id', id);
+
+        if (error) {
+            showToast('Erreur suppression : ' + error.message, 'error');
+            return;
+        }
+
+        showToast('Template supprimé', 'success');
+        this.loadEmailTemplates();
     },
 
     async showTemplatePreview(templateId) {

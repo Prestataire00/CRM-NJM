@@ -2065,9 +2065,12 @@
 
             <!-- TEMPLATES EMAILS PAGE -->
             <div id="page-email-templates" class="page-content">
-                <div style="margin-bottom:1.5rem;">
-                    <h2 style="font-size:1.5rem; font-weight:700; color:var(--gray-900);">Templates d'emails</h2>
-                    <p style="color:var(--gray-600); font-size:0.9rem; margin-top:0.25rem; max-width:700px; line-height:1.5;">Personnalisez les emails envoyes automatiquement a vos clients. Les variables entre <span style="background:#fef3c7;color:#92400e;padding:0.1rem 0.3rem;border-radius:4px;font-family:monospace;font-size:0.85em;">{{ }}</span> sont remplacees par les vraies valeurs au moment de l'envoi.</p>
+                <div style="margin-bottom:1.5rem; display:flex; justify-content:space-between; align-items:flex-start;">
+                    <div>
+                        <h2 style="font-size:1.5rem; font-weight:700; color:var(--gray-900);">Templates d'emails</h2>
+                        <p style="color:var(--gray-600); font-size:0.9rem; margin-top:0.25rem; max-width:700px; line-height:1.5;">Personnalisez les emails envoyes automatiquement a vos clients. Les variables entre <span style="background:#fef3c7;color:#92400e;padding:0.1rem 0.3rem;border-radius:4px;font-family:monospace;font-size:0.85em;">{{ }}</span> sont remplacees par les vraies valeurs au moment de l'envoi.</p>
+                    </div>
+                    <button onclick="CRMApp.createEmailTemplate()" style="padding:0.6rem 1.25rem; background:var(--primary-orange); color:white; border:none; border-radius:var(--radius-md); font-weight:600; cursor:pointer; font-size:0.85rem; white-space:nowrap;">+ Nouveau template</button>
                 </div>
                 <div id="email-templates-list">
                     <p style="color:var(--gray-500);text-align:center;padding:2rem;">Chargement...</p>
