@@ -6548,14 +6548,14 @@ Nathalie Joulie-Morand`;
             if (error || !formations) return;
 
             const now = new Date();
-            const sixMonths = 6 * 30 * 24 * 60 * 60 * 1000;
+            const threeMonths = 3 * 30 * 24 * 60 * 60 * 1000;
             const alertes = [];
 
             formations.forEach(f => {
                 if (!f.end_date) return;
                 const endDate = new Date(f.end_date);
                 const diff = now - endDate;
-                if (diff >= sixMonths && !f.questionnaire_froid_sent) {
+                if (diff >= threeMonths && !f.questionnaire_froid_sent) {
                     alertes.push({
                         id: f.id,
                         formation_name: f.formation_name,
@@ -6570,7 +6570,7 @@ Nathalie Joulie-Morand`;
                 alertContainer.style.display = 'block';
                 alertContainer.innerHTML = `
                     <div style="padding: 1rem; background: #fef3c7; border-left: 4px solid #f59e0b; border-radius: var(--radius-md); margin-bottom: 1rem;">
-                        <strong>Questionnaires a froid a envoyer (6 mois) :</strong>
+                        <strong>Questionnaires a froid a envoyer (3 mois) :</strong>
                         <ul style="margin-top: 0.5rem; margin-left: 1rem; list-style: none;">
                             ${alertes.map(a => `
                                 <li style="margin-bottom: 0.75rem; padding: 0.75rem; background: white; border-radius: var(--radius-md); border: 1px solid #fcd34d;">
@@ -6627,7 +6627,7 @@ Nathalie Joulie-Morand`;
 
 J'espère que vous allez bien.
 
-Il y a maintenant 6 mois que la formation "${formation.formation_name || ''}" s'est terminée. Dans le cadre de la démarche qualité Qualiopi, je souhaiterais recueillir votre retour sur l'impact de cette formation.
+Il y a maintenant 3 mois que la formation "${formation.formation_name || ''}" s'est terminée. Dans le cadre de la démarche qualité Qualiopi, je souhaiterais recueillir votre retour sur l'impact de cette formation.
 
 Pourriez-vous prendre quelques minutes pour compléter ce questionnaire réservé au dirigeant ?
 
@@ -6681,7 +6681,7 @@ Nathalie Joulié-Morand`;
 
 J'espère que vous allez bien.
 
-Il y a maintenant 6 mois que la formation "${formation.formation_name || ''}" s'est terminée. Dans le cadre de la démarche qualité Qualiopi, je souhaiterais recueillir le retour de chaque apprenant sur l'impact de cette formation dans leur activité quotidienne.
+Il y a maintenant 3 mois que la formation "${formation.formation_name || ''}" s'est terminée. Dans le cadre de la démarche qualité Qualiopi, je souhaiterais recueillir le retour de chaque apprenant sur l'impact de cette formation dans leur activité quotidienne.
 
 Pourriez-vous transmettre ce questionnaire à chaque apprenant ayant participé à la formation ?
 ${learnersNames ? 'Apprenants concernés : ' + learnersNames : ''}
