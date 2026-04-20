@@ -642,6 +642,15 @@ const FormationForm = {
                     });
                 } catch (e) { console.warn('BPF auto-creation:', e); }
 
+                // Auto-attribution des questionnaires pertinents
+                try {
+                    const categories = ['amont', 'satisfaction', 'evaluation_acquis'];
+                    for (const cat of categories) {
+                        const q = await SupabaseData.getQuestionnaireForFormation(created.id, cat);
+                        if (q) await SupabaseData.assignQuestionnaireToFormation(created.id, q.id);
+                    }
+                } catch (e) { console.warn('Auto-assign questionnaires:', e); }
+
                 showToast('Formation cr\u00E9\u00E9e !', 'success');
                 addNotification('formation', `Formation cr\u00E9\u00E9e \u2014 ${formData.formation_name}`);
             }

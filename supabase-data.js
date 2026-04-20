@@ -756,6 +756,44 @@ const SupabaseData = {
         }
     },
 
+    async getQuestionnaireForFormation(formationId, category) {
+        try {
+            const { data: formation } = await supabaseClient
+                .from('formations')
+                .select('formation_type')
+                .eq('id', formationId)
+                .single();
+            if (!formation) return null;
+
+            // Chercher un questionnaire spécifique au type de formation
+            if (formation.formation_type) {
+                const { data: specific } = await supabaseClient
+                    .from('questionnaires')
+                    .select('*')
+                    .eq('category', category)
+                    .eq('formation_type', formation.formation_type)
+                    .eq('active', true)
+                    .limit(1)
+                    .maybeSingle();
+                if (specific) return specific;
+            }
+
+            // Fallback : questionnaire générique (formation_type = null)
+            const { data: generic } = await supabaseClient
+                .from('questionnaires')
+                .select('*')
+                .eq('category', category)
+                .is('formation_type', null)
+                .eq('active', true)
+                .limit(1)
+                .maybeSingle();
+            return generic || null;
+        } catch (error) {
+            console.error('Error getting questionnaire for formation:', error);
+            return null;
+        }
+    },
+
     async getFormationQuestionnaires(formationId) {
         try {
             const { data, error } = await supabaseClient

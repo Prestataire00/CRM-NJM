@@ -4346,89 +4346,98 @@ Nathalie Joulie-Morand`;
         document.body.appendChild(modal);
     },
 
+    async _getClientPassword(clientEmail) {
+        if (!clientEmail) return '[mot de passe non disponible]';
+        const profileResult = await SupabaseData.getProfileByEmail(clientEmail);
+        if (!profileResult.success || !profileResult.data) return '[mot de passe non disponible]';
+        if (profileResult.data.initial_password) return profileResult.data.initial_password;
+        try {
+            const newPwd = Math.random().toString(36).slice(-8) + 'A1!';
+            await supabaseClient.auth.admin.updateUserById(profileResult.data.id, { password: newPwd });
+            await supabaseClient.from('profiles').update({ initial_password: newPwd }).eq('id', profileResult.data.id);
+            return newPwd;
+        } catch (e) { return '[mot de passe déjà communiqué]'; }
+    },
+
+    async fillEmailTemplateVariables(templateId, formationId) {
+        const [template, formResult] = await Promise.all([
+            SupabaseData.getEmailTemplate(templateId),
+            supabaseClient.from('formations').select('*').eq('id', formationId).single()
+        ]);
+        if (!template || formResult.error) return null;
+        const f = formResult.data;
+
+        const clientPassword = await this._getClientPassword(f.client_email);
+        const siteUrl = window.location.origin;
+        const fmtDate = (d) => d ? new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+        const startDate = fmtDate(f.start_date) || '[date à définir]';
+        const endDate = fmtDate(f.end_date);
+        const formateurName = ((f.subcontractor_first_name || '') + ' ' + (f.subcontractor_last_name || '')).trim() || 'Nathalie JOULIE MORAND';
+
+        let dateLimit = '[date limite]';
+        if (f.start_date) {
+            const ld = new Date(f.start_date);
+            ld.setDate(ld.getDate() - 5);
+            dateLimit = fmtDate(ld);
+        }
+
+        const vars = {
+            '{{formation}}': f.formation_name || 'Formation',
+            '{{dirigeant}}': f.company_director_name || '',
+            '{{Nom_du_dirigeant}}': f.company_director_name || '',
+            '{{dates}}': startDate + (endDate && endDate !== startDate ? ' - ' + endDate : ''),
+            '{{dates_de_début}}': startDate,
+            '{{dates_de_fin}}': endDate,
+            '{{lieu}}': f.training_location || '[lieu à préciser]',
+            '{{training_location}}': f.training_location || '[lieu à préciser]',
+            '{{date_limite_questionnaire}}': dateLimit,
+            '{{url}}': siteUrl,
+            '{{password}}': clientPassword,
+            '{{client_login}}': f.client_email || '',
+            '{{client_password}}': clientPassword,
+            '{{email}}': f.client_email || '',
+            '{{formateur}}': formateurName
+        };
+
+        let subject = template.subject;
+        let body = template.body;
+        Object.entries(vars).forEach(([k, v]) => {
+            subject = subject.replaceAll(k, v);
+            body = body.replaceAll(k, v);
+        });
+
+        // Matching automatique des questionnaires
+        if (body.includes('{{lien_questionnaire}}')) {
+            const q = await SupabaseData.getQuestionnaireForFormation(formationId, 'amont');
+            body = body.replaceAll('{{lien_questionnaire}}', q?.url || '[questionnaire amont non configuré]');
+        }
+        if (body.includes('{{lien_satisfaction}}')) {
+            const q = await SupabaseData.getQuestionnaireForFormation(formationId, 'satisfaction');
+            body = body.replaceAll('{{lien_satisfaction}}', q?.url || '[questionnaire satisfaction non configuré]');
+        }
+        if (body.includes('{{lien_evaluation}}')) {
+            const q = await SupabaseData.getQuestionnaireForFormation(formationId, 'evaluation_acquis');
+            body = body.replaceAll('{{lien_evaluation}}', q?.url || '[questionnaire évaluation non configuré]');
+        }
+
+        return { subject, body, templateName: template.name, to: f.client_email || '' };
+    },
+
     async openEmailWithTemplate(formationId, templateId) {
         try {
-            // Charger formation + template en parallèle
-            const [formResult, template] = await Promise.all([
-                supabaseClient.from('formations').select('*').eq('id', formationId).single(),
-                SupabaseData.getEmailTemplate(templateId)
-            ]);
-
-            if (formResult.error) throw formResult.error;
-            const formation = formResult.data;
-
-            if (!template) {
+            const result = await this.fillEmailTemplateVariables(templateId, formationId);
+            if (!result) {
                 showToast('Template introuvable. Exécutez la migration SQL.', 'error');
                 return;
             }
 
-            // Récupérer le mot de passe client
-            let clientPassword = '[mot de passe non disponible]';
-            if (formation.client_email) {
-                const profileResult = await SupabaseData.getProfileByEmail(formation.client_email);
-                if (profileResult.success && profileResult.data) {
-                    if (profileResult.data.initial_password) {
-                        clientPassword = profileResult.data.initial_password;
-                    } else {
-                        try {
-                            const newPwd = Math.random().toString(36).slice(-8) + 'A1!';
-                            await supabaseClient.auth.admin.updateUserById(profileResult.data.id, { password: newPwd });
-                            await supabaseClient.from('profiles').update({ initial_password: newPwd }).eq('id', profileResult.data.id);
-                            clientPassword = newPwd;
-                        } catch (e) { clientPassword = '[mot de passe déjà communiqué]'; }
-                    }
-                }
-            }
-
-            const siteUrl = window.location.origin;
-            const startDate = formation.start_date ? new Date(formation.start_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : '[date à définir]';
-            const endDate = formation.end_date ? new Date(formation.end_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
-            const formateurName = ((formation.subcontractor_first_name || '') + ' ' + (formation.subcontractor_last_name || '')).trim() || 'le formateur';
-
-            // Date limite questionnaire = J-5
-            let dateLimit = '[date limite]';
-            if (formation.start_date) {
-                const limitDate = new Date(formation.start_date);
-                limitDate.setDate(limitDate.getDate() - 5);
-                dateLimit = limitDate.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
-            }
-
-            // Map de toutes les variables possibles
-            const vars = {
-                '{{formation}}': formation.formation_name || 'Formation',
-                '{{dirigeant}}': formation.company_director_name || '',
-                '{{Nom_du_dirigeant}}': formation.company_director_name || '',
-                '{{dates}}': startDate + (endDate && endDate !== startDate ? ' - ' + endDate : ''),
-                '{{dates_de_début}}': startDate,
-                '{{dates_de_fin}}': endDate,
-                '{{lieu}}': formation.training_location || '[lieu à préciser]',
-                '{{training_location}}': formation.training_location || '[lieu à préciser]',
-                '{{date_limite_questionnaire}}': dateLimit,
-                '{{lien_questionnaire}}': '[Sélectionnez un questionnaire amont]',
-                '{{lien_satisfaction}}': '[Sélectionnez un questionnaire satisfaction]',
-                '{{lien_evaluation}}': '[Sélectionnez un questionnaire évaluation]',
-                '{{url}}': siteUrl,
-                '{{password}}': clientPassword,
-                '{{client_login}}': formation.client_email || '',
-                '{{client_password}}': clientPassword,
-                '{{email}}': formation.client_email || '',
-                '{{formateur}}': formateurName
-            };
-
-            let subject = template.subject;
-            let body = template.body;
-            Object.entries(vars).forEach(([key, val]) => {
-                subject = subject.replaceAll(key, val);
-                body = body.replaceAll(key, val);
-            });
-
             const showQuestionnaires = ['fin_formation_v2', 'relance_questionnaires'].includes(templateId);
 
             GenericEmail.show({
-                title: '📨 ' + template.name,
-                to: formation.client_email || '',
-                subject,
-                body,
+                title: '📨 ' + result.templateName,
+                to: result.to,
+                subject: result.subject,
+                body: result.body,
                 showQuestionnaires,
                 formationId
             });
@@ -4497,56 +4506,15 @@ Nathalie Joulie-Morand`;
 
     async sendMailFinFormation(formationId) {
         try {
-            const { data: formation, error } = await supabaseClient
-                .from('formations')
-                .select('*')
-                .eq('id', formationId)
-                .single();
-
-            if (error) throw error;
-
-            const clientEmail = formation.client_email;
-            if (!clientEmail) {
-                showToast('Email client non renseigné', 'warning');
+            const result = await this.fillEmailTemplateVariables('fin_formation_v2', formationId);
+            if (!result) {
+                // Fallback sur ancien template
+                const fallback = await this.fillEmailTemplateVariables('fin_formation', formationId);
+                if (!fallback) { showToast('Template fin de formation introuvable', 'error'); return; }
+                GenericEmail.show({ title: '📧 Mail fin de formation', to: fallback.to, subject: fallback.subject, body: fallback.body, showQuestionnaires: true, formationId });
                 return;
             }
-
-            // Récupérer les identifiants du compte client
-            let clientPassword = '[mot de passe non disponible]';
-            const profileResult = await SupabaseData.getProfileByEmail(clientEmail);
-            if (profileResult.success && profileResult.data) {
-                if (profileResult.data.initial_password) {
-                    clientPassword = profileResult.data.initial_password;
-                } else {
-                    // Générer un nouveau mot de passe et le stocker
-                    try {
-                        const newPwd = Math.random().toString(36).slice(-8) + 'A1!';
-                        await supabaseClient.auth.admin.updateUserById(profileResult.data.id, { password: newPwd });
-                        await supabaseClient.from('profiles').update({ initial_password: newPwd }).eq('id', profileResult.data.id);
-                        clientPassword = newPwd;
-                    } catch (e) {
-                        clientPassword = '[mot de passe déjà communiqué]';
-                    }
-                }
-            }
-
-            const siteUrl = window.location.origin;
-            const formationName = formation.formation_name || 'Formation';
-
-            const tpl = await SupabaseData.getEmailTemplate('fin_formation');
-            const vars = { '{{formation}}': formationName, '{{url}}': siteUrl, '{{password}}': clientPassword };
-            const fallbackBody = `Bonjour,\n\nTout va bien pour vous? J'espère que l'équipe est satisfaite de la formation.\n\nJe transmets ici plusieurs éléments relatifs à la démarche qualité de la formation.\nC'est important que ce soit complété par chaque personne qui a suivi la formation :\n-un questionnaire de satisfaction :\n\n-un questionnaire d'évaluation des acquis :\n\nPar ailleurs, je vous transmets à nouveau le lien et le mot de passe de votre espace confidentiel NJM Conseil.\nLien : ${siteUrl}\nMot de passe : ${clientPassword}\nVous y trouverez tous les documents pour l'OPCO : feuilles de présence, certificats de fin de formation.\nVous pourrez aussi y récupérer :\n-pour vous : le bilan de la formation\n-pour les apprenants : le support pédagogique, les grilles d'évaluation\n\nAutre chose, ce serait sympa de prendre 1 minute pour déposer un avis sincère sur Google. Cela me donnera plus de visibilité sur le net. Merci d'aller sur:\nhttps://g.page/r/CTDsPUbHjCnREB0/review\n\nDésolée, cela fait de la paperasse mais c'est indispensable par rapport à la prise en charge de la formation.\n\nMerci encore à vous et à toute l'équipe pour la gentillesse de votre accueil.\n\nCordialement\n\nNathalie JOULIÉ MORAND`;
-            const subject = tpl ? Object.keys(vars).reduce((s, k) => s.replaceAll(k, vars[k]), tpl.subject) : `Suite formation "${formationName}" - Documents et questionnaires`;
-            const body = tpl ? Object.keys(vars).reduce((s, k) => s.replaceAll(k, vars[k]), tpl.body) : fallbackBody;
-
-            GenericEmail.show({
-                title: '📧 Mail fin de formation',
-                to: clientEmail,
-                subject,
-                body,
-                showQuestionnaires: true,
-                formationId
-            });
+            GenericEmail.show({ title: '📧 Mail fin de formation', to: result.to, subject: result.subject, body: result.body, showQuestionnaires: true, formationId });
         } catch (error) {
             console.error('Erreur mail fin de formation:', error);
             showToast('Erreur préparation du mail', 'error');
@@ -4555,45 +4523,14 @@ Nathalie Joulie-Morand`;
 
     async relanceQuestionnaires(formationId) {
         try {
-            const { data: formation, error } = await supabaseClient
-                .from('formations')
-                .select('*')
-                .eq('id', formationId)
-                .single();
-
-            if (error) throw error;
-
-            const clientEmail = formation.client_email;
-            if (!clientEmail) {
-                showToast('Email client non renseigné', 'warning');
-                return;
+            const result = await this.fillEmailTemplateVariables('relance_questionnaires', formationId);
+            if (result) {
+                GenericEmail.show({ title: '📋 Relance questionnaires', to: result.to, subject: result.subject, body: result.body, showQuestionnaires: true, formationId });
+            } else {
+                // Fallback minimal
+                const { data: f } = await supabaseClient.from('formations').select('client_email, formation_name').eq('id', formationId).single();
+                GenericEmail.show({ title: '📋 Relance questionnaires', to: f?.client_email || '', subject: 'Relance questionnaires — ' + (f?.formation_name || ''), body: '', showQuestionnaires: true, formationId });
             }
-
-            const subject = `Questionnaires post-formation "${formation.formation_name || 'Formation'}"`;
-            const body = `Bonjour,
-
-J'espère que vous allez bien.
-
-A l'issue de la formation, je vous ai transmis un mail avec 2 questionnaires à compléter par chaque apprenant. Ces derniers sont importants pour mesurer l'impact de la formation et pour répondre aux exigences de la démarche qualité Qualiopi.
-
-Sauf erreur de ma part, les questionnaires n'ont pas été complétés à ce jour. Pouvez-vous les transmettre à nouveau aux apprenants et leur demander de les remplir au plus tôt ?
-
-Questionnaire d'évaluation des acquis :
-
-Questionnaire de satisfaction :
-
-En vous remerciant par avance
-
-Nathalie Joulie-Morand`;
-
-            GenericEmail.show({
-                title: '📋 Relance questionnaires',
-                to: clientEmail,
-                subject,
-                body,
-                showQuestionnaires: true,
-                formationId
-            });
         } catch (error) {
             console.error('Erreur relance questionnaires:', error);
             showToast('Erreur préparation du mail', 'error');
