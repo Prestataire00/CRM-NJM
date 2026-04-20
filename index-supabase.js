@@ -1185,17 +1185,31 @@ const CRMApp = {
 
                     <!-- ③ Clôturer -->
                     <div style="background:white;border-radius:var(--radius-xl);padding:1.25rem;box-shadow:var(--shadow-sm);border-top:3px solid #059669;">
-                        <h3 style="font-size:1rem;font-weight:700;color:var(--gray-900);margin:0 0 1rem 0;">③ Clôturer</h3>
-
-                        <div style="padding:0.75rem 0;border-bottom:1px solid var(--gray-100);">
-                            <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;">
-                                <span style="font-size:1rem;color:${sendableQuests.every(fq => fq.sent_at) && sendableQuests.length > 0 ? '#059669' : 'var(--gray-400)'};">${sendableQuests.every(fq => fq.sent_at) && sendableQuests.length > 0 ? '✅' : '□'}</span>
-                                <span style="font-size:0.9rem;font-weight:500;color:var(--gray-900);">Questionnaires évaluation + satisfaction</span>
-                            </div>
-                            <div style="padding-left:1.5rem;">
-                                ${questItemsHtml}
-                            </div>
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin:0 0 1rem 0;">
+                            <h3 style="font-size:1rem;font-weight:700;color:var(--gray-900);margin:0;">③ Clôturer</h3>
+                            <span style="font-size:0.75rem;color:var(--gray-500);background:var(--gray-100);padding:0.2rem 0.6rem;border-radius:10px;">
+                                ${[hasAttendance, sendableQuests.filter(fq => fq.sent_at).length === sendableQuests.length && sendableQuests.length > 0, hasCertificate].filter(Boolean).length}/5 complétées
+                            </span>
                         </div>
+
+                        ${phaseItem(
+                            hasAttendance,
+                            'Feuille de présence',
+                            { label: hasAttendance ? 'Ouvrir' : 'Créer', action: hasAttendance ? "CRMApp.openDocument(" + formationId + ", 'attendance_sheet')" : "CRMApp.createAttendanceSheet(" + formationId + ")" }
+                        )}
+
+                        ${sendableQuests.map(fq => {
+                            const q = fq.questionnaires;
+                            if (!q) return '';
+                            const sent = !!fq.sent_at;
+                            const catLabel = this._categoryLabels[q.category] || q.category;
+                            return phaseItem(
+                                sent,
+                                sent ? catLabel + ' — <span style="color:#059669;font-weight:500;">Envoyé le ' + new Date(fq.sent_at).toLocaleDateString('fr-FR') + '</span>' : catLabel + ' — à envoyer aux apprenants',
+                                sent ? { label: 'Ouvrir', action: "window.open('" + q.url + "', '_blank')", bg: 'var(--gray-500)' }
+                                    : { label: '📤 Envoyer aux apprenants', action: "CRMApp.sendQuestionnaireToLearners(" + formationId + ", " + q.id + ")" }
+                            );
+                        }).join('')}
 
                         ${phaseItem(
                             hasCertificate,
@@ -1528,7 +1542,7 @@ const CRMApp = {
                     : (formation.client_signed_at ? 'active' : 'pending')
             },
             {
-                num: 4, label: 'Mes documents',
+                num: 4, label: 'Questionnaires & Documents',
                 status: hasCertificate ? 'done' : (formation.status === 'completed' ? 'active' : 'pending')
             }
         ];
@@ -1591,6 +1605,8 @@ const CRMApp = {
             `;
             // Le renderClientPrealableTab cible #client-formation-questionnaires
             this.renderClientPrealableTab(formation);
+            // Charger questionnaire amont si attribué
+            this._loadClientAmontQuestionnaire(formation.id);
         } else if (step === 2) {
             const convDoc = docs.find(d => d.type === 'convention' && d.visible_client !== false);
             const isSigned = !!formation.client_signed_at;
@@ -1651,14 +1667,18 @@ const CRMApp = {
             `;
         } else if (step === 4) {
             container.innerHTML = `
-                <div style="background:#d1fae5;border:2px solid #059669;border-radius:var(--radius-xl);padding:1.5rem;">
+                <div style="background:#eff6ff;border:2px solid #3b82f6;border-radius:var(--radius-xl);padding:1.5rem;">
                     <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.5rem;">
-                        <span style="font-size:1.75rem;">🎉</span>
-                        <h3 style="font-size:1.15rem;font-weight:700;color:var(--gray-900);margin:0;">Formation terminée ✅</h3>
+                        <span style="font-size:1.75rem;">📝</span>
+                        <h3 style="font-size:1.15rem;font-weight:700;color:var(--gray-900);margin:0;">Questionnaires à compléter</h3>
                     </div>
-                    <p style="color:var(--gray-600);margin:0 0 1rem 0;font-size:0.9rem;">Vous pouvez consulter ci-dessous votre certificat, votre attestation et les autres documents de fin de formation.</p>
+                    <p style="color:var(--gray-600);margin:0 0 1rem 0;font-size:0.9rem;">Ces questionnaires sont obligatoires pour la démarche qualité Qualiopi. Merci de les compléter rapidement.</p>
+                    <div id="client-action-questionnaires" style="display:grid;gap:0.6rem;">
+                        <p style="color:var(--gray-400);font-size:0.85rem;">Chargement...</p>
+                    </div>
                 </div>
             `;
+            this._loadClientActionQuestionnaires(formation.id);
         } else {
             // Tout est complété
             container.innerHTML = `
@@ -6286,6 +6306,24 @@ Nathalie Joulie-Morand`;
 
     // ==================== CLIENT-SIDE QUESTIONNAIRES ====================
 
+    _renderQuestLink(q) {
+        const color = this._categoryColors[q.category] || '#6b7280';
+        const label = this._categoryLabels[q.category] || q.category;
+        return `<a href="${q.url}" target="_blank" rel="noopener noreferrer"
+            style="display:flex;align-items:center;gap:1rem;padding:0.85rem 1rem;background:var(--gray-50);border-radius:var(--radius-md);text-decoration:none;color:var(--gray-900);border:1px solid transparent;transition:all 0.15s;"
+            onmouseover="this.style.background='white';this.style.borderColor='var(--gray-200)';"
+            onmouseout="this.style.background='var(--gray-50)';this.style.borderColor='transparent';">
+            <span style="font-size:1.5rem;">📝</span>
+            <div style="flex:1;">
+                <div style="font-weight:600;color:var(--gray-900);font-size:0.9rem;">${q.title}</div>
+                <div style="font-size:0.75rem;color:var(--gray-500);margin-top:0.15rem;">
+                    <span style="display:inline-block;padding:0.1rem 0.4rem;border-radius:8px;background:${color}15;color:${color};font-weight:500;">${label}</span>
+                </div>
+            </div>
+            <span style="font-size:0.8rem;color:var(--primary-pink);font-weight:500;">Répondre →</span>
+        </a>`;
+    },
+
     async _loadClientQuestionnaires(formationId) {
         const container = document.getElementById('client-formation-questionnaires-list');
         if (!container) return;
@@ -6296,29 +6334,62 @@ Nathalie Joulie-Morand`;
             return;
         }
 
-        container.innerHTML = `<div style="display:grid;gap:0.6rem;">
-            ${result.data.map(fq => {
-                const q = fq.questionnaires;
-                if (!q) return '';
-                const color = this._categoryColors[q.category] || '#6b7280';
-                const label = this._categoryLabels[q.category] || q.category;
-                return `
-                    <a href="${q.url}" target="_blank" rel="noopener noreferrer"
-                        style="display:flex;align-items:center;gap:1rem;padding:0.85rem 1rem;background:var(--gray-50);border-radius:var(--radius-md);text-decoration:none;color:var(--gray-900);border:1px solid transparent;transition:all 0.15s;"
-                        onmouseover="this.style.background='white';this.style.borderColor='var(--gray-200)';"
-                        onmouseout="this.style.background='var(--gray-50)';this.style.borderColor='transparent';">
-                        <span style="font-size:1.5rem;">📝</span>
-                        <div style="flex:1;">
-                            <div style="font-weight:600;color:var(--gray-900);font-size:0.9rem;">${q.title}</div>
-                            <div style="font-size:0.75rem;color:var(--gray-500);margin-top:0.15rem;">
-                                <span style="display:inline-block;padding:0.1rem 0.4rem;border-radius:8px;background:${color}15;color:${color};font-weight:500;">${label}</span>
-                            </div>
-                        </div>
-                        <span style="font-size:0.8rem;color:var(--primary-pink);font-weight:500;">Ouvrir le questionnaire →</span>
-                    </a>
-                `;
-            }).join('')}
-        </div>`;
+        // Filtrer les questionnaires à froid (envoyés par mail, pas affichés en permanence)
+        const visible = result.data.filter(fq => {
+            const q = fq.questionnaires;
+            return q && q.category !== 'froid_dirigeant' && q.category !== 'froid_apprenant';
+        });
+
+        if (visible.length === 0) {
+            container.innerHTML = '<p style="color:var(--gray-400);font-size:0.85rem;">Aucun questionnaire pour le moment.</p>';
+            return;
+        }
+
+        container.innerHTML = '<div style="display:grid;gap:0.6rem;">' +
+            visible.map(fq => this._renderQuestLink(fq.questionnaires)).join('') +
+        '</div>';
+    },
+
+    async _loadClientAmontQuestionnaire(formationId) {
+        const result = await SupabaseData.getFormationQuestionnaires(formationId);
+        if (!result.success) return;
+        const amont = result.data.filter(fq => fq.questionnaires?.category === 'amont');
+        if (amont.length === 0) return;
+
+        // Insérer après le formulaire préalable
+        const parent = document.getElementById('client-formation-action');
+        if (!parent) return;
+        const block = document.createElement('div');
+        block.style.cssText = 'background:#eff6ff;border:2px solid #3b82f6;border-radius:var(--radius-xl);padding:1.5rem;margin-top:1rem;';
+        block.innerHTML = '<div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem;">' +
+            '<span style="font-size:1.5rem;">📝</span>' +
+            '<h3 style="font-size:1.05rem;font-weight:700;color:var(--gray-900);margin:0;">Questionnaire amont à compléter</h3>' +
+        '</div>' +
+        '<p style="color:var(--gray-600);font-size:0.85rem;margin:0 0 0.75rem;">Merci de compléter ce questionnaire avant le début de la formation.</p>' +
+        '<div style="display:grid;gap:0.5rem;">' +
+            amont.map(fq => this._renderQuestLink(fq.questionnaires)).join('') +
+        '</div>';
+        parent.appendChild(block);
+    },
+
+    async _loadClientActionQuestionnaires(formationId) {
+        const container = document.getElementById('client-action-questionnaires');
+        if (!container) return;
+
+        const result = await SupabaseData.getFormationQuestionnaires(formationId);
+        if (!result.success) return;
+
+        const quests = result.data.filter(fq => {
+            const c = fq.questionnaires?.category;
+            return c === 'satisfaction' || c === 'evaluation_acquis';
+        });
+
+        if (quests.length === 0) {
+            container.innerHTML = '<p style="color:var(--gray-500);font-size:0.85rem;">Aucun questionnaire attribué pour le moment.</p>';
+            return;
+        }
+
+        container.innerHTML = quests.map(fq => this._renderQuestLink(fq.questionnaires)).join('');
     },
 
     // ==================== ENVOI QUESTIONNAIRES AUX APPRENANTS ====================
@@ -6431,38 +6502,63 @@ Nathalie Joulie-Morand`;
         const container = document.getElementById('formation-questionnaires-list');
         if (!container) return;
 
-        const result = await SupabaseData.getFormationQuestionnaires(formationId);
+        const [result, formResult] = await Promise.all([
+            SupabaseData.getFormationQuestionnaires(formationId),
+            supabaseClient.from('formations').select('end_date').eq('id', formationId).single()
+        ]);
+
         if (!result.success) {
             container.innerHTML = '<p style="color:#dc2626;font-size:0.85rem;">Erreur chargement</p>';
             return;
         }
 
         if (result.data.length === 0) {
-            container.innerHTML = '<p style="color:var(--gray-400);font-size:0.85rem;">Aucun questionnaire attribue</p>';
+            container.innerHTML = '<p style="color:var(--gray-400);font-size:0.85rem;">Aucun questionnaire attribué</p>';
             return;
         }
+
+        const endDate = formResult.data?.end_date;
+        const catIcons = { amont: '📝', satisfaction: '💬', evaluation_acquis: '📊', froid_dirigeant: '🕐', froid_apprenant: '🕐', autre: '📋' };
 
         container.innerHTML = result.data.map(fq => {
             const q = fq.questionnaires;
             if (!q) return '';
             const color = this._categoryColors[q.category] || '#6b7280';
             const label = this._categoryLabels[q.category] || q.category;
-            const sentInfo = fq.sent_at
-                ? `<span style="font-size:0.75rem;color:#059669;font-weight:500;">Envoye le ${new Date(fq.sent_at).toLocaleDateString('fr-FR')}</span>`
-                : '<span style="font-size:0.75rem;color:var(--gray-500);">Non envoye</span>';
+            const icon = catIcons[q.category] || '📋';
 
-            return `<div style="display:flex;align-items:center;justify-content:space-between;padding:0.6rem 0.75rem;background:var(--gray-50);border-radius:var(--radius-md);border:1px solid var(--gray-200);">
-                <div style="display:flex;align-items:center;gap:0.75rem;flex:1;">
-                    <span style="display:inline-block;padding:0.15rem 0.5rem;border-radius:12px;font-size:0.7rem;font-weight:500;background:${color}15;color:${color};">${label}</span>
-                    <span style="font-size:0.9rem;color:var(--gray-800);">${q.title}</span>
-                    ${sentInfo}
-                </div>
-                <div style="display:flex;align-items:center;gap:0.5rem;">
-                    <a href="${q.url}" target="_blank" rel="noopener" style="padding:0.3rem 0.6rem;background:${color};color:white;border:none;border-radius:var(--radius-md);font-size:0.75rem;cursor:pointer;text-decoration:none;">Ouvrir</a>
-                    <button onclick="CRMApp.removeFormationQuestionnaire(${formationId}, ${q.id})" style="padding:0.3rem 0.55rem;background:white;color:#dc2626;border:1px solid #fca5a5;border-radius:var(--radius-md);cursor:pointer;font-size:0.8rem;">Retirer</button>
-                </div>
-            </div>`;
-        }).join('');
+            // Badge de statut intelligent selon la catégorie
+            let statusBadge = '';
+            if (q.category === 'amont') {
+                statusBadge = '<span style="font-size:0.7rem;color:#059669;background:#d1fae5;padding:0.15rem 0.5rem;border-radius:8px;">✅ Disponible espace client</span>';
+            } else if (q.category === 'satisfaction' || q.category === 'evaluation_acquis') {
+                statusBadge = fq.sent_at
+                    ? '<span style="font-size:0.7rem;color:#059669;background:#d1fae5;padding:0.15rem 0.5rem;border-radius:8px;">✅ Envoyé le ' + new Date(fq.sent_at).toLocaleDateString('fr-FR') + '</span>'
+                    : '<span style="font-size:0.7rem;color:#92400e;background:#fef3c7;padding:0.15rem 0.5rem;border-radius:8px;">⏳ Sera envoyé par le formateur</span>';
+            } else if (q.category === 'froid_dirigeant' || q.category === 'froid_apprenant') {
+                let froidDate = 'après la formation';
+                if (endDate) {
+                    const d = new Date(endDate);
+                    d.setMonth(d.getMonth() + 3);
+                    froidDate = 'le ' + d.toLocaleDateString('fr-FR');
+                }
+                statusBadge = '<span style="font-size:0.7rem;color:#6b21a8;background:#f3e8ff;padding:0.15rem 0.5rem;border-radius:8px;">🕐 Envoi auto prévu ' + froidDate + '</span>';
+            }
+
+            return '<div style="display:flex;align-items:center;justify-content:space-between;padding:0.6rem 0.75rem;background:var(--gray-50);border-radius:var(--radius-md);border:1px solid var(--gray-200);">' +
+                '<div style="display:flex;align-items:center;gap:0.75rem;flex:1;flex-wrap:wrap;">' +
+                    '<span style="font-size:1.1rem;">' + icon + '</span>' +
+                    '<span style="display:inline-block;padding:0.15rem 0.5rem;border-radius:12px;font-size:0.7rem;font-weight:500;background:' + color + '15;color:' + color + ';">' + label + '</span>' +
+                    '<span style="font-size:0.9rem;color:var(--gray-800);">' + q.title + '</span>' +
+                    statusBadge +
+                '</div>' +
+                '<div style="display:flex;align-items:center;gap:0.5rem;flex-shrink:0;">' +
+                    '<a href="' + q.url + '" target="_blank" rel="noopener" style="padding:0.3rem 0.6rem;background:' + color + ';color:white;border:none;border-radius:var(--radius-md);font-size:0.75rem;cursor:pointer;text-decoration:none;">Ouvrir</a>' +
+                    '<button onclick="CRMApp.removeFormationQuestionnaire(' + formationId + ', ' + q.id + ')" style="padding:0.3rem 0.55rem;background:white;color:#dc2626;border:1px solid #fca5a5;border-radius:var(--radius-md);cursor:pointer;font-size:0.8rem;">Retirer</button>' +
+                '</div>' +
+            '</div>';
+        }).join('') +
+        '<p style="font-size:0.75rem;color:var(--gray-400);margin:0.75rem 0 0;font-style:italic;">Les questionnaires à froid seront envoyés automatiquement 3 mois après la fin de la formation.</p>';
     },
 
     async showAssignQuestionnaireModal(formationId) {
