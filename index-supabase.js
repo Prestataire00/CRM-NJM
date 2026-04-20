@@ -3788,8 +3788,17 @@ const CRMApp = {
                 if (profileResult.data.initial_password) {
                     clientPassword = profileResult.data.initial_password;
                 } else {
-                    clientPassword = '⚠️ Réinitialisez le mot de passe dans Gestion des Accès';
-                    showToast('Mot de passe initial non disponible. Réinitialisez-le dans Gestion des Accès.', 'warning', 5000);
+                    // Générer un nouveau mot de passe et le stocker
+                    const newPwd = Math.random().toString(36).slice(-8) + 'A1!';
+                    try {
+                        await supabaseClient.auth.admin.updateUserById(profileResult.data.id, { password: newPwd });
+                        await supabaseClient.from('profiles').update({ initial_password: newPwd }).eq('id', profileResult.data.id);
+                        clientPassword = newPwd;
+                        showToast('Mot de passe réinitialisé pour ' + clientEmail, 'info');
+                    } catch (e) {
+                        console.warn('Erreur réinitialisation mdp:', e);
+                        clientPassword = '[mot de passe déjà communiqué]';
+                    }
                 }
             } else {
                 showToast('Aucun compte client trouvé pour ' + clientEmail + '. Créez-le dans Gestion des Accès.', 'warning', 6000);
@@ -4342,7 +4351,19 @@ Nathalie Joulie-Morand`;
             let clientPassword = '[mot de passe non disponible]';
             const profileResult = await SupabaseData.getProfileByEmail(clientEmail);
             if (profileResult.success && profileResult.data) {
-                clientPassword = profileResult.data.initial_password || '[voir avec l\'administrateur]';
+                if (profileResult.data.initial_password) {
+                    clientPassword = profileResult.data.initial_password;
+                } else {
+                    // Générer un nouveau mot de passe et le stocker
+                    try {
+                        const newPwd = Math.random().toString(36).slice(-8) + 'A1!';
+                        await supabaseClient.auth.admin.updateUserById(profileResult.data.id, { password: newPwd });
+                        await supabaseClient.from('profiles').update({ initial_password: newPwd }).eq('id', profileResult.data.id);
+                        clientPassword = newPwd;
+                    } catch (e) {
+                        clientPassword = '[mot de passe déjà communiqué]';
+                    }
+                }
             }
 
             const siteUrl = window.location.origin;
