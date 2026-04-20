@@ -1240,7 +1240,7 @@ const CRMApp = {
                 <div style="background:white;border-radius:var(--radius-xl);padding:1.5rem;box-shadow:var(--shadow-sm);margin-bottom:1.5rem;">
                     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
                         <h3 style="font-size:1rem;font-weight:700;color:var(--gray-900);margin:0;">✉️ Communications (${convocLogs.length})</h3>
-                        <button onclick="CRMApp.sendMailLibre(${formationId})" style="padding:0.45rem 1rem;background:var(--primary-pink);color:white;border:none;border-radius:var(--radius-md);cursor:pointer;font-weight:600;font-size:0.85rem;">
+                        <button onclick="CRMApp.openEmailMenu(${formationId})" style="padding:0.45rem 1rem;background:var(--primary-pink);color:white;border:none;border-radius:var(--radius-md);cursor:pointer;font-weight:600;font-size:0.85rem;">
                             ✉️ Envoyer un mail
                         </button>
                     </div>
@@ -3125,7 +3125,7 @@ const CRMApp = {
                 <div style="background:white;border-radius:var(--radius-xl);padding:1.5rem;box-shadow:var(--shadow-sm);margin-bottom:1.5rem;">
                     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
                         <h3 style="font-size:1rem;font-weight:700;color:var(--gray-900);margin:0;">✉️ Communications (${convocLogs.length})</h3>
-                        <button onclick="CRMApp.sendMailLibre(${formationId})" style="padding:0.45rem 1rem;background:var(--primary-pink);color:white;border:none;border-radius:var(--radius-md);cursor:pointer;font-weight:600;font-size:0.85rem;">
+                        <button onclick="CRMApp.openEmailMenu(${formationId})" style="padding:0.45rem 1rem;background:var(--primary-pink);color:white;border:none;border-radius:var(--radius-md);cursor:pointer;font-weight:600;font-size:0.85rem;">
                             ✉️ Envoyer un mail
                         </button>
                     </div>
@@ -4273,6 +4273,170 @@ Nathalie Joulie-Morand`;
     },
 
     // ==================== END SIGNATURE ====================
+
+    async openEmailMenu(formationId) {
+        // Charger la formation pour déterminer collaboration_mode
+        const { data: formation, error } = await supabaseClient
+            .from('formations').select('collaboration_mode').eq('id', formationId).single();
+        const isSousTraitant = formation && formation.collaboration_mode === 'sous-traitant';
+
+        const existing = document.getElementById('email-menu-modal');
+        if (existing) existing.remove();
+
+        const menuItem = (icon, label, desc, templateId) =>
+            `<div onclick="document.getElementById('email-menu-modal').remove(); CRMApp.openEmailWithTemplate(${formationId}, '${templateId}')"
+                style="display:flex;align-items:center;gap:1rem;padding:0.85rem 1rem;border:1px solid var(--gray-200);border-radius:8px;cursor:pointer;transition:all 0.15s;"
+                onmouseover="this.style.background='#fdf2f8';this.style.borderColor='#f9a8d4';"
+                onmouseout="this.style.background='white';this.style.borderColor='var(--gray-200)';">
+                <span style="font-size:1.25rem;">${icon}</span>
+                <div style="flex:1;">
+                    <div style="font-weight:600;color:var(--gray-900);font-size:0.9rem;">${label}</div>
+                    <div style="font-size:0.75rem;color:var(--gray-500);margin-top:0.1rem;">${desc}</div>
+                </div>
+                <svg width="16" height="16" fill="none" stroke="var(--gray-400)" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </div>`;
+
+        const modal = document.createElement('div');
+        modal.id = 'email-menu-modal';
+        modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:50001;display:flex;align-items:center;justify-content:center;padding:1rem;';
+        modal.innerHTML = `
+            <div style="background:white;border-radius:var(--radius-xl);padding:2rem;max-width:550px;width:95%;max-height:90vh;overflow-y:auto;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+                    <h3 style="font-size:1.15rem;font-weight:700;color:var(--gray-900);margin:0;">✉️ Quel mail envoyer ?</h3>
+                    <button onclick="document.getElementById('email-menu-modal').remove()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--gray-400);">&times;</button>
+                </div>
+
+                <div style="margin-bottom:1.25rem;">
+                    <div style="font-size:0.8rem;font-weight:700;color:#8b5cf6;text-transform:uppercase;margin-bottom:0.5rem;padding-left:0.25rem;">🟣 Avant la formation</div>
+                    <div style="display:grid;gap:0.5rem;">
+                        ${menuItem('📨', 'Convocation', 'Avec questionnaire amont et accès espace client', 'convocation_v2')}
+                        ${menuItem('📨', 'Relance convention', 'Si convention non retournée signée', 'relance_convention_v2')}
+                        ${menuItem('📨', 'Relance préalable', 'Si apprenants non renseignés par le client', 'prealable_reminder')}
+                    </div>
+                </div>
+
+                <div style="margin-bottom:1.25rem;">
+                    <div style="font-size:0.8rem;font-weight:700;color:#059669;text-transform:uppercase;margin-bottom:0.5rem;padding-left:0.25rem;">🟢 Après la formation</div>
+                    <div style="display:grid;gap:0.5rem;">
+                        ${menuItem('📨', 'Mail fin de formation', 'Questionnaires + accès espace client', 'fin_formation_v2')}
+                        ${menuItem('📨', 'Relance questionnaires', 'Si questionnaires non complétés', 'relance_questionnaires')}
+                        ${isSousTraitant
+                            ? menuItem('📨', 'Avis Google (sous-traitant)', 'Mentionne le formateur sous-traitant', 'avis_google_sous_traitant')
+                            : menuItem('📨', 'Avis Google', 'Demande d\'avis Google aux participants', 'avis_google_direct')
+                        }
+                    </div>
+                </div>
+
+                <div style="border-top:1px solid var(--gray-200);padding-top:1rem;">
+                    <div onclick="document.getElementById('email-menu-modal').remove(); CRMApp.sendMailLibre(${formationId})"
+                        style="display:flex;align-items:center;gap:1rem;padding:0.85rem 1rem;border:1px solid var(--gray-200);border-radius:8px;cursor:pointer;transition:all 0.15s;"
+                        onmouseover="this.style.background='var(--gray-50)';this.style.borderColor='var(--gray-300)';"
+                        onmouseout="this.style.background='white';this.style.borderColor='var(--gray-200)';">
+                        <span style="font-size:1.25rem;">✏️</span>
+                        <div style="flex:1;">
+                            <div style="font-weight:600;color:var(--gray-900);font-size:0.9rem;">Mail personnalisé</div>
+                            <div style="font-size:0.75rem;color:var(--gray-500);margin-top:0.1rem;">Rédiger un mail libre</div>
+                        </div>
+                        <svg width="16" height="16" fill="none" stroke="var(--gray-400)" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                    </div>
+                </div>
+            </div>
+        `;
+        modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+        document.body.appendChild(modal);
+    },
+
+    async openEmailWithTemplate(formationId, templateId) {
+        try {
+            // Charger formation + template en parallèle
+            const [formResult, template] = await Promise.all([
+                supabaseClient.from('formations').select('*').eq('id', formationId).single(),
+                SupabaseData.getEmailTemplate(templateId)
+            ]);
+
+            if (formResult.error) throw formResult.error;
+            const formation = formResult.data;
+
+            if (!template) {
+                showToast('Template introuvable. Exécutez la migration SQL.', 'error');
+                return;
+            }
+
+            // Récupérer le mot de passe client
+            let clientPassword = '[mot de passe non disponible]';
+            if (formation.client_email) {
+                const profileResult = await SupabaseData.getProfileByEmail(formation.client_email);
+                if (profileResult.success && profileResult.data) {
+                    if (profileResult.data.initial_password) {
+                        clientPassword = profileResult.data.initial_password;
+                    } else {
+                        try {
+                            const newPwd = Math.random().toString(36).slice(-8) + 'A1!';
+                            await supabaseClient.auth.admin.updateUserById(profileResult.data.id, { password: newPwd });
+                            await supabaseClient.from('profiles').update({ initial_password: newPwd }).eq('id', profileResult.data.id);
+                            clientPassword = newPwd;
+                        } catch (e) { clientPassword = '[mot de passe déjà communiqué]'; }
+                    }
+                }
+            }
+
+            const siteUrl = window.location.origin;
+            const startDate = formation.start_date ? new Date(formation.start_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : '[date à définir]';
+            const endDate = formation.end_date ? new Date(formation.end_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+            const formateurName = ((formation.subcontractor_first_name || '') + ' ' + (formation.subcontractor_last_name || '')).trim() || 'le formateur';
+
+            // Date limite questionnaire = J-5
+            let dateLimit = '[date limite]';
+            if (formation.start_date) {
+                const limitDate = new Date(formation.start_date);
+                limitDate.setDate(limitDate.getDate() - 5);
+                dateLimit = limitDate.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+            }
+
+            // Map de toutes les variables possibles
+            const vars = {
+                '{{formation}}': formation.formation_name || 'Formation',
+                '{{dirigeant}}': formation.company_director_name || '',
+                '{{Nom_du_dirigeant}}': formation.company_director_name || '',
+                '{{dates}}': startDate + (endDate && endDate !== startDate ? ' - ' + endDate : ''),
+                '{{dates_de_début}}': startDate,
+                '{{dates_de_fin}}': endDate,
+                '{{lieu}}': formation.training_location || '[lieu à préciser]',
+                '{{training_location}}': formation.training_location || '[lieu à préciser]',
+                '{{date_limite_questionnaire}}': dateLimit,
+                '{{lien_questionnaire}}': '[Sélectionnez un questionnaire amont]',
+                '{{lien_satisfaction}}': '[Sélectionnez un questionnaire satisfaction]',
+                '{{lien_evaluation}}': '[Sélectionnez un questionnaire évaluation]',
+                '{{url}}': siteUrl,
+                '{{password}}': clientPassword,
+                '{{client_login}}': formation.client_email || '',
+                '{{client_password}}': clientPassword,
+                '{{email}}': formation.client_email || '',
+                '{{formateur}}': formateurName
+            };
+
+            let subject = template.subject;
+            let body = template.body;
+            Object.entries(vars).forEach(([key, val]) => {
+                subject = subject.replaceAll(key, val);
+                body = body.replaceAll(key, val);
+            });
+
+            const showQuestionnaires = ['fin_formation_v2', 'relance_questionnaires'].includes(templateId);
+
+            GenericEmail.show({
+                title: '📨 ' + template.name,
+                to: formation.client_email || '',
+                subject,
+                body,
+                showQuestionnaires,
+                formationId
+            });
+        } catch (err) {
+            console.error('Erreur openEmailWithTemplate:', err);
+            showToast('Erreur chargement template: ' + err.message, 'error');
+        }
+    },
 
     async sendMailLibre(formationId) {
         try {
