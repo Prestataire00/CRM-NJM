@@ -2463,6 +2463,10 @@ const CRMApp = {
             }
         }
 
+        if (pageName === 'email-templates') {
+            setTimeout(() => this.loadEmailTemplates(), 100);
+        }
+
         const pageTitles = {
             'dashboard': 'Tableau de bord',
             'formations': 'Formation 2026',
@@ -2473,6 +2477,7 @@ const CRMApp = {
             'biblio-supports': 'Bibliothèque Supports',
             'biblio-templates': 'Bibliothèque Templates',
             'questionnaires': 'Questionnaires',
+            'email-templates': 'Templates Emails',
             'formation-detail-formateur': 'Fiche formation',
             'acces': 'Gestion des Accès',
             'parametres': 'Paramètres',
@@ -4685,9 +4690,6 @@ Nathalie Joulie-Morand`;
         const cachetResult = await SupabaseData.getSetting('cachet');
         const cachet = (cachetResult.success && cachetResult.data) ? cachetResult.data : localStorage.getItem('njm_cachet');
         if (cachet) { const el = document.getElementById('param-cachet-preview'); if (el) el.src = cachet; }
-
-        // Charger les templates d'emails
-        this.loadEmailTemplates();
     },
 
     async saveParametres() {
