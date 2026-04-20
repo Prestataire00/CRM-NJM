@@ -1248,7 +1248,7 @@
                             d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
                         </path>
                     </svg>
-                    Mes documents
+                    Contrats
                 </a>
 
                 <a href="#questionnaires" class="nav-item" data-page="questionnaires">
@@ -1257,6 +1257,15 @@
                             d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
                     </svg>
                     Questionnaires
+                </a>
+
+                <a href="#biblio-supports" class="nav-item" data-page="biblio-supports">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z">
+                        </path>
+                    </svg>
+                    Supports
                 </a>
             </nav>
 
@@ -1390,6 +1399,14 @@
                 </div>
             </div>
             <!-- END MES MISSIONS PAGE -->
+
+            <!-- FICHE FORMATION FORMATEUR (page dédiée, pas dans sidebar) -->
+            <div id="page-formation-detail-formateur" class="page-content">
+                <div id="formateur-formation-detail-content">
+                    <p style="color:var(--gray-500);text-align:center;padding:3rem;">Chargement...</p>
+                </div>
+            </div>
+            <!-- END FICHE FORMATION FORMATEUR -->
 
             <!-- MES DOCUMENTS PAGE (Formateur) -->
             <div id="page-mes-documents" class="page-content">
@@ -1880,7 +1897,7 @@
                 <div style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
                     <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-900);">Bibliothèque Supports</h2>
                     <div style="display: flex; gap: 0.75rem;">
-                        <button onclick="CRMApp.uploadSupportFile()"
+                        <button id="btn-add-support-file" onclick="CRMApp.uploadSupportFile()"
                             style="padding: 0.6rem 1.25rem; background: var(--primary-orange); color: white; border: none; border-radius: var(--radius-md); font-weight: 600; cursor: pointer; font-size: 0.85rem;">+ Ajouter un fichier</button>
                     </div>
                 </div>

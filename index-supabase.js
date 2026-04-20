@@ -506,6 +506,7 @@ const CRMApp = {
 
     async initFormateurView(user) {
         this.currentUser = user;
+        window.currentUserRole = 'formateur';
         this.setupFormateurNavigation();
         await this.loadMissions();
         this.showPage('missions');
@@ -640,9 +641,9 @@ const CRMApp = {
                         </span>
                     </td>
                     <td style="padding: 1rem; text-align: center;">
-                        <button onclick="CRMApp.showMissionDetails(${f.id})"
+                        <button onclick="CRMApp.openFormateurFormation(${f.id})"
                             style="padding: 0.5rem 1rem; background: var(--primary-purple); color: white; border: none; border-radius: var(--radius-md); font-weight: 500; cursor: pointer; font-size: 0.875rem;">
-                            Détails
+                            Ouvrir
                         </button>
                     </td>
                 </tr>
@@ -1000,6 +1001,323 @@ const CRMApp = {
         if (targetTab) {
             targetTab.style.display = 'block';
         }
+    },
+
+    // ==================== FORMATEUR — FICHE FORMATION DÉDIÉE ====================
+
+    openFormateurFormation(formationId) {
+        this.showPage('formation-detail-formateur');
+        // Deselect sidebar items
+        const formateurNav = document.getElementById('formateur-nav');
+        if (formateurNav) formateurNav.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        this.showFormateurFormationDetail(formationId);
+    },
+
+    async showFormateurFormationDetail(formationId) {
+        const container = document.getElementById('formateur-formation-detail-content');
+        if (!container) return;
+        container.innerHTML = '<p style="color:var(--gray-500);text-align:center;padding:3rem;">Chargement...</p>';
+
+        try {
+            const { data: formation, error } = await supabaseClient
+                .from('formations')
+                .select('*, formation_documents(*)')
+                .eq('id', formationId)
+                .single();
+            if (error) throw error;
+
+            // Logs de communication
+            const convocResult = await SupabaseData.getConvocationLogs(formationId);
+            const convocLogs = convocResult.success ? convocResult.data : [];
+
+            // Questionnaires attribués
+            const questResult = await SupabaseData.getFormationQuestionnaires(formationId);
+            const formationQuests = questResult.success ? questResult.data : [];
+
+            const docs = formation.formation_documents || [];
+            const hasDoc = (type) => docs.some(d => d.type === type || (type === 'fiche_pedagogique' && d.type === 'google_doc'));
+
+            const startDate = formation.start_date ? new Date(formation.start_date).toLocaleDateString('fr-FR') : 'N/A';
+            const endDate = formation.end_date ? new Date(formation.end_date).toLocaleDateString('fr-FR') : 'N/A';
+            const learnersData = typeof formation.learners_data === 'string' ? JSON.parse(formation.learners_data || '[]') : (formation.learners_data || []);
+
+            const hasPrealable = formation.prealable_recu === true;
+            const hasFichePeda = hasDoc('fiche_pedagogique');
+            const hasConvention = hasDoc('convention');
+            const hasContratST = hasDoc('contrat_sous_traitance');
+            const hasAttendance = hasDoc('attendance_sheet');
+            const hasCertificate = hasDoc('certificate');
+            const hasConvocation = convocLogs.length > 0;
+            const learnersCount = learnersData.length;
+
+            let hasClientAccount = false;
+            if (formation.client_email) {
+                const profileCheck = await SupabaseData.getProfileByEmail(formation.client_email);
+                hasClientAccount = profileCheck.success && profileCheck.data;
+            }
+
+            const statusLabels = {
+                'planned': { text: 'Planifiée', bg: '#dbeafe', color: '#1e40af' },
+                'in_progress': { text: 'En cours', bg: '#fef3c7', color: '#92400e' },
+                'completed': { text: 'Terminée', bg: '#d1fae5', color: '#065f46' },
+                'cancelled': { text: 'Annulée', bg: '#fee2e2', color: '#dc2626' },
+                'awaiting_prealable': { text: 'Préalable en attente', bg: '#f3e8ff', color: '#6b21a8' }
+            };
+            const st = statusLabels[formation.status] || statusLabels['planned'];
+
+            // Phase item helper — version formateur (lecture seule ou action)
+            const phaseItem = (done, label, primary, secondary) => {
+                const checkIcon = done ? '✅' : '□';
+                const checkColor = done ? '#059669' : 'var(--gray-400)';
+                const labelColor = done ? 'var(--gray-600)' : 'var(--gray-900)';
+                const textDecor = done ? 'text-decoration:line-through;' : '';
+                return `
+                    <div style="padding:0.75rem 0;border-bottom:1px solid var(--gray-100);">
+                        <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:${primary || secondary ? '0.5rem' : '0'};">
+                            <span style="font-size:1rem;color:${checkColor};">${checkIcon}</span>
+                            <span style="font-size:0.9rem;font-weight:500;color:${labelColor};${textDecor}">${label}</span>
+                        </div>
+                        ${(primary || secondary) ? `<div style="display:flex;gap:0.4rem;flex-wrap:wrap;padding-left:1.5rem;">
+                            ${primary ? `<button onclick="${primary.action}" style="padding:0.35rem 0.75rem;background:${primary.bg || 'var(--primary-pink)'};color:white;border:none;border-radius:var(--radius-md);cursor:pointer;font-size:0.8rem;font-weight:500;">${primary.label}</button>` : ''}
+                            ${secondary ? `<button onclick="${secondary.action}" style="padding:0.35rem 0.75rem;background:var(--gray-100);color:var(--gray-700);border:1px solid var(--gray-300);border-radius:var(--radius-md);cursor:pointer;font-size:0.8rem;">${secondary.label}</button>` : ''}
+                        </div>` : ''}
+                    </div>`;
+            };
+
+            // Questionnaires envoyables (satisfaction + evaluation_acquis)
+            const sendableQuests = formationQuests.filter(fq => {
+                const q = fq.questionnaires;
+                return q && (q.category === 'satisfaction' || q.category === 'evaluation_acquis');
+            });
+
+            const questItemsHtml = sendableQuests.length > 0 ? sendableQuests.map(fq => {
+                const q = fq.questionnaires;
+                const catLabel = this._categoryLabels[q.category] || q.category;
+                const catColor = this._categoryColors[q.category] || '#6b7280';
+                const sentInfo = fq.sent_at
+                    ? `<span style="color:#059669;font-weight:500;font-size:0.75rem;">Envoyé le ${new Date(fq.sent_at).toLocaleDateString('fr-FR')}</span>`
+                    : `<button onclick="CRMApp.sendQuestionnaireToLearners(${formationId}, ${q.id})" style="padding:0.3rem 0.6rem;background:var(--primary-pink);color:white;border:none;border-radius:var(--radius-md);cursor:pointer;font-size:0.75rem;font-weight:500;">Envoyer</button>`;
+                return `<div style="display:flex;align-items:center;gap:0.5rem;padding:0.4rem 0;">
+                    <span style="padding:0.1rem 0.4rem;border-radius:8px;font-size:0.7rem;background:${catColor}15;color:${catColor};">${catLabel}</span>
+                    <span style="font-size:0.85rem;color:var(--gray-800);flex:1;">${q.title}</span>
+                    ${sentInfo}
+                </div>`;
+            }).join('') : '<p style="font-size:0.8rem;color:var(--gray-400);margin:0;padding-left:1.5rem;">Aucun questionnaire attribué — <a href="#" onclick="event.preventDefault();CRMApp.showAssignQuestionnaireModal('+formationId+')" style="color:var(--primary-pink);">attribuer</a></p>';
+
+            // Documents client visibles (lecture seule)
+            const clientDocTypes = {
+                'fiche_pedagogique': '📝', 'google_doc': '📝',
+                'convention': '📄', 'attendance_sheet': '📋',
+                'certificate': '🏅', 'manual': '📎'
+            };
+            const clientVisibleDocs = docs.filter(d => d.type !== 'contrat_sous_traitance');
+
+            container.innerHTML = `
+                <!-- HEADER -->
+                <div style="margin-bottom:1.5rem;">
+                    <button onclick="CRMApp.showPage('missions'); document.querySelector('#formateur-nav .nav-item[data-page=missions]')?.classList.add('active');" style="background:none;border:none;cursor:pointer;color:var(--primary-purple);font-weight:500;margin-bottom:0.5rem;padding:0;font-size:0.9rem;">← Retour aux missions</button>
+                    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+                        <div>
+                            <h2 style="font-size:1.4rem;font-weight:700;color:var(--gray-900);margin:0;">${formation.formation_name || 'Formation'}</h2>
+                            <p style="color:var(--gray-500);font-size:0.9rem;margin:0.25rem 0 0 0;">
+                                ${formation.company_name || formation.client_name || 'Client'} &bull;
+                                ${formation.custom_dates || (startDate + (startDate !== endDate ? ' - ' + endDate : ''))} &bull;
+                                ${formation.training_location || ''} &bull;
+                                ${learnersCount} apprenant(s) &bull;
+                                ${formation.hours_per_learner || 0}h
+                            </p>
+                        </div>
+                        <span style="padding:0.35rem 0.8rem;background:${st.bg};color:${st.color};border-radius:9999px;font-size:0.85rem;font-weight:600;">${st.text}</span>
+                    </div>
+                </div>
+
+                <!-- 3 PHASES -->
+                <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:1rem;margin-bottom:1.5rem;">
+                    <!-- ① Préparer (lecture seule) -->
+                    <div style="background:white;border-radius:var(--radius-xl);padding:1.25rem;box-shadow:var(--shadow-sm);border-top:3px solid #3b82f6;">
+                        <h3 style="font-size:1rem;font-weight:700;color:var(--gray-900);margin:0 0 1rem 0;">① Préparer</h3>
+                        ${phaseItem(
+                            hasPrealable,
+                            hasPrealable ? 'Préalable reçu (' + learnersCount + ' apprenant' + (learnersCount > 1 ? 's' : '') + ')' : 'Préalable — en attente'
+                        )}
+                        ${phaseItem(
+                            hasFichePeda,
+                            'Fiche pédagogique',
+                            hasFichePeda ? { label: 'Ouvrir', action: "CRMApp.openDocument(" + formationId + ", 'fiche_pedagogique')", bg: 'var(--gray-500)' } : null
+                        )}
+                        ${phaseItem(
+                            hasConvention && !!formation.client_signed_at,
+                            hasConvention
+                                ? (formation.client_signed_at
+                                    ? 'Convention — <span style="color:#059669;font-weight:600;">Signée le ' + new Date(formation.client_signed_at).toLocaleDateString('fr-FR') + '</span>'
+                                    : 'Convention — <span style="color:#d97706;font-weight:600;">En attente signature client</span>')
+                                : 'Convention — non créée',
+                            hasConvention ? { label: 'Ouvrir', action: "CRMApp.openDocument(" + formationId + ", 'convention')", bg: 'var(--gray-500)' } : null
+                        )}
+                        ${phaseItem(hasConvocation, hasConvocation ? 'Convocation envoyée' : 'Convocation — non envoyée')}
+                        ${phaseItem(
+                            hasContratST && !!formation.subcontractor_signed_at,
+                            hasContratST
+                                ? (formation.subcontractor_signed_at
+                                    ? 'Contrat sous-traitance — <span style="color:#059669;font-weight:600;">Signé le ' + new Date(formation.subcontractor_signed_at).toLocaleDateString('fr-FR') + '</span>'
+                                    : 'Contrat sous-traitance — <span style="color:#d97706;font-weight:600;">En attente signature</span>')
+                                : 'Contrat sous-traitance — non créé',
+                            hasContratST ? { label: 'Ouvrir', action: "CRMApp.openDocument(" + formationId + ", 'contrat_sous_traitance')", bg: 'var(--gray-500)' } : null,
+                            hasContratST && !formation.subcontractor_signed_at ? { label: 'Signer', action: "CRMApp.openSignatureModal('subcontractor', " + formationId + ")" } : null
+                        )}
+                    </div>
+
+                    <!-- ② Pendant -->
+                    <div style="background:white;border-radius:var(--radius-xl);padding:1.25rem;box-shadow:var(--shadow-sm);border-top:3px solid #f59e0b;">
+                        <h3 style="font-size:1rem;font-weight:700;color:var(--gray-900);margin:0 0 1rem 0;">② Pendant</h3>
+                        ${phaseItem(
+                            hasAttendance,
+                            'Feuille de présence',
+                            { label: hasAttendance ? 'Ouvrir' : 'Créer', action: hasAttendance ? "CRMApp.openDocument(" + formationId + ", 'attendance_sheet')" : "CRMApp.createAttendanceSheet(" + formationId + ")" }
+                        )}
+                        ${phaseItem(
+                            hasClientAccount,
+                            hasClientAccount ? 'Accès client — actif' : 'Accès client — non créé'
+                        )}
+                    </div>
+
+                    <!-- ③ Clôturer -->
+                    <div style="background:white;border-radius:var(--radius-xl);padding:1.25rem;box-shadow:var(--shadow-sm);border-top:3px solid #059669;">
+                        <h3 style="font-size:1rem;font-weight:700;color:var(--gray-900);margin:0 0 1rem 0;">③ Clôturer</h3>
+
+                        <div style="padding:0.75rem 0;border-bottom:1px solid var(--gray-100);">
+                            <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;">
+                                <span style="font-size:1rem;color:${sendableQuests.every(fq => fq.sent_at) && sendableQuests.length > 0 ? '#059669' : 'var(--gray-400)'};">${sendableQuests.every(fq => fq.sent_at) && sendableQuests.length > 0 ? '✅' : '□'}</span>
+                                <span style="font-size:0.9rem;font-weight:500;color:var(--gray-900);">Questionnaires évaluation + satisfaction</span>
+                            </div>
+                            <div style="padding-left:1.5rem;">
+                                ${questItemsHtml}
+                            </div>
+                        </div>
+
+                        ${phaseItem(
+                            hasCertificate,
+                            'Certificat + Attestation',
+                            { label: hasCertificate ? 'Ouvrir' : 'Créer', action: hasCertificate ? "CRMApp.openDocument(" + formationId + ", 'certificate')" : "CRMApp.createCertificate(" + formationId + ")" }
+                        )}
+                        ${phaseItem(
+                            false,
+                            'Bilan de formation',
+                            { label: 'Télécharger', action: "window.open('assets/static/bilan-formation.docx', '_blank')", bg: 'var(--gray-500)' }
+                        )}
+                        ${phaseItem(
+                            false,
+                            'Mail fin de formation',
+                            { label: 'Envoyer', action: "CRMApp.sendMailFinFormation(" + formationId + ")" }
+                        )}
+                    </div>
+                </div>
+
+                <!-- ESPACE CLIENT (lecture seule) -->
+                <div style="background:white;border-radius:var(--radius-xl);padding:1.5rem;box-shadow:var(--shadow-sm);margin-bottom:1.5rem;">
+                    <h3 style="font-size:1rem;font-weight:700;color:var(--gray-900);margin:0 0 1rem 0;">👁 Espace client — Ce que voit le client</h3>
+                    <div style="display:grid;gap:0.5rem;">
+                        ${clientVisibleDocs.length === 0 ? '<p style="color:var(--gray-500);font-size:0.9rem;">Aucun document visible</p>' :
+                            clientVisibleDocs.map(doc => {
+                                const typeLabels = { 'fiche_pedagogique': 'Fiche pédagogique', 'google_doc': 'Fiche pédagogique', 'convention': 'Convention', 'attendance_sheet': 'Feuille de présence', 'certificate': 'Certificat', 'manual': 'Document' };
+                                const icon = clientDocTypes[doc.type] || '📄';
+                                const visible = doc.visible_client !== false;
+                                return '<div style="display:flex;align-items:center;justify-content:space-between;padding:0.6rem 0.75rem;background:var(--gray-50);border-radius:var(--radius-md);border:1px solid var(--gray-200);">' +
+                                    '<span style="font-size:0.9rem;color:var(--gray-800);display:flex;align-items:center;gap:0.5rem;">' +
+                                        '<span style="font-size:1.1rem;">' + icon + '</span> ' +
+                                        (doc.name || typeLabels[doc.type] || doc.type) +
+                                    '</span>' +
+                                    '<span style="font-size:0.75rem;color:' + (visible ? '#059669' : '#dc2626') + ';font-weight:500;">' + (visible ? '👁 Visible' : '🔒 Masqué') + '</span>' +
+                                '</div>';
+                            }).join('')
+                        }
+                    </div>
+                </div>
+
+                <!-- COMMUNICATIONS -->
+                <div style="background:white;border-radius:var(--radius-xl);padding:1.5rem;box-shadow:var(--shadow-sm);margin-bottom:1.5rem;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+                        <h3 style="font-size:1rem;font-weight:700;color:var(--gray-900);margin:0;">✉️ Communications (${convocLogs.length})</h3>
+                        <button onclick="CRMApp.sendMailLibre(${formationId})" style="padding:0.45rem 1rem;background:var(--primary-pink);color:white;border:none;border-radius:var(--radius-md);cursor:pointer;font-weight:600;font-size:0.85rem;">
+                            ✉️ Envoyer un mail
+                        </button>
+                    </div>
+                    ${convocLogs.length === 0 ? '<p style="color:var(--gray-500);font-size:0.9rem;">Aucun email envoyé</p>' :
+                        '<div style="display:grid;gap:0.5rem;">' +
+                            convocLogs.map(log =>
+                                '<div style="padding:0.65rem 0.85rem;background:var(--gray-50);border-radius:var(--radius-md);border-left:3px solid var(--primary-pink);">' +
+                                    '<div style="font-size:0.85rem;font-weight:500;color:var(--gray-900);">' + (log.subject || 'Mail') + '</div>' +
+                                    '<div style="font-size:0.75rem;color:var(--gray-500);margin-top:0.15rem;">' + new Date(log.sent_at || log.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }) + ' — ' + log.sent_to + '</div>' +
+                                '</div>'
+                            ).join('') +
+                        '</div>'
+                    }
+                </div>
+
+                <!-- QUESTIONNAIRES ATTRIBUÉS -->
+                <div style="background:white;border-radius:var(--radius-xl);padding:1.5rem;box-shadow:var(--shadow-sm);margin-bottom:1.5rem;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+                        <h3 style="font-size:1rem;font-weight:700;color:var(--gray-900);margin:0;">📝 Questionnaires attribués</h3>
+                        <button onclick="CRMApp.showAssignQuestionnaireModal(${formationId})" style="padding:0.35rem 0.85rem;background:var(--primary-orange);color:white;border:none;border-radius:var(--radius-md);font-size:0.8rem;font-weight:600;cursor:pointer;">+ Attribuer</button>
+                    </div>
+                    <div id="formateur-formation-questionnaires-list" style="display:grid;gap:0.5rem;">
+                        <p style="color:var(--gray-400);font-size:0.85rem;">Chargement...</p>
+                    </div>
+                </div>
+
+                <!-- SUPPORTS PÉDAGOGIQUES -->
+                <div style="background:white;border-radius:var(--radius-xl);padding:1.5rem;box-shadow:var(--shadow-sm);">
+                    <h3 style="font-size:1rem;font-weight:700;color:var(--gray-900);margin:0 0 1rem 0;">📚 Supports pédagogiques</h3>
+                    <div id="formateur-formation-supports-list" style="margin-top:0.5rem;">
+                        <p style="color:var(--gray-400);font-size:0.85rem;">Chargement...</p>
+                    </div>
+                </div>
+            `;
+
+            // Charger questionnaires attribués
+            this._loadFormateurFormationQuestionnaires(formationId);
+
+            // Charger supports
+            this.loadFormationSupports(formationId, 'formateur-formation-supports-list');
+
+        } catch (err) {
+            console.error('Erreur showFormateurFormationDetail:', err);
+            container.innerHTML = '<p style="color:#dc2626;text-align:center;padding:2rem;">Erreur de chargement: ' + err.message + '</p>';
+        }
+    },
+
+    async _loadFormateurFormationQuestionnaires(formationId) {
+        const container = document.getElementById('formateur-formation-questionnaires-list');
+        if (!container) return;
+
+        const result = await SupabaseData.getFormationQuestionnaires(formationId);
+        if (!result.success || result.data.length === 0) {
+            container.innerHTML = '<p style="color:var(--gray-400);font-size:0.85rem;">Aucun questionnaire attribué</p>';
+            return;
+        }
+
+        container.innerHTML = result.data.map(fq => {
+            const q = fq.questionnaires;
+            if (!q) return '';
+            const color = this._categoryColors[q.category] || '#6b7280';
+            const label = this._categoryLabels[q.category] || q.category;
+            const sentInfo = fq.sent_at
+                ? '<span style="font-size:0.75rem;color:#059669;font-weight:500;">Envoyé le ' + new Date(fq.sent_at).toLocaleDateString('fr-FR') + '</span>'
+                : '<span style="font-size:0.75rem;color:var(--gray-500);">Non envoyé</span>';
+
+            return '<div style="display:flex;align-items:center;justify-content:space-between;padding:0.6rem 0.75rem;background:var(--gray-50);border-radius:var(--radius-md);border:1px solid var(--gray-200);">' +
+                '<div style="display:flex;align-items:center;gap:0.75rem;flex:1;">' +
+                    '<span style="display:inline-block;padding:0.15rem 0.5rem;border-radius:12px;font-size:0.7rem;font-weight:500;background:' + color + '15;color:' + color + ';">' + label + '</span>' +
+                    '<span style="font-size:0.9rem;color:var(--gray-800);">' + q.title + '</span>' +
+                    sentInfo +
+                '</div>' +
+                '<div style="display:flex;align-items:center;gap:0.5rem;">' +
+                    '<a href="' + q.url + '" target="_blank" rel="noopener" style="padding:0.3rem 0.6rem;background:' + color + ';color:white;border:none;border-radius:var(--radius-md);font-size:0.75rem;cursor:pointer;text-decoration:none;">Ouvrir</a>' +
+                    (!fq.sent_at && (q.category === 'satisfaction' || q.category === 'evaluation_acquis') ? '<button onclick="CRMApp.sendQuestionnaireToLearners(' + formationId + ', ' + q.id + ')" style="padding:0.3rem 0.6rem;background:var(--primary-pink);color:white;border:none;border-radius:var(--radius-md);font-size:0.75rem;cursor:pointer;">Envoyer</button>' : '') +
+                    '<button onclick="CRMApp.removeFormationQuestionnaire(' + formationId + ', ' + q.id + ')" style="padding:0.3rem 0.55rem;background:white;color:#dc2626;border:1px solid #fca5a5;border-radius:var(--radius-md);cursor:pointer;font-size:0.8rem;">Retirer</button>' +
+                '</div>' +
+            '</div>';
+        }).join('');
     },
 
     // ==================== END FORMATEUR VIEW ====================
@@ -2138,6 +2456,13 @@ const CRMApp = {
             setTimeout(() => this.loadQuestionnaires(), 100);
         }
 
+        if (pageName === 'biblio-supports') {
+            const addBtn = document.getElementById('btn-add-support-file');
+            if (addBtn && window.currentUserRole === 'formateur') {
+                addBtn.style.display = 'none';
+            }
+        }
+
         const pageTitles = {
             'dashboard': 'Tableau de bord',
             'formations': 'Formation 2026',
@@ -2148,6 +2473,7 @@ const CRMApp = {
             'biblio-supports': 'Bibliothèque Supports',
             'biblio-templates': 'Bibliothèque Templates',
             'questionnaires': 'Questionnaires',
+            'formation-detail-formateur': 'Fiche formation',
             'acces': 'Gestion des Accès',
             'parametres': 'Paramètres',
             'missions': 'Mes missions',
@@ -2846,8 +3172,8 @@ const CRMApp = {
         }
     },
 
-    async loadFormationSupports(formationId) {
-        const container = document.getElementById('formation-supports-list');
+    async loadFormationSupports(formationId, containerId) {
+        const container = document.getElementById(containerId || 'formation-supports-list');
         if (!container) return;
 
         const result = await SupabaseData.getFormationSupports(formationId);
@@ -5656,6 +5982,110 @@ Nathalie Joulie-Morand`;
                 `;
             }).join('')}
         </div>`;
+    },
+
+    // ==================== ENVOI QUESTIONNAIRES AUX APPRENANTS ====================
+
+    async sendQuestionnaireToLearners(formationId, questionnaireId) {
+        try {
+            // Charger la formation pour récupérer les apprenants et infos
+            const { data: formation, error } = await supabaseClient
+                .from('formations')
+                .select('*')
+                .eq('id', formationId)
+                .single();
+            if (error) throw error;
+
+            // Charger le questionnaire
+            const questResult = await SupabaseData.getQuestionnaire(questionnaireId);
+            if (!questResult.success) throw new Error('Questionnaire introuvable');
+            const questionnaire = questResult.data;
+
+            // Parser les apprenants
+            const learnersData = typeof formation.learners_data === 'string'
+                ? JSON.parse(formation.learners_data || '[]')
+                : (formation.learners_data || []);
+
+            const learnersWithEmail = learnersData.filter(l => l.email);
+
+            if (learnersWithEmail.length === 0) {
+                // Pas d'email apprenant : envoyer au client (dirigeant)
+                if (!formation.client_email) {
+                    showToast('Aucun email apprenant ni client renseigné', 'warning');
+                    return;
+                }
+
+                const catLabel = this._categoryLabels[questionnaire.category] || questionnaire.category;
+                const subject = catLabel + ' - Formation "' + (formation.formation_name || 'Formation') + '"';
+                const body = 'Bonjour,\n\nDans le cadre de la formation "' + (formation.formation_name || '') + '", pourriez-vous transmettre le questionnaire ci-dessous à chaque participant ?\n\n' + catLabel + ' : ' + questionnaire.url + '\n\nMerci par avance.\n\nCordialement,\nNathalie JOULIÉ-MORAND\nNJM Conseil';
+
+                GenericEmail.show({
+                    title: '📧 Envoi questionnaire — ' + catLabel,
+                    to: formation.client_email,
+                    subject,
+                    body,
+                    formationId
+                });
+                return;
+            }
+
+            // Confirmation
+            if (!confirm('Envoyer le questionnaire "' + questionnaire.title + '" à ' + learnersWithEmail.length + ' apprenant(s) ?')) return;
+
+            let sent = 0;
+            let errors = 0;
+            const catLabel = this._categoryLabels[questionnaire.category] || questionnaire.category;
+
+            for (const learner of learnersWithEmail) {
+                try {
+                    const learnerName = ((learner.first_name || '') + ' ' + (learner.last_name || '')).trim();
+                    const subject = catLabel + ' - Formation "' + (formation.formation_name || '') + '"';
+                    const body = 'Bonjour' + (learnerName ? ' ' + learnerName : '') + ',\n\nSuite à la formation "' + (formation.formation_name || '') + '", pourriez-vous prendre quelques minutes pour compléter le questionnaire ci-dessous ?\n\n' + questionnaire.url + '\n\nVotre retour est précieux pour améliorer la qualité de nos formations.\n\nCordialement,\nNathalie JOULIÉ-MORAND\nNJM Conseil';
+
+                    const emailResult = await SupabaseData.sendEmail({
+                        to: learner.email,
+                        subject,
+                        body
+                    });
+
+                    if (emailResult.success) {
+                        sent++;
+                        // Logger dans convocation_logs
+                        await supabaseClient.from('convocation_logs').insert([{
+                            formation_id: formationId,
+                            sent_to: learner.email,
+                            subject,
+                            body,
+                            questionnaire_url: questionnaire.url
+                        }]);
+                    } else {
+                        errors++;
+                    }
+                } catch (e) {
+                    console.error('Erreur envoi questionnaire à', learner.email, e);
+                    errors++;
+                }
+            }
+
+            // Marquer comme envoyé dans formation_questionnaires
+            await supabaseClient
+                .from('formation_questionnaires')
+                .update({ sent_to_learners: true, sent_at: new Date().toISOString() })
+                .eq('formation_id', formationId)
+                .eq('questionnaire_id', questionnaireId);
+
+            showToast('Questionnaire envoyé à ' + sent + ' apprenant(s)' + (errors > 0 ? ' (' + errors + ' erreur(s))' : ''), sent > 0 ? 'success' : 'error');
+
+            // Rafraîchir les listes
+            this.loadFormationQuestionnaires(formationId);
+            this._loadFormateurFormationQuestionnaires(formationId);
+            if (this.currentPage === 'formation-detail-formateur') {
+                this.showFormateurFormationDetail(formationId);
+            }
+        } catch (err) {
+            console.error('Erreur sendQuestionnaireToLearners:', err);
+            showToast('Erreur envoi questionnaire: ' + err.message, 'error');
+        }
     },
 
     // ==================== FORMATION-QUESTIONNAIRES (attribution) ====================
