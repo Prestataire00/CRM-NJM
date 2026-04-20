@@ -4856,6 +4856,47 @@ Nathalie Joulie-Morand`;
         }
     },
 
+    async reassignAllQuestionnaires() {
+        const resultEl = document.getElementById('reassign-result');
+        if (resultEl) resultEl.textContent = 'Traitement en cours...';
+
+        try {
+            const { data: formations, error } = await supabaseClient
+                .from('formations')
+                .select('id, formation_name')
+                .order('id');
+            if (error) throw error;
+
+            let assigned = 0;
+            let skipped = 0;
+            const categories = ['amont', 'satisfaction', 'evaluation_acquis'];
+
+            for (const f of formations) {
+                // Vérifier si des questionnaires sont déjà attribués
+                const existing = await SupabaseData.getFormationQuestionnaires(f.id);
+                const existingCats = new Set((existing.data || []).map(fq => fq.questionnaires?.category).filter(Boolean));
+
+                for (const cat of categories) {
+                    if (existingCats.has(cat)) continue;
+                    const q = await SupabaseData.getQuestionnaireForFormation(f.id, cat);
+                    if (q) {
+                        await SupabaseData.assignQuestionnaireToFormation(f.id, q.id);
+                        assigned++;
+                    }
+                }
+                skipped++;
+            }
+
+            const msg = `Terminé : ${assigned} questionnaire(s) attribué(s) sur ${formations.length} formation(s).`;
+            if (resultEl) resultEl.textContent = msg;
+            showToast(msg, 'success');
+        } catch (err) {
+            console.error('Erreur reassignAllQuestionnaires:', err);
+            if (resultEl) resultEl.textContent = 'Erreur : ' + err.message;
+            showToast('Erreur : ' + err.message, 'error');
+        }
+    },
+
     // ==================== EMAIL DETAIL (historique) ====================
 
     async showEmailDetail(logId) {

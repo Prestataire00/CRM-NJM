@@ -756,22 +756,33 @@ const SupabaseData = {
         }
     },
 
+    // Mapping nom de formation → type de questionnaire dans la table questionnaires
+    _formationNameToQuestionnaireType: {
+        'Techniques de vente': 'techniques_vente',
+        'Management': 'management',
+        'Manager commercial': 'manager_commercial',
+        'Manager et piloter une équipe commerciale': 'manager_commercial',
+    },
+
     async getQuestionnaireForFormation(formationId, category) {
         try {
             const { data: formation } = await supabaseClient
                 .from('formations')
-                .select('formation_type')
+                .select('formation_name')
                 .eq('id', formationId)
                 .single();
             if (!formation) return null;
 
+            // Déterminer le type de questionnaire via le nom de la formation
+            const questType = this._formationNameToQuestionnaireType[formation.formation_name] || null;
+
             // Chercher un questionnaire spécifique au type de formation
-            if (formation.formation_type) {
+            if (questType) {
                 const { data: specific } = await supabaseClient
                     .from('questionnaires')
                     .select('*')
                     .eq('category', category)
-                    .eq('formation_type', formation.formation_type)
+                    .eq('formation_type', questType)
                     .eq('active', true)
                     .limit(1)
                     .maybeSingle();

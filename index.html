@@ -1544,6 +1544,17 @@
                             Enregistrer les paramètres
                         </button>
                     </div>
+
+                    <!-- Outils admin -->
+                    <div style="background: white; border-radius: var(--radius-xl); padding: 2rem; box-shadow: var(--shadow-sm); margin-bottom: 2rem;">
+                        <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--gray-900); margin-bottom: 1rem;">Outils d'administration</h3>
+                        <div style="display:flex; gap:1rem; flex-wrap:wrap;">
+                            <button onclick="CRMApp.reassignAllQuestionnaires()" style="padding:0.75rem 1.5rem; background:var(--primary-purple); color:white; border:none; border-radius:var(--radius-md); font-weight:600; cursor:pointer; font-size:0.9rem;">
+                                🔄 Ré-attribuer les questionnaires aux formations existantes
+                            </button>
+                        </div>
+                        <p id="reassign-result" style="margin-top:0.75rem; font-size:0.85rem; color:var(--gray-500);"></p>
+                    </div>
                 </div>
                 </div>
             </div>
