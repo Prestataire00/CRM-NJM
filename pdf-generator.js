@@ -167,6 +167,41 @@ const PdfGenerator = {
         return new Date(dateStr).toLocaleDateString('fr-FR');
     },
 
+    /**
+     * Renvoie la date de création figée pour un type de document.
+     * - Si la formation a déjà une date enregistrée pour ce type, la renvoie.
+     * - Sinon, fixe la date du jour, la persiste en base et la renvoie.
+     * Garantit que les documents (convention, contrat, certificat...) gardent
+     * la même date à chaque réouverture / régénération.
+     */
+    async getDocumentCreationDate(formation, docType) {
+        if (!formation || !docType) return new Date().toISOString();
+
+        let dates = formation.document_dates;
+        if (typeof dates === 'string') {
+            try { dates = JSON.parse(dates); } catch (e) { dates = {}; }
+        }
+        dates = dates || {};
+
+        if (dates[docType]) {
+            formation.document_dates = dates;
+            return dates[docType];
+        }
+
+        const isoDate = new Date().toISOString();
+        dates[docType] = isoDate;
+        formation.document_dates = dates;
+
+        if (formation.id && typeof SupabaseData !== 'undefined' && SupabaseData.updateFormation) {
+            try {
+                await SupabaseData.updateFormation(formation.id, { document_dates: dates });
+            } catch (e) {
+                console.warn('Impossible de persister document_dates:', e);
+            }
+        }
+        return isoDate;
+    },
+
     getLearnerName(learner) {
         const firstName = learner.first_name || learner.firstname || '';
         const lastName = learner.last_name || learner.lastname || '';
@@ -311,8 +346,10 @@ const PdfGenerator = {
 
             const colWidths = [15, 35, 80, 50];
 
+            const nbDays = parseFloat(formation.number_of_days) || 0;
+            const nbDaysStr = nbDays > 0 ? nbDays.toString().replace('.', ',') : '0';
             const rows = [[
-                `${formation.hours_per_learner || 0}h\n\n${formation.number_of_days || 0} ${(formation.number_of_days || 0) <= 1 ? 'jour' : 'jours'}`,
+                `${formation.hours_per_learner || 0}h\n\n${nbDaysStr} ${nbDays <= 1 ? 'jour' : 'jours'}`,
                 formation.objectives || 'RAS',
                 formation.module_1 || 'Commerce',
                 formation.methods_tools || 'RAS'
@@ -502,7 +539,8 @@ const PdfGenerator = {
             const margin = 20;
             const maxW = 170;
 
-            const currentDate = new Date().toLocaleDateString('fr-FR');
+            const docCreatedIso = await this.getDocumentCreationDate(formation, 'convention');
+            const currentDate = new Date(docCreatedIso).toLocaleDateString('fr-FR');
             const startDate = this.formatDate(formation.start_date);
             const endDate = this.formatDate(formation.end_date);
             // Priorité : custom_dates > attendance_sheets > fallback start/end
@@ -799,7 +837,8 @@ const PdfGenerator = {
             const subAddress = formation.subcontractor_address || '';
             const subSiret = formation.subcontractor_siret || '';
             const subNda = formation.subcontractor_nda || '';
-            const signatureDate = new Date().toLocaleDateString('fr-FR');
+            const docCreatedIso = await this.getDocumentCreationDate(formation, 'contrat_sous_traitance');
+            const signatureDate = new Date(docCreatedIso).toLocaleDateString('fr-FR');
 
             // ===== PAGE 1 =====
             let y = this.addNJMHeader(doc);
@@ -973,7 +1012,7 @@ const PdfGenerator = {
             }).filter(Boolean);
             if (dates.length > 0) return dates;
         }
-        let numDays = parseInt(formation.number_of_days) || 0;
+        let numDays = Math.ceil(parseFloat(formation.number_of_days) || 0);
         if (!numDays && formation.start_date && formation.end_date) {
             const start = new Date(formation.start_date);
             const end = new Date(formation.end_date);
@@ -1212,7 +1251,11 @@ const PdfGenerator = {
                     dates = startDate === endDate ? startDate : `${startDate} au ${endDate}`;
                 }
             }
-            const lastDate = endDate || startDate || new Date().toLocaleDateString('fr-FR');
+            let lastDate = endDate || startDate;
+            if (!lastDate) {
+                const docCreatedIso = await this.getDocumentCreationDate(formation, 'certificate');
+                lastDate = new Date(docCreatedIso).toLocaleDateString('fr-FR');
+            }
             const companyName = formation.company_name || formation.client_name || '';
 
             let totalHours = learnersData.length > 0

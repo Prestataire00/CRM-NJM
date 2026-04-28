@@ -855,7 +855,7 @@ const CRMApp = {
                             </div>
                             <div style="background: var(--gray-50); padding: 1rem; border-radius: var(--radius-md);">
                                 <div style="font-size: 0.75rem; color: var(--gray-500); margin-bottom: 0.25rem;">Nombre de jours</div>
-                                <div style="font-weight: 500; color: var(--gray-700);">${formation.number_of_days || 'N/A'} jour(s)</div>
+                                <div style="font-weight: 500; color: var(--gray-700);">${formation.number_of_days != null ? String(formation.number_of_days).replace('.', ',') : 'N/A'} jour(s)</div>
                             </div>
                             <div style="background: var(--gray-50); padding: 1rem; border-radius: var(--radius-md);">
                                 <div style="font-size: 0.75rem; color: var(--gray-500); margin-bottom: 0.25rem;">Total heures</div>
@@ -8839,7 +8839,7 @@ const DOC_CONFIGS = {
                 content_summary: f.content_summary || '',
                 module_content: f.module_1 || '',
                 methods: f.methods_tools || '',
-                signature_date: new Date().toLocaleDateString('fr-FR'),
+                signature_date: DocumentPreview._formattedDocDate(f, 'convention'),
             };
         },
     },
@@ -8902,7 +8902,7 @@ const DOC_CONFIGS = {
                 dates,
                 duration: String(f.hours_per_learner || ''),
                 price: f.subcontractor_price || '600',
-                signature_date: new Date().toLocaleDateString('fr-FR'),
+                signature_date: DocumentPreview._formattedDocDate(f, 'contrat_sous_traitance'),
             };
         },
     },
@@ -8965,7 +8965,7 @@ const DOC_CONFIGS = {
                 training_location: f.training_location || '',
                 dates,
                 duration: String(firstLearner.hours || f.hours_per_learner || ''),
-                signature_date: endDate || new Date().toLocaleDateString('fr-FR'),
+                signature_date: endDate || DocumentPreview._formattedDocDate(f, 'certificate'),
                 _learners: learnersData.map(l => ({
                     name: PdfGenerator.getLearnerName(l),
                     hours: l.hours || f.hours_per_learner || '',
@@ -8981,6 +8981,22 @@ const DocumentPreview = {
     currentType: null,
     currentFormationData: null,
     currentFormationId: null,
+
+    /**
+     * Lit la date de création figée pour un document (sans persistance ici).
+     * Renvoie une date FR formatée. Sert à `prepareVars` (appel sync).
+     * La persistance se fait dans `open()` via PdfGenerator.getDocumentCreationDate.
+     */
+    _formattedDocDate(f, docType) {
+        let dates = f && f.document_dates;
+        if (typeof dates === 'string') {
+            try { dates = JSON.parse(dates); } catch (e) { dates = {}; }
+        }
+        const iso = dates && dates[docType];
+        return iso
+            ? new Date(iso).toLocaleDateString('fr-FR')
+            : new Date().toLocaleDateString('fr-FR');
+    },
 
     async open(formationId, docType) {
         try {
@@ -8999,6 +9015,12 @@ const DocumentPreview = {
                 .eq('id', formationId)
                 .single();
             if (error) throw error;
+
+            // Fige la date de création du document (1ère ouverture seulement).
+            // Garantit que la date affichée ne se met pas à jour aux relectures.
+            if (typeof PdfGenerator !== 'undefined' && PdfGenerator.getDocumentCreationDate) {
+                await PdfGenerator.getDocumentCreationDate(data, docType);
+            }
 
             // Fetch client pour pre-remplir les infos manquantes
             if (data.client_id) {

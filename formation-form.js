@@ -99,18 +99,34 @@ const FormationForm = {
         if (customInput) {
             customInput.style.display = value === '__custom__' ? 'block' : 'none';
         }
+        const pedaFields = ['target_audience', 'prerequisites', 'objectives', 'module_1', 'content_summary', 'methods_tools', 'evaluation_methodology', 'added_value', 'access_delays', 'hours_per_learner', 'number_of_days'];
+
+        // Si "personnalisée" : vider les champs pour repartir de zéro
+        // (sauf pour une formation existante déjà personnalisée, qu'on ne veut pas écraser)
+        if (value === '__custom__') {
+            const isExistingCustom = this.currentFormation && this.currentFormation.id
+                && this.currentFormation.formation_name
+                && !this.FORMATION_TEMPLATES[this.currentFormation.formation_name];
+            if (!isExistingCustom) {
+                pedaFields.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.value = '';
+                });
+                if (customInput) customInput.value = '';
+            }
+            return;
+        }
+
         // Pre-remplir depuis template si existant
         const template = this.FORMATION_TEMPLATES[value];
         if (!template) return;
-        const fields = ['target_audience', 'prerequisites', 'objectives', 'module_1', 'content_summary', 'methods_tools', 'evaluation_methodology', 'added_value', 'access_delays', 'hours_per_learner', 'number_of_days'];
         let filled = 0;
-        fields.forEach(id => {
+        pedaFields.forEach(id => {
             const el = document.getElementById(id);
             if (el && !el.value.trim() && template[id] !== undefined) { el.value = template[id]; filled++; }
         });
         // Pre-remplir le nom de formation personnalise si le template en fournit un
         if (template.formation_name) {
-            const customInput = document.getElementById('formation_name_custom');
             if (customInput && !customInput.value.trim()) customInput.value = template.formation_name;
         }
         if (filled > 0) showToast(`${filled} champ(s) pr\u00E9-rempli(s) pour "${value}"`, 'info');
@@ -219,7 +235,7 @@ const FormationForm = {
                         <option value="Techniques de vente" ${f.formation_name === 'Techniques de vente' ? 'selected' : ''}>Techniques de vente</option>
                         <option value="Management" ${f.formation_name === 'Management' ? 'selected' : ''}>Management</option>
                         <option value="Manager commercial" ${f.formation_name === 'Manager commercial' ? 'selected' : ''}>Manager commercial</option>
-                        <option value="__custom__" ${isCustomName ? 'selected' : ''}>Autre (saisie libre)</option>
+                        <option value="__custom__" ${isCustomName ? 'selected' : ''}>✏️ Créer une formation personnalisée</option>
                     </select>
                     <input type="text" id="formation_name_custom" value="${isCustomName ? (f.formation_name || '') : ''}" placeholder="Nom de la formation..." style="display: ${isCustomName ? 'block' : 'none'}; margin-top: 0.5rem;">
                 </div>
@@ -296,11 +312,21 @@ const FormationForm = {
                 </div>
                 <div class="form-group">
                     <label>Nombre de jours</label>
-                    <input type="number" id="number_of_days" value="${f.number_of_days || ''}" min="1">
+                    <input type="number" id="number_of_days" value="${f.number_of_days || ''}" min="0.5" step="0.5" placeholder="ex: 2,5" onchange="FormationForm.refreshDailySchedule()">
                 </div>
                 <div class="form-group">
                     <label>Heures par apprenant *</label>
                     <input type="number" id="hours_per_learner" value="${f.hours_per_learner || ''}" min="0" step="0.5" placeholder="ex: 14">
+                </div>
+                <div class="form-group form-group-full" style="background: #fef3f2; padding: 1rem; border-radius: 8px; border: 1px solid #fecaca;">
+                    <label style="color: #991b1b; font-weight: 600;">Planning par jour (dates + heures)</label>
+                    <p style="font-size: 0.75rem; color: #991b1b; margin-top: 0.25rem; margin-bottom: 0.75rem;">
+                        Ces dates et heures sont utilisées pour générer la feuille de présence. Cliquez sur "Générer" après avoir renseigné le nombre de jours.
+                    </p>
+                    <div id="daily-schedule-container">${this.renderDailySchedule()}</div>
+                    <button type="button" onclick="FormationForm.refreshDailySchedule()" style="margin-top: 0.5rem; padding: 0.4rem 0.75rem; background: #fff; color: #991b1b; border: 1px solid #991b1b; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 500;">
+                        ↻ Régénérer depuis le nombre de jours
+                    </button>
                 </div>
                 <div class="form-group">
                     <label>Montant de la formation (\u20AC)</label>
@@ -451,6 +477,100 @@ const FormationForm = {
         this.currentTab = tabName;
     },
 
+    // ==================== GESTION PLANNING PAR JOUR ====================
+    renderDailySchedule() {
+        const f = this.currentFormation || {};
+        let sheets = f.attendance_sheets || [];
+        if (typeof sheets === 'string') { try { sheets = JSON.parse(sheets); } catch (e) { sheets = []; } }
+        if (!Array.isArray(sheets) || sheets.length === 0) {
+            return `<p style="font-size: 0.8rem; color: var(--gray-500); font-style: italic;">Renseignez le nombre de jours puis cliquez sur "Régénérer".</p>`;
+        }
+        return `
+            <div style="display: grid; grid-template-columns: 80px 1fr 120px; gap: 0.5rem; align-items: center;">
+                <div style="font-size: 0.75rem; color: var(--gray-600); font-weight: 600;">Jour</div>
+                <div style="font-size: 0.75rem; color: var(--gray-600); font-weight: 600;">Date</div>
+                <div style="font-size: 0.75rem; color: var(--gray-600); font-weight: 600;">Heures / apprenant</div>
+                ${sheets.map((s, i) => `
+                    <div style="font-size: 0.85rem; color: var(--gray-700);">Jour ${i + 1}</div>
+                    <input type="date" value="${s.date || ''}" onchange="FormationForm.updateDayField(${i}, 'date', this.value)" style="padding: 0.4rem; border: 1px solid var(--gray-300); border-radius: 6px;">
+                    <input type="number" min="0" step="0.5" value="${(s.learners_hours && s.learners_hours[0] && s.learners_hours[0].hours != null) ? s.learners_hours[0].hours : ''}" placeholder="ex: 7" onchange="FormationForm.updateDayField(${i}, 'hours', this.value)" style="padding: 0.4rem; border: 1px solid var(--gray-300); border-radius: 6px;">
+                `).join('')}
+            </div>
+        `;
+    },
+
+    refreshDailySchedule() {
+        const numDaysRaw = parseFloat(document.getElementById('number_of_days')?.value);
+        if (!numDaysRaw || numDaysRaw <= 0) {
+            showToast('Renseignez d\'abord le nombre de jours', 'info');
+            return;
+        }
+        const numDays = Math.ceil(numDaysRaw);
+        const startDateStr = document.getElementById('start_date')?.value;
+        const totalHours = parseFloat(document.getElementById('hours_per_learner')?.value) || 0;
+        const defaultHoursPerDay = numDaysRaw > 0 ? +(totalHours / numDaysRaw).toFixed(2) : 0;
+
+        const f = this.currentFormation || {};
+        let existing = f.attendance_sheets || [];
+        if (typeof existing === 'string') { try { existing = JSON.parse(existing); } catch (e) { existing = []; } }
+        if (!Array.isArray(existing)) existing = [];
+
+        const newSheets = [];
+        for (let i = 0; i < numDays; i++) {
+            const prev = existing[i] || {};
+            let date = prev.date || '';
+            if (!date && startDateStr) {
+                const d = new Date(startDateStr);
+                d.setDate(d.getDate() + i);
+                date = d.toISOString().split('T')[0];
+            }
+            const hours = (prev.learners_hours && prev.learners_hours[0] && prev.learners_hours[0].hours != null)
+                ? prev.learners_hours[0].hours
+                : defaultHoursPerDay;
+            newSheets.push({
+                day: i + 1,
+                date,
+                learners_hours: this.learnersData.map(l => ({
+                    learner_name: `${l.first_name || ''} ${l.last_name || ''}`.trim(),
+                    hours
+                }))
+            });
+        }
+        if (!this.currentFormation) this.currentFormation = {};
+        this.currentFormation.attendance_sheets = newSheets;
+
+        const container = document.getElementById('daily-schedule-container');
+        if (container) container.innerHTML = this.renderDailySchedule();
+    },
+
+    updateDayField(index, field, value) {
+        if (!this.currentFormation) this.currentFormation = {};
+        let sheets = this.currentFormation.attendance_sheets || [];
+        if (typeof sheets === 'string') { try { sheets = JSON.parse(sheets); } catch (e) { sheets = []; } }
+        if (!sheets[index]) sheets[index] = { day: index + 1, date: '', learners_hours: [] };
+        if (field === 'date') {
+            sheets[index].date = value;
+        } else if (field === 'hours') {
+            const h = parseFloat(value) || 0;
+            const names = this.learnersData.map(l => `${l.first_name || ''} ${l.last_name || ''}`.trim());
+            sheets[index].learners_hours = (names.length ? names : [''])
+                .map(n => ({ learner_name: n, hours: h }));
+        }
+        this.currentFormation.attendance_sheets = sheets;
+
+        // Auto-calcul du total d'heures par apprenant à partir des heures par jour
+        if (field === 'hours') {
+            const total = sheets.reduce((sum, s) => {
+                const hPerDay = (s.learners_hours && s.learners_hours[0] && s.learners_hours[0].hours != null)
+                    ? parseFloat(s.learners_hours[0].hours) || 0
+                    : 0;
+                return sum + hPerDay;
+            }, 0);
+            const totalInput = document.getElementById('hours_per_learner');
+            if (totalInput) totalInput.value = total;
+        }
+    },
+
     // ==================== GESTION APPRENANTS ====================
     addLearner() {
         this.learnersData.push({ id: Date.now(), first_name: '', last_name: '', email: '', birth_year: '', position_title: '', phone: '', entity: '', hours: '', position: this.learnersData.length + 1 });
@@ -565,6 +685,18 @@ const FormationForm = {
         // Filtrer les apprenants vides (sans nom ni prenom)
         this.learnersData = this.learnersData.filter(l => (l.first_name || '').trim() || (l.last_name || '').trim());
 
+        // Synchroniser les noms d'apprenants dans le planning par jour
+        if (this.currentFormation && Array.isArray(this.currentFormation.attendance_sheets)) {
+            const names = this.learnersData.map(l => `${l.first_name || ''} ${l.last_name || ''}`.trim()).filter(Boolean);
+            this.currentFormation.attendance_sheets = this.currentFormation.attendance_sheets.map(s => {
+                const hours = (s.learners_hours && s.learners_hours[0] && s.learners_hours[0].hours != null) ? s.learners_hours[0].hours : 0;
+                return {
+                    ...s,
+                    learners_hours: (names.length ? names : ['']).map(n => ({ learner_name: n, hours }))
+                };
+            });
+        }
+
         const selectedClient = this.clientsData.find(c => c.id === clientId);
         const selectedSub = this.subcontractorsData.find(s => s.id === subcontractorId);
 
@@ -585,8 +717,9 @@ const FormationForm = {
             end_date: document.getElementById('end_date').value,
             custom_dates: document.getElementById('custom_dates').value.trim() || null,
             training_location: document.getElementById('training_location').value,
-            number_of_days: parseInt(document.getElementById('number_of_days').value) || null,
+            number_of_days: parseFloat(document.getElementById('number_of_days').value) || null,
             hours_per_learner: parseFloat(document.getElementById('hours_per_learner').value) || 0,
+            attendance_sheets: (this.currentFormation && this.currentFormation.attendance_sheets) || [],
             total_amount: parseFloat(document.getElementById('total_amount').value) || null,
             status: document.getElementById('status').value,
             company_name: document.getElementById('company_name').value,
